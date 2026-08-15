@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Physics Simulations</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121a2e;
+      --border: #263658;
+      --text: #f2f7ff;
+      --muted: #aebbd3;
+      --accent: #61b4ff;
+      --accent2: #61e7b6;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 20% 0%, #193563 0%, transparent 32rem),
+        var(--bg);
+      line-height: 1.5;
+    }
+
+    header, main {
+      width: min(1080px, calc(100% - 32px));
+      margin: auto;
+    }
+
+    header {
+      padding: 48px 0 25px;
+    }
+
+    h1 { margin: 0; font-size: clamp(2rem, 5vw, 3.6rem); }
+    h2 { margin: 0 0 10px; font-size: 1.3rem; }
+
+    .subtitle, .intro p, .card p {
+      color: var(--muted);
+    }
+
+    .subtitle { font-size: 1.08rem; margin-top: 10px; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(235px, 1fr));
+      gap: 16px;
+      padding: 20px 0 56px;
+    }
+
+    .card {
+      display: block;
+      min-height: 150px;
+      padding: 20px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      color: inherit;
+      text-decoration: none;
+      background: rgba(18, 26, 46, 0.88);
+      transition: transform 160ms ease, border-color 160ms ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: var(--accent);
+    }
+
+    .card h3 {
+      margin: 0 0 8px;
+      color: var(--accent);
+    }
+
+    .card p {
+      margin: 0;
+      font-size: 0.94rem;
+    }
+
+    .tag {
+      display: inline-block;
+      margin-top: 14px;
+      color: var(--accent2);
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+
+    footer {
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      padding: 22px 0 40px;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Physics Simulations</h1>
+    <p class="subtitle">Interactive browser-based labs for exploring physics.</p>
+  </header>
+
+  <main>
+    <section class="intro">
+      <h2>Choose a simulation</h2>
+      <p>Start with the Wave on a String lab. The other cards are marked as coming soon.</p>
+    </section>
+
+    <section class="grid">
+      <a class="card" href="wave-on-a-string.html">
+        <h3>Wave on a String</h3>
+        <p>Change frequency, amplitude, tension, damping, and the end boundary. Watch the wave evolve in real time.</p>
+        <span class="tag">Open simulation →</span>
+      </a>
+
+      <div class="card">
+        <h3>Projectile Motion</h3>
+        <p>Launch objects and investigate trajectories, gravity, and air resistance.</p>
+        <span class="tag">Coming soon</span>
+      </div>
+
+      <div class="card">
+        <h3>Springs & Masses</h3>
+        <p>Explore Hooke’s law, resonance, damping, and mechanical energy.</p>
+        <span class="tag">Coming soon</span>
+      </div>
+
+      <div class="card">
+        <h3>Simple Circuits</h3>
+        <p>Experiment with voltage, resistance, capacitance, and current.</p>
+        <span class="tag">Coming soon</span>
+      </div>
+
+      <div class="card">
+        <h3>Orbital Motion</h3>
+        <p>Explore gravity, orbital speed, and paths around a central body.</p>
+        <span class="tag">Coming soon</span>
+      </div>
+    </section>
+
+    <footer>Built with HTML, CSS, and JavaScript.</footer>
+  </main>
+</body>
+</html>
