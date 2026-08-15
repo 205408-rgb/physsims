@@ -1,0 +1,792 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Collision Lab | Physics Simulations</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121a2e;
+      --canvas: #0c1425;
+      --border: #263658;
+      --text: #f2f7ff;
+      --muted: #aebbd3;
+      --blue: #61b4ff;
+      --green: #61e7b6;
+      --red: #ff7b8e;
+      --yellow: #ffd56a;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 20% 0%, #193563 0%, transparent 32rem),
+        var(--bg);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .page {
+      width: min(1180px, calc(100% - 32px));
+      margin: auto;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 28px 0 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+    }
+
+    h2 {
+      margin: 0 0 16px;
+      font-size: 1.1rem;
+    }
+
+    .subtitle {
+      margin: 7px 0 0;
+      color: var(--muted);
+    }
+
+    .back {
+      color: var(--blue);
+      text-decoration: none;
+      white-space: nowrap;
+      padding-top: 6px;
+    }
+
+    .back:hover { text-decoration: underline; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.75fr);
+      gap: 18px;
+      padding: 22px 0 18px;
+    }
+
+    .panel {
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: rgba(18, 26, 46, 0.9);
+    }
+
+    .simulation {
+      position: relative;
+      min-height: 440px;
+    }
+
+    #simCanvas {
+      display: block;
+      width: 100%;
+      height: 440px;
+      background: var(--canvas);
+    }
+
+    .canvas-label {
+      position: absolute;
+      top: 12px;
+      left: 14px;
+      color: var(--muted);
+      font-size: 0.84rem;
+      pointer-events: none;
+    }
+
+    .controls { padding: 20px; }
+
+    .control { margin-bottom: 17px; }
+
+    label {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    output {
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      cursor: pointer;
+      accent-color: var(--blue);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 5px 0 20px;
+    }
+
+    button {
+      cursor: pointer;
+      border: 0;
+      border-radius: 9px;
+      padding: 10px 14px;
+      color: #08101c;
+      background: linear-gradient(135deg, var(--blue), var(--green));
+      font: inherit;
+      font-weight: 750;
+    }
+
+    button.secondary {
+      color: var(--text);
+      border: 1px solid var(--border);
+      background: transparent;
+    }
+
+    .readouts {
+      margin-top: 22px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--canvas);
+    }
+
+    .readouts h3 {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .readouts p {
+      display: flex;
+      justify-content: space-between;
+      margin: 6px 0;
+      font-size: 0.92rem;
+    }
+
+    .readouts strong { font-variant-numeric: tabular-nums; }
+
+    .graphs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      padding-bottom: 40px;
+    }
+
+    .graph { padding: 14px; }
+
+    .graph h2 {
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .graph canvas {
+      display: block;
+      width: 100%;
+      height: 205px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--canvas);
+    }
+
+    .legend {
+      display: flex;
+      gap: 14px;
+      margin-top: 9px;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .blue { color: var(--blue); }
+    .red { color: var(--red); }
+    .green { color: var(--green); }
+    .yellow { color: var(--yellow); }
+
+    @media (max-width: 850px) {
+      header { flex-direction: column; }
+      .layout, .graphs { grid-template-columns: 1fr; }
+      #simCanvas { height: 360px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div>
+        <h1>Collision Lab</h1>
+        <p class="subtitle">Adjust two carts and investigate momentum and kinetic energy during a one-dimensional collision.</p>
+      </div>
+      <a class="back" href="index.html">← All simulations</a>
+    </header>
+
+    <main class="layout">
+      <section class="panel simulation">
+        <canvas id="simCanvas"></canvas>
+        <div class="canvas-label">Blue cart: A · Red cart: B · Green arrows: velocity</div>
+      </section>
+
+      <aside class="panel controls">
+        <h2>Cart A</h2>
+
+        <div class="control">
+          <label for="massA">
+            <span>Mass A</span>
+            <output id="massAOut">2.0 kg</output>
+          </label>
+          <input id="massA" type="range" min="0.5" max="10" value="2" step="0.5">
+        </div>
+
+        <div class="control">
+          <label for="velocityA">
+            <span>Velocity A</span>
+            <output id="velocityAOut">4.0 m/s</output>
+          </label>
+          <input id="velocityA" type="range" min="-8" max="8" value="4" step="0.5">
+        </div>
+
+        <h2>Cart B</h2>
+
+        <div class="control">
+          <label for="massB">
+            <span>Mass B</span>
+            <output id="massBOut">3.0 kg</output>
+          </label>
+          <input id="massB" type="range" min="0.5" max="10" value="3" step="0.5">
+        </div>
+
+        <div class="control">
+          <label for="velocityB">
+            <span>Velocity B</span>
+            <output id="velocityBOut">-1.0 m/s</output>
+          </label>
+          <input id="velocityB" type="range" min="-8" max="8" value="-1" step="0.5">
+        </div>
+
+        <div class="control">
+          <label for="elasticity">
+            <span>Elasticity</span>
+            <output id="elasticityOut">1.00</output>
+          </label>
+          <input id="elasticity" type="range" min="0" max="1" value="1" step="0.05">
+        </div>
+
+        <div class="actions">
+          <button id="startButton" type="button">Start</button>
+          <button id="pauseButton" class="secondary" type="button">Pause</button>
+          <button id="resetButton" class="secondary" type="button">Reset</button>
+        </div>
+
+        <section class="readouts">
+          <h3>Conservation checks</h3>
+          <p><span>Time</span><strong id="timeOut">0.00 s</strong></p>
+          <p><span>Total momentum</span><strong id="momentumOut">0.00 kg·m/s</strong></p>
+          <p><span>Total kinetic energy</span><strong id="energyOut">0.00 J</strong></p>
+          <p><span>Collision state</span><strong id="stateOut">Ready</strong></p>
+        </section>
+      </aside>
+    </main>
+
+    <section class="graphs">
+      <section class="panel graph">
+        <h2>Momentum vs. time</h2>
+        <canvas id="momentumGraph"></canvas>
+        <div class="legend">
+          <span class="blue">● cart A</span>
+          <span class="red">● cart B</span>
+          <span class="yellow">● total</span>
+        </div>
+      </section>
+
+      <section class="panel graph">
+        <h2>Kinetic energy vs. time</h2>
+        <canvas id="energyGraph"></canvas>
+        <div class="legend">
+          <span class="blue">● cart A</span>
+          <span class="red">● cart B</span>
+          <span class="yellow">● total</span>
+        </div>
+      </section>
+    </section>
+  </div>
+
+  <script>
+    const simCanvas = document.getElementById("simCanvas");
+    const simCtx = simCanvas.getContext("2d");
+    const momentumGraph = document.getElementById("momentumGraph");
+    const momentumCtx = momentumGraph.getContext("2d");
+    const energyGraph = document.getElementById("energyGraph");
+    const energyCtx = energyGraph.getContext("2d");
+
+    const massAInput = document.getElementById("massA");
+    const velocityAInput = document.getElementById("velocityA");
+    const massBInput = document.getElementById("massB");
+    const velocityBInput = document.getElementById("velocityB");
+    const elasticityInput = document.getElementById("elasticity");
+
+    const massAOut = document.getElementById("massAOut");
+    const velocityAOut = document.getElementById("velocityAOut");
+    const massBOut = document.getElementById("massBOut");
+    const velocityBOut = document.getElementById("velocityBOut");
+    const elasticityOut = document.getElementById("elasticityOut");
+
+    const startButton = document.getElementById("startButton");
+    const pauseButton = document.getElementById("pauseButton");
+    const resetButton = document.getElementById("resetButton");
+
+    const timeOut = document.getElementById("timeOut");
+    const momentumOut = document.getElementById("momentumOut");
+    const energyOut = document.getElementById("energyOut");
+    const stateOut = document.getElementById("stateOut");
+
+    let cartA;
+    let cartB;
+    let time = 0;
+    let running = false;
+    let paused = false;
+    let collided = false;
+    let history = [];
+    let previousTimestamp = null;
+
+    function parameters() {
+      return {
+        massA: Number(massAInput.value),
+        velocityA: Number(velocityAInput.value),
+        massB: Number(massBInput.value),
+        velocityB: Number(velocityBInput.value),
+        elasticity: Number(elasticityInput.value)
+      };
+    }
+
+    function reset() {
+      const p = parameters();
+
+      cartA = { x: -7, velocity: p.velocityA, mass: p.massA };
+      cartB = { x: 7, velocity: p.velocityB, mass: p.massB };
+
+      time = 0;
+      running = false;
+      paused = false;
+      collided = false;
+      history = [];
+      pauseButton.textContent = "Pause";
+    }
+
+    function resizeCanvas(canvas) {
+      const ratio = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+
+      canvas.width = Math.round(rect.width * ratio);
+      canvas.height = Math.round(rect.height * ratio);
+
+      const ctx = canvas.getContext("2d");
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+
+      return { width: rect.width, height: rect.height };
+    }
+
+    function line(ctx, x1, y1, x2, y2, color, width = 1) {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+    }
+
+    function arrow(ctx, x1, y1, x2, y2, color) {
+      const head = 8;
+      const direction = Math.atan2(y2 - y1, x2 - x1);
+
+      line(ctx, x1, y1, x2, y2, color, 2);
+
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(
+        x2 - head * Math.cos(direction - Math.PI / 6),
+        y2 - head * Math.sin(direction - Math.PI / 6)
+      );
+      ctx.lineTo(
+        x2 - head * Math.cos(direction + Math.PI / 6),
+        y2 - head * Math.sin(direction + Math.PI / 6)
+      );
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function collide(p) {
+      const m1 = cartA.mass;
+      const m2 = cartB.mass;
+      const u1 = cartA.velocity;
+      const u2 = cartB.velocity;
+      const e = p.elasticity;
+
+      const v1 = (
+        m1 * u1 + m2 * u2 - m2 * e * (u1 - u2)
+      ) / (m1 + m2);
+
+      const v2 = (
+        m1 * u1 + m2 * u2 + m1 * e * (u1 - u2)
+      ) / (m1 + m2);
+
+      cartA.velocity = v1;
+      cartB.velocity = v2;
+      collided = true;
+    }
+
+    function updatePhysics(delta, p) {
+      if (!running || paused) return;
+
+      cartA.x += cartA.velocity * delta;
+      cartB.x += cartB.velocity * delta;
+      time += delta;
+
+      const cartWidthWorld = 1.7;
+      const approaching = cartA.velocity > cartB.velocity;
+
+      if (
+        !collided &&
+        approaching &&
+        cartA.x + cartWidthWorld / 2 >= cartB.x - cartWidthWorld / 2
+      ) {
+        const midpoint = (cartA.x + cartB.x) / 2;
+        cartA.x = midpoint - cartWidthWorld / 2;
+        cartB.x = midpoint + cartWidthWorld / 2;
+        collide(p);
+      }
+
+      if (cartA.x < -13 || cartB.x > 13 || cartA.x > 13 || cartB.x < -13) {
+        running = false;
+      }
+
+      const momentumA = cartA.mass * cartA.velocity;
+      const momentumB = cartB.mass * cartB.velocity;
+      const energyA = 0.5 * cartA.mass * cartA.velocity * cartA.velocity;
+      const energyB = 0.5 * cartB.mass * cartB.velocity * cartB.velocity;
+
+      if (history.length === 0 || time - history[history.length - 1].t > 0.04) {
+        history.push({
+          t: time,
+          momentumA,
+          momentumB,
+          momentumTotal: momentumA + momentumB,
+          energyA,
+          energyB,
+          energyTotal: energyA + energyB
+        });
+      }
+
+      history = history.filter(point => point.t >= time - 12);
+    }
+
+    function updateLabels(p) {
+      massAOut.textContent = `${p.massA.toFixed(1)} kg`;
+      velocityAOut.textContent = `${p.velocityA.toFixed(1)} m/s`;
+      massBOut.textContent = `${p.massB.toFixed(1)} kg`;
+      velocityBOut.textContent = `${p.velocityB.toFixed(1)} m/s`;
+      elasticityOut.textContent = p.elasticity.toFixed(2);
+
+      const totalMomentum =
+        cartA.mass * cartA.velocity +
+        cartB.mass * cartB.velocity;
+
+      const totalEnergy =
+        0.5 * cartA.mass * cartA.velocity * cartA.velocity +
+        0.5 * cartB.mass * cartB.velocity * cartB.velocity;
+
+      timeOut.textContent = `${time.toFixed(2)} s`;
+      momentumOut.textContent = `${totalMomentum.toFixed(2)} kg·m/s`;
+      energyOut.textContent = `${totalEnergy.toFixed(2)} J`;
+
+      if (collided) {
+        stateOut.textContent = `Collided, e = ${p.elasticity.toFixed(2)}`;
+      } else if (running) {
+        stateOut.textContent = "Approaching";
+      } else {
+        stateOut.textContent = "Ready";
+      }
+    }
+
+    function drawCart(ctx, x, y, width, height, color, label, mass) {
+      ctx.fillStyle = color;
+      ctx.fillRect(x, y, width, height);
+
+      ctx.strokeStyle = "#06101d";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x, y, width, height);
+
+      ctx.fillStyle = "#06101d";
+      ctx.beginPath();
+      ctx.arc(x + width * 0.24, y + height + 8, 7, 0, Math.PI * 2);
+      ctx.arc(x + width * 0.76, y + height + 8, 7, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "#f2f7ff";
+      ctx.font = "13px system-ui";
+      ctx.fillText(label, x + 13, y + 27);
+      ctx.fillText(`${mass.toFixed(1)} kg`, x + 4, y + 47);
+    }
+
+    function drawSimulation() {
+      const { width, height } = resizeCanvas(simCanvas);
+      const trackY = height * 0.70;
+      const scale = width / 30;
+      const cartWidth = 68;
+      const cartHeight = 54;
+
+      const mapX = x => width / 2 + x * scale;
+
+      simCtx.clearRect(0, 0, width, height);
+      simCtx.fillStyle = "#0c1425";
+      simCtx.fillRect(0, 0, width, height);
+
+      simCtx.strokeStyle = "rgba(174,187,211,0.13)";
+      simCtx.lineWidth = 1;
+
+      for (let x = 0; x < width; x += 48) {
+        simCtx.beginPath();
+        simCtx.moveTo(x, 0);
+        simCtx.lineTo(x, trackY);
+        simCtx.stroke();
+      }
+
+      simCtx.fillStyle = "#263658";
+      simCtx.fillRect(0, trackY, width, height - trackY);
+
+      line(simCtx, 0, trackY, width, trackY, "#aebbd3", 2);
+
+      const cartAX = mapX(cartA.x) - cartWidth / 2;
+      const cartBX = mapX(cartB.x) - cartWidth / 2;
+      const cartY = trackY - cartHeight - 15;
+
+      drawCart(simCtx, cartAX, cartY, cartWidth, cartHeight, "#61b4ff", "A", cartA.mass);
+      drawCart(simCtx, cartBX, cartY, cartWidth, cartHeight, "#ff7b8e", "B", cartB.mass);
+
+      const velocityScale = 18;
+
+      arrow(
+        simCtx,
+        cartAX + cartWidth / 2,
+        cartY - 14,
+        cartAX + cartWidth / 2 + cartA.velocity * velocityScale,
+        cartY - 14,
+        "#61e7b6"
+      );
+
+      arrow(
+        simCtx,
+        cartBX + cartWidth / 2,
+        cartY - 14,
+        cartBX + cartWidth / 2 + cartB.velocity * velocityScale,
+        cartY - 14,
+        "#61e7b6"
+      );
+
+      simCtx.fillStyle = "#aebbd3";
+      simCtx.font = "12px system-ui";
+      simCtx.fillText("frictionless track", 20, trackY + 27);
+    }
+
+    function graphBase(ctx, canvas, label) {
+      const { width, height } = resizeCanvas(canvas);
+      const left = 40;
+      const right = 12;
+      const top = 15;
+      const bottom = 27;
+
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = "#0c1425";
+      ctx.fillRect(0, 0, width, height);
+
+      ctx.strokeStyle = "rgba(174,187,211,0.15)";
+      ctx.lineWidth = 1;
+
+      for (let i = 0; i <= 4; i++) {
+        const y = top + i * (height - top - bottom) / 4;
+        ctx.beginPath();
+        ctx.moveTo(left, y);
+        ctx.lineTo(width - right, y);
+        ctx.stroke();
+      }
+
+      line(ctx, left, top, left, height - bottom, "rgba(174,187,211,0.55)", 1);
+      line(ctx, left, height - bottom, width - right, height - bottom, "rgba(174,187,211,0.55)", 1);
+
+      ctx.fillStyle = "#aebbd3";
+      ctx.font = "11px system-ui";
+      ctx.fillText(label, 7, 16);
+
+      return { width, height, left, right, top, bottom };
+    }
+
+    function drawSeries(ctx, points, color, mapX, mapY) {
+      if (points.length < 2) return;
+
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+
+      points.forEach((point, index) => {
+        const x = mapX(point.t);
+        const y = mapY(point.value);
+
+        if (index === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+
+      ctx.stroke();
+    }
+
+    function drawMomentumGraph() {
+      const area = graphBase(momentumCtx, momentumGraph, "momentum");
+      if (history.length < 2) return;
+
+      const start = history[0].t;
+      const duration = Math.max(history[history.length - 1].t - start, 1);
+
+      const maximum = Math.max(
+        1,
+        ...history.map(point => Math.max(
+          Math.abs(point.momentumA),
+          Math.abs(point.momentumB),
+          Math.abs(point.momentumTotal)
+        ))
+      );
+
+      const middle = (area.top + area.height - area.bottom) / 2;
+
+      const mapX = t =>
+        area.left + (t - start) / duration * (area.width - area.left - area.right);
+
+      const mapY = value =>
+        middle - value / maximum * ((area.height - area.top - area.bottom) / 2 - 7);
+
+      line(
+        momentumCtx,
+        area.left,
+        middle,
+        area.width - area.right,
+        middle,
+        "rgba(174,187,211,0.35)"
+      );
+
+      drawSeries(
+        momentumCtx,
+        history.map(point => ({ t: point.t, value: point.momentumA })),
+        "#61b4ff",
+        mapX,
+        mapY
+      );
+
+      drawSeries(
+        momentumCtx,
+        history.map(point => ({ t: point.t, value: point.momentumB })),
+        "#ff7b8e",
+        mapX,
+        mapY
+      );
+
+      drawSeries(
+        momentumCtx,
+        history.map(point => ({ t: point.t, value: point.momentumTotal })),
+        "#ffd56a",
+        mapX,
+        mapY
+      );
+    }
+
+    function drawEnergyGraph() {
+      const area = graphBase(energyCtx, energyGraph, "energy");
+      if (history.length < 2) return;
+
+      const start = history[0].t;
+      const duration = Math.max(history[history.length - 1].t - start, 1);
+
+      const maximum = Math.max(
+        0.1,
+        ...history.map(point => point.energyTotal)
+      );
+
+      const mapX = t =>
+        area.left + (t - start) / duration * (area.width - area.left - area.right);
+
+      const mapY = value =>
+        area.height - area.bottom -
+        value / maximum * (area.height - area.top - area.bottom);
+
+      drawSeries(
+        energyCtx,
+        history.map(point => ({ t: point.t, value: point.energyA })),
+        "#61b4ff",
+        mapX,
+        mapY
+      );
+
+      drawSeries(
+        energyCtx,
+        history.map(point => ({ t: point.t, value: point.energyB })),
+        "#ff7b8e",
+        mapX,
+        mapY
+      );
+
+      drawSeries(
+        energyCtx,
+        history.map(point => ({ t: point.t, value: point.energyTotal })),
+        "#ffd56a",
+        mapX,
+        mapY
+      );
+    }
+
+    function animate(timestamp) {
+      if (previousTimestamp === null) previousTimestamp = timestamp;
+
+      const delta = Math.min((timestamp - previousTimestamp) / 1000, 0.04);
+      previousTimestamp = timestamp;
+
+      const p = parameters();
+      updatePhysics(delta, p);
+      updateLabels(p);
+      drawSimulation();
+      drawMomentumGraph();
+      drawEnergyGraph();
+
+      requestAnimationFrame(animate);
+    }
+
+    startButton.addEventListener("click", () => {
+      running = true;
+      paused = false;
+      pauseButton.textContent = "Pause";
+    });
+
+    pauseButton.addEventListener("click", () => {
+      paused = !paused;
+      pauseButton.textContent = paused ? "Resume" : "Pause";
+    });
+
+    resetButton.addEventListener("click", reset);
+
+    [massAInput, velocityAInput, massBInput, velocityBInput, elasticityInput].forEach(input => {
+      input.addEventListener("input", () => {
+        if (!running) reset();
+      });
+    });
+
+    window.addEventListener("resize", () => {
+      previousTimestamp = null;
+    });
+
+    reset();
+    requestAnimationFrame(animate);
+  </script>
+</body>
+</html>
