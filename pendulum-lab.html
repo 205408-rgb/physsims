@@ -1,0 +1,758 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pendulum Lab | Physics Simulations</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121a2e;
+      --canvas: #0c1425;
+      --border: #263658;
+      --text: #f2f7ff;
+      --muted: #aebbd3;
+      --blue: #61b4ff;
+      --green: #61e7b6;
+      --red: #ff7b8e;
+      --yellow: #ffd56a;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 20% 0%, #193563 0%, transparent 32rem),
+        var(--bg);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .page {
+      width: min(1180px, calc(100% - 32px));
+      margin: auto;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 28px 0 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+    }
+
+    h2 {
+      margin: 0 0 16px;
+      font-size: 1.1rem;
+    }
+
+    .subtitle {
+      margin: 7px 0 0;
+      color: var(--muted);
+    }
+
+    .back {
+      color: var(--blue);
+      text-decoration: none;
+      white-space: nowrap;
+      padding-top: 6px;
+    }
+
+    .back:hover { text-decoration: underline; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.75fr);
+      gap: 18px;
+      padding: 22px 0 18px;
+    }
+
+    .panel {
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: rgba(18, 26, 46, 0.9);
+    }
+
+    .simulation {
+      position: relative;
+      min-height: 440px;
+    }
+
+    #simCanvas {
+      display: block;
+      width: 100%;
+      height: 440px;
+      background: var(--canvas);
+    }
+
+    .canvas-label {
+      position: absolute;
+      top: 12px;
+      left: 14px;
+      color: var(--muted);
+      font-size: 0.84rem;
+      pointer-events: none;
+    }
+
+    .controls { padding: 20px; }
+
+    .control { margin-bottom: 19px; }
+
+    label {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    output {
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      cursor: pointer;
+      accent-color: var(--blue);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 5px 0 20px;
+    }
+
+    button {
+      cursor: pointer;
+      border: 0;
+      border-radius: 9px;
+      padding: 10px 14px;
+      color: #08101c;
+      background: linear-gradient(135deg, var(--blue), var(--green));
+      font: inherit;
+      font-weight: 750;
+    }
+
+    button.secondary {
+      color: var(--text);
+      border: 1px solid var(--border);
+      background: transparent;
+    }
+
+    .checks {
+      display: grid;
+      gap: 10px;
+    }
+
+    .checks label {
+      justify-content: flex-start;
+      align-items: center;
+      margin: 0;
+      cursor: pointer;
+    }
+
+    .checks input { accent-color: var(--blue); }
+
+    .readouts {
+      margin-top: 22px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--canvas);
+    }
+
+    .readouts h3 {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .readouts p {
+      display: flex;
+      justify-content: space-between;
+      margin: 6px 0;
+      font-size: 0.92rem;
+    }
+
+    .readouts strong {
+      font-variant-numeric: tabular-nums;
+    }
+
+    .graphs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      padding-bottom: 40px;
+    }
+
+    .graph { padding: 14px; }
+
+    .graph h2 {
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .graph canvas {
+      display: block;
+      width: 100%;
+      height: 205px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--canvas);
+    }
+
+    .legend {
+      display: flex;
+      gap: 14px;
+      margin-top: 9px;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .blue { color: var(--blue); }
+    .red { color: var(--red); }
+    .yellow { color: var(--yellow); }
+
+    @media (max-width: 850px) {
+      header { flex-direction: column; }
+      .layout, .graphs { grid-template-columns: 1fr; }
+      #simCanvas { height: 360px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div>
+        <h1>Pendulum Lab</h1>
+        <p class="subtitle">Change length, gravity, release angle, and damping to investigate periodic motion and energy.</p>
+      </div>
+      <a class="back" href="index.html">← All simulations</a>
+    </header>
+
+    <main class="layout">
+      <section class="panel simulation">
+        <canvas id="simCanvas"></canvas>
+        <div class="canvas-label">Blue: velocity vector · Yellow: gravitational force</div>
+      </section>
+
+      <aside class="panel controls">
+        <h2>Controls</h2>
+
+        <div class="control">
+          <label for="length">
+            <span>String length</span>
+            <output id="lengthOut">2.0 m</output>
+          </label>
+          <input id="length" type="range" min="0.5" max="5" value="2" step="0.1">
+        </div>
+
+        <div class="control">
+          <label for="mass">
+            <span>Bob mass</span>
+            <output id="massOut">1.0 kg</output>
+          </label>
+          <input id="mass" type="range" min="0.2" max="5" value="1" step="0.1">
+        </div>
+
+        <div class="control">
+          <label for="gravity">
+            <span>Gravity</span>
+            <output id="gravityOut">9.81 m/s²</output>
+          </label>
+          <input id="gravity" type="range" min="1" max="20" value="9.81" step="0.01">
+        </div>
+
+        <div class="control">
+          <label for="angle">
+            <span>Release angle</span>
+            <output id="angleOut">35°</output>
+          </label>
+          <input id="angle" type="range" min="2" max="80" value="35" step="1">
+        </div>
+
+        <div class="control">
+          <label for="damping">
+            <span>Damping</span>
+            <output id="dampingOut">0.02</output>
+          </label>
+          <input id="damping" type="range" min="0" max="1" value="0.02" step="0.01">
+        </div>
+
+        <div class="actions">
+          <button id="startButton" type="button">Release</button>
+          <button id="pauseButton" class="secondary" type="button">Pause</button>
+          <button id="resetButton" class="secondary" type="button">Reset</button>
+        </div>
+
+        <div class="checks">
+          <label><input id="vectors" type="checkbox" checked> Show force and velocity</label>
+          <label><input id="trail" type="checkbox" checked> Show bob trail</label>
+        </div>
+
+        <section class="readouts">
+          <h3>Live readouts</h3>
+          <p><span>Time</span><strong id="timeOut">0.00 s</strong></p>
+          <p><span>Angle</span><strong id="angleLiveOut">0.0°</strong></p>
+          <p><span>Angular velocity</span><strong id="omegaOut">0.000 rad/s</strong></p>
+          <p><span>Small-angle period</span><strong id="periodOut">0.00 s</strong></p>
+          <p><span>Total energy</span><strong id="energyOut">0.000 J</strong></p>
+        </section>
+      </aside>
+    </main>
+
+    <section class="graphs">
+      <section class="panel graph">
+        <h2>Angle vs. time</h2>
+        <canvas id="angleGraph"></canvas>
+        <div class="legend"><span class="blue">● angle θ</span></div>
+      </section>
+
+      <section class="panel graph">
+        <h2>Energy vs. time</h2>
+        <canvas id="energyGraph"></canvas>
+        <div class="legend">
+          <span class="red">● kinetic</span>
+          <span class="blue">● potential</span>
+          <span class="yellow">● total</span>
+        </div>
+      </section>
+    </section>
+  </div>
+
+  <script>
+    const simCanvas = document.getElementById("simCanvas");
+    const simCtx = simCanvas.getContext("2d");
+    const angleGraph = document.getElementById("angleGraph");
+    const angleCtx = angleGraph.getContext("2d");
+    const energyGraph = document.getElementById("energyGraph");
+    const energyCtx = energyGraph.getContext("2d");
+
+    const lengthInput = document.getElementById("length");
+    const massInput = document.getElementById("mass");
+    const gravityInput = document.getElementById("gravity");
+    const angleInput = document.getElementById("angle");
+    const dampingInput = document.getElementById("damping");
+    const vectorsInput = document.getElementById("vectors");
+    const trailInput = document.getElementById("trail");
+
+    const lengthOut = document.getElementById("lengthOut");
+    const massOut = document.getElementById("massOut");
+    const gravityOut = document.getElementById("gravityOut");
+    const angleOut = document.getElementById("angleOut");
+    const dampingOut = document.getElementById("dampingOut");
+
+    const timeOut = document.getElementById("timeOut");
+    const angleLiveOut = document.getElementById("angleLiveOut");
+    const omegaOut = document.getElementById("omegaOut");
+    const periodOut = document.getElementById("periodOut");
+    const energyOut = document.getElementById("energyOut");
+
+    const startButton = document.getElementById("startButton");
+    const pauseButton = document.getElementById("pauseButton");
+    const resetButton = document.getElementById("resetButton");
+
+    let theta = 0;
+    let omega = 0;
+    let time = 0;
+    let released = false;
+    let paused = false;
+    let history = [];
+    let trail = [];
+    let previousTimestamp = null;
+
+    function parameters() {
+      return {
+        length: Number(lengthInput.value),
+        mass: Number(massInput.value),
+        gravity: Number(gravityInput.value),
+        releaseAngle: Number(angleInput.value) * Math.PI / 180,
+        damping: Number(dampingInput.value)
+      };
+    }
+
+    function reset() {
+      const p = parameters();
+      theta = p.releaseAngle;
+      omega = 0;
+      time = 0;
+      released = false;
+      paused = false;
+      history = [];
+      trail = [];
+      pauseButton.textContent = "Pause";
+    }
+
+    function resizeCanvas(canvas) {
+      const ratio = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = Math.round(rect.width * ratio);
+      canvas.height = Math.round(rect.height * ratio);
+
+      const ctx = canvas.getContext("2d");
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+
+      return { width: rect.width, height: rect.height };
+    }
+
+    function line(ctx, x1, y1, x2, y2, color, width = 1) {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+    }
+
+    function arrow(ctx, x1, y1, x2, y2, color) {
+      const headLength = 8;
+      const direction = Math.atan2(y2 - y1, x2 - x1);
+
+      line(ctx, x1, y1, x2, y2, color, 2);
+
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(
+        x2 - headLength * Math.cos(direction - Math.PI / 6),
+        y2 - headLength * Math.sin(direction - Math.PI / 6)
+      );
+      ctx.lineTo(
+        x2 - headLength * Math.cos(direction + Math.PI / 6),
+        y2 - headLength * Math.sin(direction + Math.PI / 6)
+      );
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function updatePhysics(delta, p) {
+      if (!released || paused) return;
+
+      const steps = Math.max(1, Math.ceil(delta / 0.01));
+      const dt = delta / steps;
+
+      for (let i = 0; i < steps; i++) {
+        const angularAcceleration =
+          -(p.gravity / p.length) * Math.sin(theta) -
+          p.damping * omega;
+
+        omega += angularAcceleration * dt;
+        theta += omega * dt;
+        time += dt;
+      }
+
+      const kinetic = 0.5 * p.mass * Math.pow(p.length * omega, 2);
+      const potential = p.mass * p.gravity * p.length * (1 - Math.cos(theta));
+
+      if (history.length === 0 || time - history[history.length - 1].t > 0.04) {
+        history.push({
+          t: time,
+          theta,
+          kinetic,
+          potential,
+          total: kinetic + potential
+        });
+      }
+
+      history = history.filter(point => point.t >= time - 12);
+    }
+
+    function updateLabels(p) {
+      const period = 2 * Math.PI * Math.sqrt(p.length / p.gravity);
+      const kinetic = 0.5 * p.mass * Math.pow(p.length * omega, 2);
+      const potential = p.mass * p.gravity * p.length * (1 - Math.cos(theta));
+
+      lengthOut.textContent = `${p.length.toFixed(1)} m`;
+      massOut.textContent = `${p.mass.toFixed(1)} kg`;
+      gravityOut.textContent = `${p.gravity.toFixed(2)} m/s²`;
+      angleOut.textContent = `${(p.releaseAngle * 180 / Math.PI).toFixed(0)}°`;
+      dampingOut.textContent = p.damping.toFixed(2);
+
+      timeOut.textContent = `${time.toFixed(2)} s`;
+      angleLiveOut.textContent = `${(theta * 180 / Math.PI).toFixed(1)}°`;
+      omegaOut.textContent = `${omega.toFixed(3)} rad/s`;
+      periodOut.textContent = `${period.toFixed(2)} s`;
+      energyOut.textContent = `${(kinetic + potential).toFixed(3)} J`;
+    }
+
+    function drawSimulation(p) {
+      const { width, height } = resizeCanvas(simCanvas);
+      const pivotX = width / 2;
+      const pivotY = 62;
+      const pixelsPerMetre = Math.min(78, (height - 120) / p.length);
+      const bobX = pivotX + p.length * pixelsPerMetre * Math.sin(theta);
+      const bobY = pivotY + p.length * pixelsPerMetre * Math.cos(theta);
+      const bobRadius = 10 + Math.sqrt(p.mass) * 4;
+
+      simCtx.clearRect(0, 0, width, height);
+      simCtx.fillStyle = "#0c1425";
+      simCtx.fillRect(0, 0, width, height);
+
+      simCtx.strokeStyle = "rgba(174,187,211,0.12)";
+      simCtx.lineWidth = 1;
+
+      for (let x = 30; x < width; x += 48) {
+        simCtx.beginPath();
+        simCtx.moveTo(x, 0);
+        simCtx.lineTo(x, height);
+        simCtx.stroke();
+      }
+
+      simCtx.fillStyle = "#263658";
+      simCtx.fillRect(pivotX - 88, pivotY - 20, 176, 12);
+
+      if (trailInput.checked) {
+        trail.push({ x: bobX, y: bobY });
+        if (trail.length > 220) trail.shift();
+
+        if (trail.length > 1) {
+          simCtx.strokeStyle = "rgba(97, 180, 255, 0.45)";
+          simCtx.lineWidth = 1.5;
+          simCtx.beginPath();
+
+          trail.forEach((point, index) => {
+            if (index === 0) simCtx.moveTo(point.x, point.y);
+            else simCtx.lineTo(point.x, point.y);
+          });
+
+          simCtx.stroke();
+        }
+      }
+
+      line(simCtx, pivotX, pivotY, bobX, bobY, "#aebbd3", 3);
+
+      simCtx.fillStyle = "#f2f7ff";
+      simCtx.beginPath();
+      simCtx.arc(pivotX, pivotY, 6, 0, Math.PI * 2);
+      simCtx.fill();
+
+      simCtx.fillStyle = "#61b4ff";
+      simCtx.beginPath();
+      simCtx.arc(bobX, bobY, bobRadius, 0, Math.PI * 2);
+      simCtx.fill();
+
+      simCtx.strokeStyle = "#06101d";
+      simCtx.lineWidth = 2;
+      simCtx.stroke();
+
+      if (vectorsInput.checked) {
+        const tangentialX = Math.cos(theta);
+        const tangentialY = -Math.sin(theta);
+        const velocityScale = 38;
+        const gravityScale = 3.5;
+
+        arrow(
+          simCtx,
+          bobX,
+          bobY,
+          bobX + tangentialX * omega * velocityScale,
+          bobY + tangentialY * omega * velocityScale,
+          "#61b4ff"
+        );
+
+        arrow(
+          simCtx,
+          bobX,
+          bobY,
+          bobX,
+          bobY + p.mass * p.gravity * gravityScale,
+          "#ffd56a"
+        );
+      }
+
+      simCtx.fillStyle = "#aebbd3";
+      simCtx.font = "12px system-ui";
+      simCtx.fillText("pivot", pivotX + 10, pivotY - 10);
+      simCtx.fillText(`${p.mass.toFixed(1)} kg`, bobX + bobRadius + 8, bobY + 5);
+    }
+
+    function graphBase(ctx, canvas, label) {
+      const { width, height } = resizeCanvas(canvas);
+      const left = 40;
+      const right = 12;
+      const top = 15;
+      const bottom = 27;
+
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = "#0c1425";
+      ctx.fillRect(0, 0, width, height);
+
+      ctx.strokeStyle = "rgba(174,187,211,0.15)";
+      ctx.lineWidth = 1;
+
+      for (let i = 0; i <= 4; i++) {
+        const y = top + i * (height - top - bottom) / 4;
+        ctx.beginPath();
+        ctx.moveTo(left, y);
+        ctx.lineTo(width - right, y);
+        ctx.stroke();
+      }
+
+      line(ctx, left, top, left, height - bottom, "rgba(174,187,211,0.55)", 1);
+      line(ctx, left, height - bottom, width - right, height - bottom, "rgba(174,187,211,0.55)", 1);
+
+      ctx.fillStyle = "#aebbd3";
+      ctx.font = "11px system-ui";
+      ctx.fillText(label, 7, 16);
+
+      return { width, height, left, right, top, bottom };
+    }
+
+    function drawSeries(ctx, points, color, mapX, mapY) {
+      if (points.length < 2) return;
+
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+
+      points.forEach((point, index) => {
+        const x = mapX(point.t);
+        const y = mapY(point.value);
+
+        if (index === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+
+      ctx.stroke();
+    }
+
+    function drawAngleGraph() {
+      const area = graphBase(angleCtx, angleGraph, "angle");
+      if (history.length < 2) return;
+
+      const start = history[0].t;
+      const duration = Math.max(history[history.length - 1].t - start, 1);
+      const maximum = Math.max(
+        0.1,
+        ...history.map(point => Math.abs(point.theta))
+      );
+
+      const middle = (area.top + area.height - area.bottom) / 2;
+
+      const mapX = t =>
+        area.left + (t - start) / duration * (area.width - area.left - area.right);
+
+      const mapY = value =>
+        middle - value / maximum * ((area.height - area.top - area.bottom) / 2 - 7);
+
+      line(
+        angleCtx,
+        area.left,
+        middle,
+        area.width - area.right,
+        middle,
+        "rgba(174,187,211,0.35)"
+      );
+
+      drawSeries(
+        angleCtx,
+        history.map(point => ({ t: point.t, value: point.theta })),
+        "#61b4ff",
+        mapX,
+        mapY
+      );
+
+      angleCtx.fillStyle = "#aebbd3";
+      angleCtx.font = "11px system-ui";
+      angleCtx.fillText("time", area.width - 33, area.height - 8);
+    }
+
+    function drawEnergyGraph() {
+      const area = graphBase(energyCtx, energyGraph, "energy");
+      if (history.length < 2) return;
+
+      const start = history[0].t;
+      const duration = Math.max(history[history.length - 1].t - start, 1);
+      const maximum = Math.max(0.1, ...history.map(point => point.total));
+
+      const mapX = t =>
+        area.left + (t - start) / duration * (area.width - area.left - area.right);
+
+      const mapY = value =>
+        area.height - area.bottom -
+        value / maximum * (area.height - area.top - area.bottom);
+
+      drawSeries(
+        energyCtx,
+        history.map(point => ({ t: point.t, value: point.kinetic })),
+        "#ff7b8e",
+        mapX,
+        mapY
+      );
+
+      drawSeries(
+        energyCtx,
+        history.map(point => ({ t: point.t, value: point.potential })),
+        "#61b4ff",
+        mapX,
+        mapY
+      );
+
+      drawSeries(
+        energyCtx,
+        history.map(point => ({ t: point.t, value: point.total })),
+        "#ffd56a",
+        mapX,
+        mapY
+      );
+
+      energyCtx.fillStyle = "#aebbd3";
+      energyCtx.font = "11px system-ui";
+      energyCtx.fillText("time", area.width - 33, area.height - 8);
+    }
+
+    function animate(timestamp) {
+      if (previousTimestamp === null) previousTimestamp = timestamp;
+
+      const delta = Math.min((timestamp - previousTimestamp) / 1000, 0.04);
+      previousTimestamp = timestamp;
+
+      const p = parameters();
+      updatePhysics(delta, p);
+      updateLabels(p);
+      drawSimulation(p);
+      drawAngleGraph();
+      drawEnergyGraph();
+
+      requestAnimationFrame(animate);
+    }
+
+    startButton.addEventListener("click", () => {
+      released = true;
+      paused = false;
+      pauseButton.textContent = "Pause";
+    });
+
+    pauseButton.addEventListener("click", () => {
+      paused = !paused;
+      pauseButton.textContent = paused ? "Resume" : "Pause";
+    });
+
+    resetButton.addEventListener("click", reset);
+
+    [lengthInput, massInput, gravityInput, angleInput, dampingInput].forEach(input => {
+      input.addEventListener("input", () => {
+        if (!released) reset();
+      });
+    });
+
+    window.addEventListener("resize", () => {
+      previousTimestamp = null;
+    });
+
+    reset();
+    requestAnimationFrame(animate);
+  </script>
+</body>
+</html>
