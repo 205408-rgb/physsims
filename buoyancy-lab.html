@@ -300,7 +300,7 @@
     const dropButton = document.getElementById("dropButton");
     const resetButton = document.getElementById("resetButton");
 
-    let y = 0.34;
+    let y = 0.16;
     let velocity = 0;
     let falling = false;
     let previousTimestamp = null;
@@ -315,7 +315,7 @@
     }
 
     function reset() {
-      y = 0.24;
+      y = 0.16;
       velocity = 0;
       falling = false;
     }
@@ -359,6 +359,34 @@
     }
 
     function calculate(v, objectTop, objectBottom, waterY, objectHeight) {
+  const mass = v.objectDensity * v.volume;
+  const weight = mass * v.gravity;
+
+  // Above the water: no displaced water and no buoyant force.
+  let submergedHeight = 0;
+
+  if (objectBottom > waterY) {
+    submergedHeight = Math.min(objectBottom, 1) - Math.max(objectTop, waterY);
+  }
+
+  submergedHeight = Math.max(0, submergedHeight);
+
+  const fractionSubmerged = Math.max(
+    0,
+    Math.min(1, submergedHeight / objectHeight)
+  );
+
+  const submergedVolume = v.volume * fractionSubmerged;
+  const buoyantForce = v.fluidDensity * v.gravity * submergedVolume;
+
+  return {
+    mass,
+    weight,
+    submergedVolume,
+    buoyantForce,
+    fractionSubmerged
+  };
+}
       const mass = v.objectDensity * v.volume;
       const weight = mass * v.gravity;
 
