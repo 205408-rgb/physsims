@@ -124,16 +124,6 @@
       accent-color: var(--blue);
     }
 
-    select {
-      width: 100%;
-      padding: 10px;
-      color: var(--text);
-      background: var(--canvas);
-      border: 1px solid var(--border);
-      border-radius: 9px;
-      font: inherit;
-    }
-
     .actions {
       display: flex;
       flex-wrap: wrap;
@@ -193,7 +183,16 @@
       font-size: 0.92rem;
     }
 
-    .readouts strong { font-variant-numeric: tabular-nums; }
+    .readouts strong {
+      font-variant-numeric: tabular-nums;
+    }
+
+    .formula {
+      margin: 18px 0 0;
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.5;
+    }
 
     @media (max-width: 850px) {
       header { flex-direction: column; }
@@ -207,7 +206,7 @@
     <header>
       <div>
         <h1>Buoyancy Lab</h1>
-        <p class="subtitle">Change the object and fluid properties to investigate floating, sinking, displacement, and Archimedes’ principle.</p>
+        <p class="subtitle">Drop an object into a fluid and investigate floating, sinking, displaced volume, and buoyant force.</p>
       </div>
       <a class="back" href="index.html">← All simulations</a>
     </header>
@@ -269,8 +268,13 @@
           <p><span>Object weight</span><strong id="weightOut">0.0 N</strong></p>
           <p><span>Buoyant force</span><strong id="buoyantOut">0.0 N</strong></p>
           <p><span>Submerged volume</span><strong id="submergedOut">0.00 m³</strong></p>
-          <p><span>Result</span><strong id="resultOut">Floating</strong></p>
+          <p><span>Submerged fraction</span><strong id="fractionOut">0%</strong></p>
+          <p><span>Result</span><strong id="resultOut">Ready</strong></p>
         </section>
+
+        <p class="formula">
+          \(F_B = \rho_\text{fluid} g V_\text{submerged}\). An object above the water has zero submerged volume, so it has zero buoyant force.
+        </p>
       </aside>
     </main>
   </div>
@@ -295,14 +299,20 @@
     const weightOut = document.getElementById("weightOut");
     const buoyantOut = document.getElementById("buoyantOut");
     const submergedOut = document.getElementById("submergedOut");
+    const fractionOut = document.getElementById("fractionOut");
     const resultOut = document.getElementById("resultOut");
 
     const dropButton = document.getElementById("dropButton");
     const resetButton = document.getElementById("resetButton");
 
-    let y = 0.16;
+    /*
+      y is the vertical centre position of the object as a fraction
+      of canvas height. Larger y means lower on the screen.
+    */
+    let y = 0.18;
     let velocity = 0;
-    let falling = false;
+    let released = false;
+    let settled = false;
     let previousTimestamp = null;
 
     function values() {
@@ -314,10 +324,21 @@
       };
     }
 
+    function objectDimensions(v, canvasHeight) {
+      const sizeFactor = Math.cbrt(v.volume);
+
+      return {
+        width: 72 + sizeFactor * 30,
+        height: 54 + sizeFactor * 34,
+        normalizedHeight: (54 + sizeFactor * 34) / canvasHeight
+      };
+    }
+
     function reset() {
-      y = 0.16;
+      y = 0.18;
       velocity = 0;
-      falling = false;
+      released = false;
+      settled = false;
     }
 
     function resizeCanvas() {
@@ -332,9 +353,45 @@
       return { width: rect.width, height: rect.height };
     }
 
+    function calculateBuoyancy(v, objectTop, objectBottom, waterLevel, objectHeight) {
+      const mass = v.objectDensity * v.volume;
+      const weight = mass * v.gravity;
+
+      /*
+        If the bottom of the object has not entered the water,
+        it displaces no water and has NO buoyant force.
+      */
+      let submergedHeight = 0;
+
+      if (objectBottom > waterLevel) {
+        submergedHeight =
+          Math.min(objectBottom, 1) -
+          Math.max(objectTop, waterLevel);
+      }
+
+      submergedHeight = Math.max(0, submergedHeight);
+
+      const fractionSubmerged = Math.min(
+        1,
+        submergedHeight / objectHeight
+      );
+
+      const submergedVolume = v.volume * fractionSubmerged;
+      const buoyantForce =
+        v.fluidDensity * v.gravity * submergedVolume;
+
+      return {
+        mass,
+        weight,
+        buoyantForce,
+        submergedVolume,
+        fractionSubmerged
+      };
+    }
+
     function arrow(x1, y1, x2, y2, colour) {
       const head = 8;
-      const angle = Math.atan2(y2 - y1, x2 - x1);
+      const direction = Math.atan2(y2 - y1, x2 - x1);
 
       ctx.strokeStyle = colour;
       ctx.lineWidth = 2;
@@ -347,142 +404,147 @@
       ctx.beginPath();
       ctx.moveTo(x2, y2);
       ctx.lineTo(
-        x2 - head * Math.cos(angle - Math.PI / 6),
-        y2 - head * Math.sin(angle - Math.PI / 6)
+        x2 - head * Math.cos(direction - Math.PI / 6),
+        y2 - head * Math.sin(direction - Math.PI / 6)
       );
       ctx.lineTo(
-        x2 - head * Math.cos(angle + Math.PI / 6),
-        y2 - head * Math.sin(angle + Math.PI / 6)
+        x2 - head * Math.cos(direction + Math.PI / 6),
+        y2 - head * Math.sin(direction + Math.PI / 6)
       );
       ctx.closePath();
       ctx.fill();
     }
 
-    function calculate(v, objectTop, objectBottom, waterY, objectHeight) {
-    const mass = v.objectDensity * v.volume;
-    const weight = mass * v.gravity;
+    function updatePhysics(delta, v, canvasHeight) {
+      if (!released || settled) return;
 
-  // Above the water: no displaced water and no buoyant force.
-    let submergedHeight = 0;
+      const waterLevel = 0.50;
+      const dimensions = objectDimensions(v, canvasHeight);
+      const objectTop = y - dimensions.normalizedHeight / 2;
+      const objectBottom = y + dimensions.normalizedHeight / 2;
 
-    if (objectBottom > waterY) {
-      submergedHeight = Math.min(objectBottom, 1) - Math.max(objectTop, waterY);
-  }
-
-    submergedHeight = Math.max(0, submergedHeight);
-
-    const fractionSubmerged = Math.max(
-      0,
-      Math.min(1, submergedHeight / objectHeight)
-    );
-
-    const submergedVolume = v.volume * fractionSubmerged;
-    const buoyantForce = v.fluidDensity * v.gravity * submergedVolume;
-
-    return {
-      mass,
-      weight,
-      submergedVolume,
-      buoyantForce,
-      fractionSubmerged
-    };
-  }
-      const mass = v.objectDensity * v.volume;
-      const weight = mass * v.gravity;
-
-      const submergedHeight = Math.max(
-        0,
-        Math.min(objectBottom, 1) - Math.max(objectTop, waterY)
+      const physics = calculateBuoyancy(
+        v,
+        objectTop,
+        objectBottom,
+        waterLevel,
+        dimensions.normalizedHeight
       );
 
-      const fractionSubmerged = Math.max(
-        0,
-        Math.min(1, submergedHeight / objectHeight)
-      );
-
-      const submergedVolume = v.volume * fractionSubmerged;
-      const buoyantForce = v.fluidDensity * v.gravity * submergedVolume;
-
-      return { mass, weight, submergedVolume, buoyantForce, fractionSubmerged };
-    }
-
-    function updatePhysics(delta, v) {
-      if (!falling) return;
-
-      const objectHeight = 0.18 + Math.cbrt(v.volume) * 0.12;
-      const waterY = 0.50;
-      const objectTop = y - objectHeight / 2;
-      const objectBottom = y + objectHeight / 2;
-
-      const result = calculate(v, objectTop, objectBottom, waterY, objectHeight);
-      const force = result.buoyantForce - result.weight;
-      const acceleration = force / result.mass;
+      /*
+        Screen y grows downwards:
+        - Weight pulls down (+)
+        - Buoyant force pushes up (-)
+      */
+      const netDownwardForce = physics.weight - physics.buoyantForce;
+      const acceleration = netDownwardForce / physics.mass;
 
       velocity += acceleration * delta;
-      velocity *= 0.996;
-      y += velocity * delta;
 
-      const targetFraction = Math.min(1, v.objectDensity / v.fluidDensity);
+      /*
+        Add water drag only after the object enters water.
+        It allows the bobbing motion to fade naturally.
+      */
+      if (physics.fractionSubmerged > 0) {
+        const dragStrength = 2.5 * physics.fractionSubmerged;
+        velocity *= Math.exp(-dragStrength * delta);
+      }
 
+      y += velocity * delta * 0.055;
+
+      const tankFloor = 0.88 - dimensions.normalizedHeight / 2;
+
+      /*
+        Objects denser than the fluid settle at the tank floor.
+      */
+      if (v.objectDensity >= v.fluidDensity && y >= tankFloor) {
+        y = tankFloor;
+        velocity = 0;
+        settled = true;
+        return;
+      }
+
+      /*
+        A floating object settles at the height where its
+        submerged fraction equals density_object / density_fluid.
+      */
       if (v.objectDensity < v.fluidDensity) {
-        const targetY = waterY + objectHeight / 2 - targetFraction * objectHeight;
+        const targetFraction = v.objectDensity / v.fluidDensity;
+        const targetY =
+          waterLevel -
+          dimensions.normalizedHeight / 2 +
+          targetFraction * dimensions.normalizedHeight;
 
-        if (Math.abs(y - targetY) < 0.002 && Math.abs(velocity) < 0.025) {
+        if (
+          Math.abs(y - targetY) < 0.002 &&
+          Math.abs(velocity) < 0.02
+        ) {
           y = targetY;
           velocity = 0;
-          falling = false;
-        }
-      } else {
-        const bottomLimit = 0.89 - objectHeight / 2;
-
-        if (y > bottomLimit) {
-          y = bottomLimit;
-          velocity = 0;
-          falling = false;
+          settled = true;
         }
       }
     }
 
     function draw(v) {
       const { width, height } = resizeCanvas();
+
       const waterTop = height * 0.50;
       const tankLeft = width * 0.19;
       const tankRight = width * 0.81;
       const tankBottom = height * 0.89;
 
-      const objectWidth = 72 + Math.cbrt(v.volume) * 28;
-      const objectHeight = 55 + Math.cbrt(v.volume) * 30;
-      const objectX = width / 2 - objectWidth / 2;
-      const objectY = y * height - objectHeight / 2;
+      const dimensions = objectDimensions(v, height);
+      const objectX = width / 2 - dimensions.width / 2;
+      const objectY = y * height - dimensions.height / 2;
 
-      const objectTopNormalized = (objectY / height);
-      const objectBottomNormalized = ((objectY + objectHeight) / height);
-      const waterNormalized = waterTop / height;
+      const objectTop = objectY / height;
+      const objectBottom = (objectY + dimensions.height) / height;
+      const waterLevel = waterTop / height;
 
-      const c = calculate(
+      const physics = calculateBuoyancy(
         v,
-        objectTopNormalized,
-        objectBottomNormalized,
-        waterNormalized,
-        objectHeight / height
+        objectTop,
+        objectBottom,
+        waterLevel,
+        dimensions.normalizedHeight
       );
 
-      objectDensityOut.textContent = `${v.objectDensity.toFixed(0)} kg/m³`;
-      volumeOut.textContent = `${v.volume.toFixed(1)} m³`;
-      fluidDensityOut.textContent = `${v.fluidDensity.toFixed(0)} kg/m³`;
-      gravityOut.textContent = `${v.gravity.toFixed(2)} m/s²`;
+      objectDensityOut.textContent =
+        `${v.objectDensity.toFixed(0)} kg/m³`;
 
-      massOut.textContent = `${c.mass.toFixed(1)} kg`;
-      weightOut.textContent = `${c.weight.toFixed(1)} N`;
-      buoyantOut.textContent = `${c.buoyantForce.toFixed(1)} N`;
-      submergedOut.textContent = `${c.submergedVolume.toFixed(2)} m³`;
+      volumeOut.textContent =
+        `${v.volume.toFixed(1)} m³`;
 
-      if (v.objectDensity < v.fluidDensity) {
-        resultOut.textContent = "Floating";
+      fluidDensityOut.textContent =
+        `${v.fluidDensity.toFixed(0)} kg/m³`;
+
+      gravityOut.textContent =
+        `${v.gravity.toFixed(2)} m/s²`;
+
+      massOut.textContent =
+        `${physics.mass.toFixed(1)} kg`;
+
+      weightOut.textContent =
+        `${physics.weight.toFixed(1)} N`;
+
+      buoyantOut.textContent =
+        `${physics.buoyantForce.toFixed(1)} N`;
+
+      submergedOut.textContent =
+        `${physics.submergedVolume.toFixed(2)} m³`;
+
+      fractionOut.textContent =
+        `${(physics.fractionSubmerged * 100).toFixed(0)}%`;
+
+      if (!released) {
+        resultOut.textContent = "Ready above water";
+      } else if (v.objectDensity < v.fluidDensity) {
+        resultOut.textContent = settled ? "Floating" : "Floating / bobbing";
       } else if (v.objectDensity === v.fluidDensity) {
         resultOut.textContent = "Neutrally buoyant";
       } else {
-        resultOut.textContent = "Sinking";
+        resultOut.textContent = settled ? "Sunk to bottom" : "Sinking";
       }
 
       ctx.clearRect(0, 0, width, height);
@@ -499,8 +561,16 @@
         ctx.stroke();
       }
 
-      ctx.fillStyle = "rgba(97, 180, 255, 0.30)";
-      ctx.fillRect(tankLeft, waterTop, tankRight - tankLeft, tankBottom - waterTop);
+      /*
+        Water in the tank.
+      */
+      ctx.fillStyle = "rgba(97, 180, 255, 0.32)";
+      ctx.fillRect(
+        tankLeft,
+        waterTop,
+        tankRight - tankLeft,
+        tankBottom - waterTop
+      );
 
       if (waterlineInput.checked) {
         ctx.strokeStyle = "#61b4ff";
@@ -511,6 +581,9 @@
         ctx.stroke();
       }
 
+      /*
+        Tank walls.
+      */
       ctx.strokeStyle = "#aebbd3";
       ctx.lineWidth = 2;
       ctx.beginPath();
@@ -526,44 +599,72 @@
         "#ffd56a";
 
       ctx.fillStyle = objectColour;
-      ctx.fillRect(objectX, objectY, objectWidth, objectHeight);
+      ctx.fillRect(
+        objectX,
+        objectY,
+        dimensions.width,
+        dimensions.height
+      );
 
       ctx.strokeStyle = "#06101d";
       ctx.lineWidth = 2;
-      ctx.strokeRect(objectX, objectY, objectWidth, objectHeight);
-
-      const submergedPixels = Math.max(
-        0,
-        Math.min(objectY + objectHeight, waterTop + (tankBottom - waterTop)) - Math.max(objectY, waterTop)
+      ctx.strokeRect(
+        objectX,
+        objectY,
+        dimensions.width,
+        dimensions.height
       );
 
-      if (submergedPixels > 0) {
-        ctx.fillStyle = "rgba(97, 180, 255, 0.25)";
-        ctx.fillRect(objectX, Math.max(objectY, waterTop), objectWidth, submergedPixels);
+      /*
+        Blue overlay shows exactly the portion underwater.
+      */
+      const submergedTop = Math.max(objectY, waterTop);
+      const submergedBottom = Math.min(
+        objectY + dimensions.height,
+        tankBottom
+      );
+
+      if (submergedBottom > submergedTop) {
+        ctx.fillStyle = "rgba(97, 180, 255, 0.30)";
+        ctx.fillRect(
+          objectX,
+          submergedTop,
+          dimensions.width,
+          submergedBottom - submergedTop
+        );
       }
 
       ctx.fillStyle = "#f2f7ff";
       ctx.font = "13px system-ui";
-      ctx.fillText("object", objectX + 13, objectY + objectHeight / 2 + 5);
+      ctx.fillText(
+        "object",
+        objectX + 14,
+        objectY + dimensions.height / 2 + 5
+      );
 
       if (vectorsInput.checked) {
-        const centerX = objectX + objectWidth / 2;
-        const centerY = objectY + objectHeight / 2;
-        const scale = 0.022;
+        const centerX = objectX + dimensions.width / 2;
+        const centerY = objectY + dimensions.height / 2;
+        const forceScale = 0.018;
+
+        /*
+          Draw buoyancy only when there is displaced water.
+        */
+        if (physics.buoyantForce > 0.01) {
+          arrow(
+            centerX - 12,
+            centerY,
+            centerX - 12,
+            centerY - physics.buoyantForce * forceScale,
+            "#61b4ff"
+          );
+        }
 
         arrow(
-          centerX,
+          centerX + 12,
           centerY,
-          centerX,
-          centerY - c.buoyantForce * scale,
-          "#61b4ff"
-        );
-
-        arrow(
-          centerX + 18,
-          centerY,
-          centerX + 18,
-          centerY + c.weight * scale,
+          centerX + 12,
+          centerY + physics.weight * forceScale,
           "#ffd56a"
         );
       }
@@ -571,23 +672,33 @@
       ctx.fillStyle = "#aebbd3";
       ctx.font = "12px system-ui";
       ctx.fillText("fluid", tankLeft + 12, waterTop + 24);
+      ctx.fillText("air", tankLeft + 12, waterTop - 12);
     }
 
     function animate(timestamp) {
-      if (previousTimestamp === null) previousTimestamp = timestamp;
+      if (previousTimestamp === null) {
+        previousTimestamp = timestamp;
+      }
 
-      const delta = Math.min((timestamp - previousTimestamp) / 1000, 0.04);
+      const delta = Math.min(
+        (timestamp - previousTimestamp) / 1000,
+        0.04
+      );
+
       previousTimestamp = timestamp;
 
       const v = values();
-      updatePhysics(delta, v);
+      const canvasHeight = canvas.getBoundingClientRect().height;
+
+      updatePhysics(delta, v, canvasHeight);
       draw(v);
 
       requestAnimationFrame(animate);
     }
 
     dropButton.addEventListener("click", () => {
-      falling = true;
+      released = true;
+      settled = false;
       velocity = 0;
     });
 
@@ -600,9 +711,11 @@
       gravityInput,
       vectorsInput,
       waterlineInput
-    ].forEach(input => input.addEventListener("input", () => {
-      if (!falling) reset();
-    }));
+    ].forEach(input => {
+      input.addEventListener("input", () => {
+        if (!released || settled) reset();
+      });
+    });
 
     window.addEventListener("resize", () => {
       previousTimestamp = null;
