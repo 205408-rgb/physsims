@@ -1,0 +1,559 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ray Optics | Physics Simulations</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121a2e;
+      --canvas: #0c1425;
+      --border: #263658;
+      --text: #f2f7ff;
+      --muted: #aebbd3;
+      --blue: #61b4ff;
+      --green: #61e7b6;
+      --red: #ff7b8e;
+      --yellow: #ffd56a;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 20% 0%, #193563 0%, transparent 32rem),
+        var(--bg);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .page {
+      width: min(1180px, calc(100% - 32px));
+      margin: auto;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 28px 0 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+    }
+
+    h2 {
+      margin: 0 0 16px;
+      font-size: 1.1rem;
+    }
+
+    .subtitle {
+      margin: 7px 0 0;
+      color: var(--muted);
+    }
+
+    .back {
+      color: var(--blue);
+      text-decoration: none;
+      white-space: nowrap;
+      padding-top: 6px;
+    }
+
+    .back:hover { text-decoration: underline; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.75fr);
+      gap: 18px;
+      padding: 22px 0 18px;
+    }
+
+    .panel {
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: rgba(18, 26, 46, 0.9);
+    }
+
+    .simulation {
+      position: relative;
+      min-height: 440px;
+    }
+
+    #simCanvas {
+      display: block;
+      width: 100%;
+      height: 440px;
+      background: var(--canvas);
+    }
+
+    .canvas-label {
+      position: absolute;
+      top: 12px;
+      left: 14px;
+      color: var(--muted);
+      font-size: 0.84rem;
+      pointer-events: none;
+    }
+
+    .controls { padding: 20px; }
+
+    .control { margin-bottom: 19px; }
+
+    label {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    output {
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      cursor: pointer;
+      accent-color: var(--blue);
+    }
+
+    select {
+      width: 100%;
+      padding: 10px;
+      color: var(--text);
+      background: var(--canvas);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      font: inherit;
+    }
+
+    .checks {
+      display: grid;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .checks label {
+      justify-content: flex-start;
+      align-items: center;
+      margin: 0;
+      cursor: pointer;
+    }
+
+    .checks input { accent-color: var(--blue); }
+
+    .readouts {
+      margin-top: 22px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--canvas);
+    }
+
+    .readouts h3 {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .readouts p {
+      display: flex;
+      justify-content: space-between;
+      margin: 6px 0;
+      font-size: 0.92rem;
+    }
+
+    .readouts strong { font-variant-numeric: tabular-nums; }
+
+    .note {
+      margin: 18px 0 0;
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.45;
+    }
+
+    @media (max-width: 850px) {
+      header { flex-direction: column; }
+      .layout { grid-template-columns: 1fr; }
+      #simCanvas { height: 360px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div>
+        <h1>Ray Optics</h1>
+        <p class="subtitle">Explore image formation by changing object distance, focal length, lens type, and object height.</p>
+      </div>
+      <a class="back" href="index.html">← All simulations</a>
+    </header>
+
+    <main class="layout">
+      <section class="panel simulation">
+        <canvas id="simCanvas"></canvas>
+        <div class="canvas-label">Solid rays are real light rays · Dashed rays are extensions</div>
+      </section>
+
+      <aside class="panel controls">
+        <h2>Lens controls</h2>
+
+        <div class="control">
+          <label for="lensType"><span>Lens type</span></label>
+          <select id="lensType">
+            <option value="converging">Converging lens</option>
+            <option value="diverging">Diverging lens</option>
+          </select>
+        </div>
+
+        <div class="control">
+          <label for="focalLength">
+            <span>Focal length</span>
+            <output id="focalLengthOut">100 px</output>
+          </label>
+          <input id="focalLength" type="range" min="50" max="180" value="100" step="5">
+        </div>
+
+        <div class="control">
+          <label for="objectDistance">
+            <span>Object distance</span>
+            <output id="objectDistanceOut">230 px</output>
+          </label>
+          <input id="objectDistance" type="range" min="55" max="360" value="230" step="5">
+        </div>
+
+        <div class="control">
+          <label for="objectHeight">
+            <span>Object height</span>
+            <output id="objectHeightOut">90 px</output>
+          </label>
+          <input id="objectHeight" type="range" min="35" max="140" value="90" step="5">
+        </div>
+
+        <div class="checks">
+          <label><input id="principalRays" type="checkbox" checked> Show principal rays</label>
+          <label><input id="focalMarkers" type="checkbox" checked> Show focal points</label>
+          <label><input id="grid" type="checkbox"> Show grid</label>
+        </div>
+
+        <section class="readouts">
+          <h3>Image readout</h3>
+          <p><span>Image distance</span><strong id="imageDistanceOut">0 px</strong></p>
+          <p><span>Magnification</span><strong id="magnificationOut">0.00</strong></p>
+          <p><span>Image height</span><strong id="imageHeightOut">0 px</strong></p>
+          <p><span>Image type</span><strong id="imageTypeOut">—</strong></p>
+        </section>
+
+        <p class="note">
+          The thin-lens equation used is \(1/f = 1/d_o + 1/d_i\). A negative focal length represents a diverging lens.
+        </p>
+      </aside>
+    </main>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("simCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const lensTypeInput = document.getElementById("lensType");
+    const focalLengthInput = document.getElementById("focalLength");
+    const objectDistanceInput = document.getElementById("objectDistance");
+    const objectHeightInput = document.getElementById("objectHeight");
+    const principalRaysInput = document.getElementById("principalRays");
+    const focalMarkersInput = document.getElementById("focalMarkers");
+    const gridInput = document.getElementById("grid");
+
+    const focalLengthOut = document.getElementById("focalLengthOut");
+    const objectDistanceOut = document.getElementById("objectDistanceOut");
+    const objectHeightOut = document.getElementById("objectHeightOut");
+
+    const imageDistanceOut = document.getElementById("imageDistanceOut");
+    const magnificationOut = document.getElementById("magnificationOut");
+    const imageHeightOut = document.getElementById("imageHeightOut");
+    const imageTypeOut = document.getElementById("imageTypeOut");
+
+    function resizeCanvas() {
+      const ratio = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+
+      canvas.width = Math.round(rect.width * ratio);
+      canvas.height = Math.round(rect.height * ratio);
+
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+
+      return { width: rect.width, height: rect.height };
+    }
+
+    function settings() {
+      const isConverging = lensTypeInput.value === "converging";
+      const focalMagnitude = Number(focalLengthInput.value);
+
+      return {
+        converging: isConverging,
+        focalLength: isConverging ? focalMagnitude : -focalMagnitude,
+        objectDistance: Number(objectDistanceInput.value),
+        objectHeight: Number(objectHeightInput.value)
+      };
+    }
+
+    function line(x1, y1, x2, y2, colour, width = 1.5, dashed = false) {
+      ctx.strokeStyle = colour;
+      ctx.lineWidth = width;
+      ctx.setLineDash(dashed ? [6, 6] : []);
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    function drawArrow(x, yBase, height, colour, dashed = false) {
+      const tipY = yBase - height;
+
+      line(x, yBase, x, tipY, colour, 3, dashed);
+
+      ctx.fillStyle = colour;
+      ctx.beginPath();
+      ctx.moveTo(x, tipY);
+      ctx.lineTo(x - 7, tipY + 14 * Math.sign(height));
+      ctx.lineTo(x + 7, tipY + 14 * Math.sign(height));
+      ctx.closePath();
+
+      if (!dashed) ctx.fill();
+    }
+
+    function drawLens(lensX, axisY, height, converging) {
+      const lensHalfHeight = height * 0.34;
+
+      ctx.fillStyle = converging
+        ? "rgba(97, 180, 255, 0.24)"
+        : "rgba(255, 123, 142, 0.20)";
+
+      ctx.strokeStyle = converging ? "#61b4ff" : "#ff7b8e";
+      ctx.lineWidth = 2;
+
+      ctx.beginPath();
+
+      if (converging) {
+        ctx.moveTo(lensX, axisY - lensHalfHeight);
+        ctx.quadraticCurveTo(lensX - 17, axisY, lensX, axisY + lensHalfHeight);
+        ctx.quadraticCurveTo(lensX + 17, axisY, lensX, axisY - lensHalfHeight);
+      } else {
+        ctx.moveTo(lensX, axisY - lensHalfHeight);
+        ctx.quadraticCurveTo(lensX + 17, axisY, lensX, axisY + lensHalfHeight);
+        ctx.quadraticCurveTo(lensX - 17, axisY, lensX, axisY - lensHalfHeight);
+      }
+
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = converging ? "#61b4ff" : "#ff7b8e";
+      ctx.font = "12px system-ui";
+      ctx.fillText(converging ? "converging lens" : "diverging lens", lensX - 42, axisY + lensHalfHeight + 24);
+    }
+
+    function drawFocalPoint(x, y, label) {
+      ctx.fillStyle = "#ffd56a";
+      ctx.beginPath();
+      ctx.arc(x, y, 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "#ffd56a";
+      ctx.font = "12px system-ui";
+      ctx.fillText(label, x - 4, y + 19);
+    }
+
+    function extendLineToEdges(x1, y1, x2, y2, minX, maxX, colour) {
+      const slope = (y2 - y1) / (x2 - x1 || 0.0001);
+      line(
+        minX,
+        y1 + slope * (minX - x1),
+        maxX,
+        y1 + slope * (maxX - x1),
+        colour,
+        1.2,
+        true
+      );
+    }
+
+    function draw() {
+      const { width, height } = resizeCanvas();
+      const s = settings();
+
+      const lensX = width * 0.55;
+      const axisY = height * 0.54;
+      const objectX = lensX - s.objectDistance;
+      const objectBaseY = axisY;
+      const objectTipY = axisY - s.objectHeight;
+
+      const denominator = (1 / s.focalLength) - (1 / s.objectDistance);
+      const imageDistance = Math.abs(denominator) < 0.0001 ? 100000 : 1 / denominator;
+      const magnification = -imageDistance / s.objectDistance;
+      const imageHeight = magnification * s.objectHeight;
+      const imageX = lensX + imageDistance;
+
+      const isReal = imageDistance > 0;
+      const imageType = isReal
+        ? (magnification < 0 ? "Real, inverted" : "Real, upright")
+        : "Virtual, upright";
+
+      focalLengthOut.textContent = `${Math.abs(s.focalLength).toFixed(0)} px`;
+      objectDistanceOut.textContent = `${s.objectDistance.toFixed(0)} px`;
+      objectHeightOut.textContent = `${s.objectHeight.toFixed(0)} px`;
+
+      imageDistanceOut.textContent =
+        `${Math.abs(imageDistance).toFixed(1)} px ${isReal ? "right" : "left"}`;
+
+      magnificationOut.textContent = magnification.toFixed(2);
+      imageHeightOut.textContent = `${imageHeight.toFixed(1)} px`;
+      imageTypeOut.textContent = imageType;
+
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = "#0c1425";
+      ctx.fillRect(0, 0, width, height);
+
+      if (gridInput.checked) {
+        ctx.strokeStyle = "rgba(174,187,211,0.10)";
+        ctx.lineWidth = 1;
+
+        for (let x = 0; x < width; x += 40) {
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, height);
+          ctx.stroke();
+        }
+
+        for (let y = 0; y < height; y += 40) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(width, y);
+          ctx.stroke();
+        }
+      }
+
+      line(0, axisY, width, axisY, "rgba(174,187,211,0.65)", 1.5);
+
+      if (focalMarkersInput.checked) {
+        drawFocalPoint(lensX - Math.abs(s.focalLength), axisY, "F");
+        drawFocalPoint(lensX + Math.abs(s.focalLength), axisY, "F");
+      }
+
+      drawLens(lensX, axisY, height, s.converging);
+      drawArrow(objectX, objectBaseY, s.objectHeight, "#61e7b6");
+
+      const imageWithinView = imageX > -100 && imageX < width + 100;
+
+      if (imageWithinView && Math.abs(imageHeight) < height * 1.8) {
+        drawArrow(
+          imageX,
+          axisY,
+          imageHeight,
+          isReal ? "#ff7b8e" : "#ff7b8e",
+          !isReal
+        );
+      }
+
+      if (principalRaysInput.checked) {
+        const rayColour = "rgba(255, 213, 106, 0.92)";
+
+        // Ray 1: Parallel to principal axis, then refracted.
+        line(objectX, objectTipY, lensX, objectTipY, rayColour, 1.8);
+
+        if (s.converging) {
+          line(lensX, objectTipY, imageX, axisY - imageHeight, rayColour, 1.8);
+
+          if (!isReal) {
+            extendLineToEdges(
+              lensX,
+              objectTipY,
+              imageX,
+              axisY - imageHeight,
+              0,
+              lensX,
+              rayColour
+            );
+          }
+        } else {
+          const leftFocusX = lensX + s.focalLength;
+          line(lensX, objectTipY, width, objectTipY + (width - lensX) * (objectTipY - axisY) / (lensX - leftFocusX), rayColour, 1.8);
+          extendLineToEdges(lensX, objectTipY, leftFocusX, axisY, 0, lensX, rayColour);
+        }
+
+        // Ray 2: Through optical centre, undeviated.
+        line(
+          objectX,
+          objectTipY,
+          lensX,
+          axisY,
+          "rgba(97, 180, 255, 0.92)",
+          1.8
+        );
+
+        const centreSlope = (axisY - objectTipY) / (lensX - objectX);
+
+        line(
+          lensX,
+          axisY,
+          width,
+          axisY + centreSlope * (width - lensX),
+          "rgba(97, 180, 255, 0.92)",
+          1.8
+        );
+
+        if (!isReal) {
+          line(
+            lensX,
+            axisY,
+            0,
+            axisY - centreSlope * lensX,
+            "rgba(97, 180, 255, 0.52)",
+            1.3,
+            true
+          );
+        }
+
+        // Ray 3: Through / toward focal point.
+        if (s.converging) {
+          const leftFocusX = lensX - Math.abs(s.focalLength);
+
+          line(objectX, objectTipY, leftFocusX, axisY, "rgba(97, 231, 182, 0.88)", 1.6);
+          line(leftFocusX, axisY, lensX, axisY, "rgba(97, 231, 182, 0.88)", 1.6);
+          line(lensX, axisY, width, axisY, "rgba(97, 231, 182, 0.88)", 1.6);
+        }
+      }
+
+      ctx.fillStyle = "#aebbd3";
+      ctx.font = "12px system-ui";
+      ctx.fillText("principal axis", 12, axisY - 10);
+      ctx.fillText("object", objectX - 18, axisY + 30);
+
+      if (imageWithinView) {
+        ctx.fillText(isReal ? "real image" : "virtual image", imageX - 28, axisY + 30);
+      }
+    }
+
+    [
+      lensTypeInput,
+      focalLengthInput,
+      objectDistanceInput,
+      objectHeightInput,
+      principalRaysInput,
+      focalMarkersInput,
+      gridInput
+    ].forEach(input => input.addEventListener("input", draw));
+
+    window.addEventListener("resize", draw);
+
+    draw();
+  </script>
+</body>
+</html>
