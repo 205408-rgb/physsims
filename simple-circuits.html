@@ -1,0 +1,685 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Simple Circuits | Physics Simulations</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121a2e;
+      --canvas: #0c1425;
+      --border: #263658;
+      --text: #f2f7ff;
+      --muted: #aebbd3;
+      --blue: #61b4ff;
+      --green: #61e7b6;
+      --red: #ff7b8e;
+      --yellow: #ffd56a;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 20% 0%, #193563 0%, transparent 32rem),
+        var(--bg);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .page {
+      width: min(1180px, calc(100% - 32px));
+      margin: auto;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 28px 0 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+    }
+
+    h2 {
+      margin: 0 0 16px;
+      font-size: 1.1rem;
+    }
+
+    .subtitle {
+      margin: 7px 0 0;
+      color: var(--muted);
+    }
+
+    .back {
+      color: var(--blue);
+      text-decoration: none;
+      white-space: nowrap;
+      padding-top: 6px;
+    }
+
+    .back:hover { text-decoration: underline; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.75fr);
+      gap: 18px;
+      padding: 22px 0 18px;
+    }
+
+    .panel {
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: rgba(18, 26, 46, 0.9);
+    }
+
+    .simulation {
+      position: relative;
+      min-height: 440px;
+    }
+
+    #simCanvas {
+      display: block;
+      width: 100%;
+      height: 440px;
+      background: var(--canvas);
+    }
+
+    .canvas-label {
+      position: absolute;
+      top: 12px;
+      left: 14px;
+      color: var(--muted);
+      font-size: 0.84rem;
+      pointer-events: none;
+    }
+
+    .controls { padding: 20px; }
+
+    .control { margin-bottom: 19px; }
+
+    label {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    output {
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      cursor: pointer;
+      accent-color: var(--blue);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 5px 0 20px;
+    }
+
+    button {
+      cursor: pointer;
+      border: 0;
+      border-radius: 9px;
+      padding: 10px 14px;
+      color: #08101c;
+      background: linear-gradient(135deg, var(--blue), var(--green));
+      font: inherit;
+      font-weight: 750;
+    }
+
+    button.secondary {
+      color: var(--text);
+      border: 1px solid var(--border);
+      background: transparent;
+    }
+
+    .checks {
+      display: grid;
+      gap: 10px;
+    }
+
+    .checks label {
+      justify-content: flex-start;
+      align-items: center;
+      margin: 0;
+      cursor: pointer;
+    }
+
+    .checks input { accent-color: var(--blue); }
+
+    .readouts {
+      margin-top: 22px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--canvas);
+    }
+
+    .readouts h3 {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .readouts p {
+      display: flex;
+      justify-content: space-between;
+      margin: 6px 0;
+      font-size: 0.92rem;
+    }
+
+    .readouts strong { font-variant-numeric: tabular-nums; }
+
+    .graphs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      padding-bottom: 40px;
+    }
+
+    .graph { padding: 14px; }
+
+    .graph h2 {
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .graph canvas {
+      display: block;
+      width: 100%;
+      height: 205px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--canvas);
+    }
+
+    .legend {
+      display: flex;
+      gap: 14px;
+      margin-top: 9px;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .blue { color: var(--blue); }
+    .green { color: var(--green); }
+    .red { color: var(--red); }
+
+    @media (max-width: 850px) {
+      header { flex-direction: column; }
+      .layout, .graphs { grid-template-columns: 1fr; }
+      #simCanvas { height: 360px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div>
+        <h1>Simple Circuits</h1>
+        <p class="subtitle">Explore charging and discharging in a resistor-capacitor circuit.</p>
+      </div>
+      <a class="back" href="index.html">← All simulations</a>
+    </header>
+
+    <main class="layout">
+      <section class="panel simulation">
+        <canvas id="simCanvas"></canvas>
+        <div class="canvas-label">Animated dots indicate conventional current</div>
+      </section>
+
+      <aside class="panel controls">
+        <h2>Controls</h2>
+
+        <div class="control">
+          <label for="voltage">
+            <span>Battery voltage</span>
+            <output id="voltageOut">9.0 V</output>
+          </label>
+          <input id="voltage" type="range" min="1" max="24" value="9" step="0.5">
+        </div>
+
+        <div class="control">
+          <label for="resistance">
+            <span>Resistance</span>
+            <output id="resistanceOut">100 Ω</output>
+          </label>
+          <input id="resistance" type="range" min="10" max="1000" value="100" step="10">
+        </div>
+
+        <div class="control">
+          <label for="capacitance">
+            <span>Capacitance</span>
+            <output id="capacitanceOut">100 μF</output>
+          </label>
+          <input id="capacitance" type="range" min="10" max="1000" value="100" step="10">
+        </div>
+
+        <div class="actions">
+          <button id="switchButton" type="button">Close switch</button>
+          <button id="resetButton" class="secondary" type="button">Reset capacitor</button>
+        </div>
+
+        <div class="checks">
+          <label><input id="dots" type="checkbox" checked> Show moving charge markers</label>
+          <label><input id="graphScale" type="checkbox" checked> Auto-scale graphs</label>
+        </div>
+
+        <section class="readouts">
+          <h3>Live readouts</h3>
+          <p><span>Switch</span><strong id="switchOut">Open</strong></p>
+          <p><span>Time</span><strong id="timeOut">0.00 s</strong></p>
+          <p><span>Capacitor voltage</span><strong id="capacitorOut">0.00 V</strong></p>
+          <p><span>Current</span><strong id="currentOut">0.00 mA</strong></p>
+          <p><span>Charge</span><strong id="chargeOut">0.00 μC</strong></p>
+          <p><span>Time constant τ</span><strong id="tauOut">0.000 s</strong></p>
+        </section>
+      </aside>
+    </main>
+
+    <section class="graphs">
+      <section class="panel graph">
+        <h2>Voltage vs. time</h2>
+        <canvas id="voltageGraph"></canvas>
+        <div class="legend">
+          <span class="blue">● capacitor voltage</span>
+          <span class="red">● resistor voltage</span>
+        </div>
+      </section>
+
+      <section class="panel graph">
+        <h2>Current vs. time</h2>
+        <canvas id="currentGraph"></canvas>
+        <div class="legend">
+          <span class="green">● current</span>
+        </div>
+      </section>
+    </section>
+  </div>
+
+  <script>
+    const simCanvas = document.getElementById("simCanvas");
+    const simCtx = simCanvas.getContext("2d");
+    const voltageGraph = document.getElementById("voltageGraph");
+    const voltageCtx = voltageGraph.getContext("2d");
+    const currentGraph = document.getElementById("currentGraph");
+    const currentCtx = currentGraph.getContext("2d");
+
+    const voltageInput = document.getElementById("voltage");
+    const resistanceInput = document.getElementById("resistance");
+    const capacitanceInput = document.getElementById("capacitance");
+    const dotsInput = document.getElementById("dots");
+    const graphScaleInput = document.getElementById("graphScale");
+
+    const voltageOut = document.getElementById("voltageOut");
+    const resistanceOut = document.getElementById("resistanceOut");
+    const capacitanceOut = document.getElementById("capacitanceOut");
+
+    const switchButton = document.getElementById("switchButton");
+    const resetButton = document.getElementById("resetButton");
+
+    const switchOut = document.getElementById("switchOut");
+    const timeOut = document.getElementById("timeOut");
+    const capacitorOut = document.getElementById("capacitorOut");
+    const currentOut = document.getElementById("currentOut");
+    const chargeOut = document.getElementById("chargeOut");
+    const tauOut = document.getElementById("tauOut");
+
+    let closed = false;
+    let time = 0;
+    let capacitorVoltage = 0;
+    let current = 0;
+    let lastTimestamp = null;
+    let history = [];
+
+    function values() {
+      return {
+        battery: Number(voltageInput.value),
+        resistance: Number(resistanceInput.value),
+        capacitance: Number(capacitanceInput.value) * 1e-6
+      };
+    }
+
+    function resizeCanvas(canvas) {
+      const ratio = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = Math.round(rect.width * ratio);
+      canvas.height = Math.round(rect.height * ratio);
+      const context = canvas.getContext("2d");
+      context.setTransform(ratio, 0, 0, ratio, 0, 0);
+      return { width: rect.width, height: rect.height };
+    }
+
+    function line(ctx, x1, y1, x2, y2, color, width = 2) {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+    }
+
+    function updateLabels(v) {
+      const tau = v.resistance * v.capacitance;
+      const charge = capacitorVoltage * v.capacitance;
+
+      voltageOut.textContent = `${v.battery.toFixed(1)} V`;
+      resistanceOut.textContent = `${v.resistance.toFixed(0)} Ω`;
+      capacitanceOut.textContent = `${(v.capacitance * 1e6).toFixed(0)} μF`;
+
+      switchOut.textContent = closed ? "Closed / charging" : "Open / discharging";
+      timeOut.textContent = `${time.toFixed(2)} s`;
+      capacitorOut.textContent = `${capacitorVoltage.toFixed(2)} V`;
+      currentOut.textContent = `${(current * 1000).toFixed(2)} mA`;
+      chargeOut.textContent = `${(charge * 1e6).toFixed(2)} μC`;
+      tauOut.textContent = `${tau.toFixed(3)} s`;
+
+      switchButton.textContent = closed ? "Open switch" : "Close switch";
+    }
+
+    function updatePhysics(delta, v) {
+      const targetVoltage = closed ? v.battery : 0;
+      const tau = Math.max(v.resistance * v.capacitance, 0.00001);
+
+      capacitorVoltage += (targetVoltage - capacitorVoltage) * (1 - Math.exp(-delta / tau));
+      current = (targetVoltage - capacitorVoltage) / v.resistance;
+      time += delta;
+
+      if (history.length === 0 || time - history[history.length - 1].t > 0.025) {
+        history.push({
+          t: time,
+          capacitorVoltage,
+          resistorVoltage: Math.abs(targetVoltage - capacitorVoltage),
+          current: Math.abs(current)
+        });
+      }
+
+      history = history.filter(point => point.t >= time - 8);
+    }
+
+    function drawBattery(ctx, x, y, height) {
+      line(ctx, x, y - height / 2, x, y + height / 2, "#aebbd3", 3);
+      line(ctx, x + 15, y - height / 3, x + 15, y + height / 3, "#aebbd3", 3);
+
+      ctx.fillStyle = "#f2f7ff";
+      ctx.font = "14px system-ui";
+      ctx.fillText("+", x + 8, y - height / 2 - 8);
+      ctx.fillText("−", x - 7, y + height / 2 + 18);
+    }
+
+    function drawResistor(ctx, x1, y, width) {
+      const turns = 8;
+      const step = width / turns;
+      ctx.strokeStyle = "#ffd56a";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(x1, y);
+
+      for (let i = 1; i < turns; i++) {
+        ctx.lineTo(x1 + i * step, y + (i % 2 === 0 ? -12 : 12));
+      }
+
+      ctx.lineTo(x1 + width, y);
+      ctx.stroke();
+    }
+
+    function drawCapacitor(ctx, x, y) {
+      line(ctx, x - 14, y - 35, x - 14, y + 35, "#61b4ff", 4);
+      line(ctx, x + 14, y - 35, x + 14, y + 35, "#61b4ff", 4);
+    }
+
+    function drawCircuit(v) {
+      const { width, height } = resizeCanvas(simCanvas);
+      const left = width * 0.19;
+      const right = width * 0.78;
+      const top = height * 0.30;
+      const bottom = height * 0.70;
+      const middle = height * 0.50;
+      const resistorX = width * 0.40;
+      const capacitorX = right;
+      const switchX = width * 0.48;
+
+      simCtx.clearRect(0, 0, width, height);
+      simCtx.fillStyle = "#0c1425";
+      simCtx.fillRect(0, 0, width, height);
+
+      simCtx.strokeStyle = "rgba(174,187,211,0.12)";
+      simCtx.lineWidth = 1;
+
+      for (let x = 30; x < width; x += 48) {
+        simCtx.beginPath();
+        simCtx.moveTo(x, 0);
+        simCtx.lineTo(x, height);
+        simCtx.stroke();
+      }
+
+      line(simCtx, left, top, resistorX - 12, top, "#aebbd3");
+      drawResistor(simCtx, resistorX - 12, top, 95);
+      line(simCtx, resistorX + 83, top, right, top, "#aebbd3");
+      line(simCtx, right, top, right, middle - 35, "#aebbd3");
+      drawCapacitor(simCtx, capacitorX, middle);
+      line(simCtx, right, middle + 35, right, bottom, "#aebbd3");
+      line(simCtx, right, bottom, switchX + 25, bottom, "#aebbd3");
+      line(simCtx, switchX - 22, bottom, left, bottom, "#aebbd3");
+      line(simCtx, left, top, left, bottom, "#aebbd3");
+
+      drawBattery(simCtx, left, middle, 100);
+
+      simCtx.fillStyle = closed ? "#61e7b6" : "#ff7b8e";
+      simCtx.beginPath();
+      simCtx.arc(switchX - 22, bottom, 5, 0, Math.PI * 2);
+      simCtx.fill();
+
+      simCtx.beginPath();
+      simCtx.arc(switchX + 25, bottom, 5, 0, Math.PI * 2);
+      simCtx.fill();
+
+      line(
+        simCtx,
+        switchX - 22,
+        bottom,
+        closed ? switchX + 25 : switchX + 4,
+        closed ? bottom : bottom - 23,
+        closed ? "#61e7b6" : "#aebbd3",
+        3
+      );
+
+      const chargeRatio = Math.max(0, Math.min(1, capacitorVoltage / v.battery));
+
+      simCtx.fillStyle = "#aebbd3";
+      simCtx.font = "13px system-ui";
+      simCtx.fillText(`${v.battery.toFixed(1)} V`, left - 24, middle + 5);
+      simCtx.fillText(`${v.resistance.toFixed(0)} Ω`, resistorX + 17, top - 25);
+      simCtx.fillText(`${(v.capacitance * 1e6).toFixed(0)} μF`, right - 23, middle + 60);
+
+      simCtx.fillStyle = `rgba(97, 180, 255, ${0.20 + chargeRatio * 0.75})`;
+      simCtx.fillRect(right - 8, middle - 27, 16, 54);
+
+      if (dotsInput.checked && Math.abs(current) > 0.00001) {
+        const currentSize = Math.min(1, Math.abs(current) * 700);
+        const progress = (time * (1.5 + currentSize * 3)) % 1;
+        const positions = [
+          [left + progress * (resistorX - left - 12), top],
+          [resistorX + 83 + progress * (right - resistorX - 83), top],
+          [right, top + progress * (bottom - top)],
+          [right - progress * (right - switchX - 25), bottom],
+          [switchX - 22 - progress * (switchX - 22 - left), bottom],
+          [left, bottom - progress * (bottom - top)]
+        ];
+
+        simCtx.fillStyle = "#61e7b6";
+        positions.forEach(([x, y]) => {
+          simCtx.beginPath();
+          simCtx.arc(x, y, 4, 0, Math.PI * 2);
+          simCtx.fill();
+        });
+      }
+
+      simCtx.fillStyle = closed ? "#61e7b6" : "#ff7b8e";
+      simCtx.font = "12px system-ui";
+      simCtx.fillText(closed ? "Switch closed: charging" : "Switch open: discharging", 20, height - 22);
+    }
+
+    function graphBase(ctx, canvas, label) {
+      const { width, height } = resizeCanvas(canvas);
+      const left = 40;
+      const right = 12;
+      const top = 15;
+      const bottom = 27;
+
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = "#0c1425";
+      ctx.fillRect(0, 0, width, height);
+
+      ctx.strokeStyle = "rgba(174,187,211,0.15)";
+      ctx.lineWidth = 1;
+
+      for (let i = 0; i <= 4; i++) {
+        const y = top + i * (height - top - bottom) / 4;
+        ctx.beginPath();
+        ctx.moveTo(left, y);
+        ctx.lineTo(width - right, y);
+        ctx.stroke();
+      }
+
+      line(ctx, left, top, left, height - bottom, "rgba(174,187,211,0.55)", 1);
+      line(ctx, left, height - bottom, width - right, height - bottom, "rgba(174,187,211,0.55)", 1);
+
+      ctx.fillStyle = "#aebbd3";
+      ctx.font = "11px system-ui";
+      ctx.fillText(label, 7, 16);
+
+      return { width, height, left, right, top, bottom };
+    }
+
+    function drawSeries(ctx, series, color, mapX, mapY) {
+      if (series.length < 2) return;
+
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+
+      series.forEach((point, index) => {
+        const x = mapX(point.t);
+        const y = mapY(point.value);
+
+        if (index === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+
+      ctx.stroke();
+    }
+
+    function drawVoltageGraph(v) {
+      const area = graphBase(voltageCtx, voltageGraph, "voltage");
+      if (history.length < 2) return;
+
+      const start = history[0].t;
+      const duration = Math.max(history[history.length - 1].t - start, 1);
+      const maxValue = graphScaleInput.checked
+        ? Math.max(v.battery, ...history.map(point => Math.max(point.capacitorVoltage, point.resistorVoltage)), 1)
+        : 24;
+
+      const mapX = t => area.left + (t - start) / duration * (area.width - area.left - area.right);
+      const mapY = value => area.height - area.bottom -
+        value / maxValue * (area.height - area.top - area.bottom);
+
+      drawSeries(
+        voltageCtx,
+        history.map(point => ({ t: point.t, value: point.capacitorVoltage })),
+        "#61b4ff",
+        mapX,
+        mapY
+      );
+
+      drawSeries(
+        voltageCtx,
+        history.map(point => ({ t: point.t, value: point.resistorVoltage })),
+        "#ff7b8e",
+        mapX,
+        mapY
+      );
+
+      voltageCtx.fillStyle = "#aebbd3";
+      voltageCtx.font = "11px system-ui";
+      voltageCtx.fillText("time", area.width - 33, area.height - 8);
+    }
+
+    function drawCurrentGraph() {
+      const area = graphBase(currentCtx, currentGraph, "current");
+      if (history.length < 2) return;
+
+      const start = history[0].t;
+      const duration = Math.max(history[history.length - 1].t - start, 1);
+      const maxValue = Math.max(0.001, ...history.map(point => point.current));
+
+      const mapX = t => area.left + (t - start) / duration * (area.width - area.left - area.right);
+      const mapY = value => area.height - area.bottom -
+        value / maxValue * (area.height - area.top - area.bottom);
+
+      drawSeries(
+        currentCtx,
+        history.map(point => ({ t: point.t, value: point.current })),
+        "#61e7b6",
+        mapX,
+        mapY
+      );
+
+      currentCtx.fillStyle = "#aebbd3";
+      currentCtx.font = "11px system-ui";
+      currentCtx.fillText("time", area.width - 33, area.height - 8);
+    }
+
+    function frame(timestamp) {
+      if (lastTimestamp === null) lastTimestamp = timestamp;
+
+      const delta = Math.min((timestamp - lastTimestamp) / 1000, 0.05);
+      lastTimestamp = timestamp;
+
+      const v = values();
+      updatePhysics(delta, v);
+      updateLabels(v);
+      drawCircuit(v);
+      drawVoltageGraph(v);
+      drawCurrentGraph();
+
+      requestAnimationFrame(frame);
+    }
+
+    switchButton.addEventListener("click", () => {
+      closed = !closed;
+    });
+
+    resetButton.addEventListener("click", () => {
+      capacitorVoltage = 0;
+      current = 0;
+      time = 0;
+      history = [];
+      closed = false;
+    });
+
+    window.addEventListener("resize", () => {
+      lastTimestamp = null;
+    });
+
+    requestAnimationFrame(frame);
+  </script>
+</body>
+</html>
