@@ -1,0 +1,699 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wave on a String | Physics Simulations</title>
+
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121a2e;
+      --panel-dark: #0c1425;
+      --border: #263658;
+      --text: #f2f7ff;
+      --muted: #aebbd3;
+      --accent: #61b4ff;
+      --accent2: #61e7b6;
+      --red: #ff7b8e;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 20% 0%, #193563 0%, transparent 32rem),
+        var(--bg);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.45;
+    }
+
+    .page {
+      width: min(1180px, calc(100% - 32px));
+      margin: auto;
+    }
+
+    header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 28px 0 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+    }
+
+    h2 {
+      font-size: 1.1rem;
+      margin: 0 0 16px;
+    }
+
+    .subtitle {
+      margin: 7px 0 0;
+      color: var(--muted);
+    }
+
+    .back {
+      display: inline-block;
+      color: var(--accent);
+      text-decoration: none;
+      white-space: nowrap;
+      padding-top: 6px;
+    }
+
+    .back:hover { text-decoration: underline; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.75fr);
+      gap: 18px;
+      padding: 22px 0 18px;
+    }
+
+    .panel {
+      background: rgba(18, 26, 46, 0.9);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .simulation {
+      position: relative;
+      min-height: 440px;
+    }
+
+    #waveCanvas {
+      display: block;
+      width: 100%;
+      height: 440px;
+      background: var(--panel-dark);
+    }
+
+    .canvas-info {
+      position: absolute;
+      top: 12px;
+      left: 14px;
+      color: var(--muted);
+      font-size: 0.85rem;
+      pointer-events: none;
+    }
+
+    .controls {
+      padding: 20px;
+    }
+
+    .control {
+      margin-bottom: 19px;
+    }
+
+    label {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+    }
+
+    output {
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    select {
+      width: 100%;
+      color: var(--text);
+      background: var(--panel-dark);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 10px;
+      font: inherit;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 5px 0 20px;
+    }
+
+    button {
+      cursor: pointer;
+      border: 0;
+      border-radius: 9px;
+      padding: 10px 14px;
+      color: #08101c;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      font-weight: 750;
+      font: inherit;
+    }
+
+    button.secondary {
+      color: var(--text);
+      background: transparent;
+      border: 1px solid var(--border);
+    }
+
+    .checks {
+      display: grid;
+      gap: 10px;
+      padding-top: 5px;
+    }
+
+    .checks label {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      margin: 0;
+      cursor: pointer;
+    }
+
+    .checks input { accent-color: var(--accent); }
+
+    .readouts {
+      margin-top: 22px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--panel-dark);
+    }
+
+    .readouts h3 {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .readouts p {
+      display: flex;
+      justify-content: space-between;
+      margin: 6px 0;
+      font-size: 0.92rem;
+    }
+
+    .readouts strong {
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .graphs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      padding-bottom: 40px;
+    }
+
+    .graph {
+      padding: 14px;
+    }
+
+    .graph h2 {
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    canvas.graph-canvas {
+      display: block;
+      width: 100%;
+      height: 205px;
+      background: var(--panel-dark);
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+
+    .legend {
+      display: flex;
+      gap: 14px;
+      margin-top: 9px;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .blue { color: var(--accent); }
+    .green { color: var(--accent2); }
+
+    @media (max-width: 850px) {
+      header { flex-direction: column; }
+      .layout, .graphs { grid-template-columns: 1fr; }
+      #waveCanvas { height: 360px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <header>
+      <div>
+        <h1>Wave on a String</h1>
+        <p class="subtitle">Control a driven transverse wave and observe reflection from the far boundary.</p>
+      </div>
+      <a class="back" href="index.html">← All simulations</a>
+    </header>
+
+    <main class="layout">
+      <section class="panel simulation">
+        <canvas id="waveCanvas"></canvas>
+        <div class="canvas-info">Driven end</div>
+      </section>
+
+      <aside class="panel controls">
+        <h2>Controls</h2>
+
+        <div class="control">
+          <label for="frequency">
+            <span>Frequency</span>
+            <output id="frequencyOut">1.0 Hz</output>
+          </label>
+          <input id="frequency" type="range" min="0.2" max="5" value="1" step="0.1">
+        </div>
+
+        <div class="control">
+          <label for="amplitude">
+            <span>Amplitude</span>
+            <output id="amplitudeOut">0.50 m</output>
+          </label>
+          <input id="amplitude" type="range" min="0.1" max="1.5" value="0.5" step="0.05">
+        </div>
+
+        <div class="control">
+          <label for="tension">
+            <span>Tension</span>
+            <output id="tensionOut">50 N</output>
+          </label>
+          <input id="tension" type="range" min="10" max="200" value="50" step="5">
+        </div>
+
+        <div class="control">
+          <label for="damping">
+            <span>Damping</span>
+            <output id="dampingOut">0.02</output>
+          </label>
+          <input id="damping" type="range" min="0" max="0.2" value="0.02" step="0.01">
+        </div>
+
+        <div class="control">
+          <label for="boundary"><span>Far-end boundary</span></label>
+          <select id="boundary">
+            <option value="fixed">Fixed end</option>
+            <option value="free">Free end</option>
+          </select>
+        </div>
+
+        <div class="actions">
+          <button id="pauseButton" type="button">Pause</button>
+          <button id="resetButton" class="secondary" type="button">Reset</button>
+        </div>
+
+        <div class="checks">
+          <label><input id="particles" type="checkbox"> Show particles</label>
+          <label><input id="standingWave" type="checkbox"> Show standing-wave guide</label>
+        </div>
+
+        <section class="readouts">
+          <h3>Live readouts</h3>
+          <p><span>Time</span><strong id="timeOut">0.00 s</strong></p>
+          <p><span>Wave speed</span><strong id="speedOut">0.00 m/s</strong></p>
+          <p><span>Wavelength</span><strong id="wavelengthOut">0.00 m</strong></p>
+          <p><span>Period</span><strong id="periodOut">0.00 s</strong></p>
+        </section>
+      </aside>
+    </main>
+
+    <section class="graphs">
+      <section class="panel graph">
+        <h2>String displacement, \(y(x,t)\)</h2>
+        <canvas class="graph-canvas" id="shapeGraph"></canvas>
+        <div class="legend"><span class="blue">● displacement</span></div>
+      </section>
+
+      <section class="panel graph">
+        <h2>Driver displacement, \(y(0,t)\)</h2>
+        <canvas class="graph-canvas" id="timeGraph"></canvas>
+        <div class="legend"><span class="green">● driver history</span></div>
+      </section>
+    </section>
+  </div>
+
+  <script>
+    const waveCanvas = document.getElementById("waveCanvas");
+    const waveCtx = waveCanvas.getContext("2d");
+    const shapeGraph = document.getElementById("shapeGraph");
+    const shapeCtx = shapeGraph.getContext("2d");
+    const timeGraph = document.getElementById("timeGraph");
+    const timeCtx = timeGraph.getContext("2d");
+
+    const frequencyInput = document.getElementById("frequency");
+    const amplitudeInput = document.getElementById("amplitude");
+    const tensionInput = document.getElementById("tension");
+    const dampingInput = document.getElementById("damping");
+    const boundaryInput = document.getElementById("boundary");
+    const particlesInput = document.getElementById("particles");
+    const standingWaveInput = document.getElementById("standingWave");
+
+    const frequencyOut = document.getElementById("frequencyOut");
+    const amplitudeOut = document.getElementById("amplitudeOut");
+    const tensionOut = document.getElementById("tensionOut");
+    const dampingOut = document.getElementById("dampingOut");
+
+    const timeOut = document.getElementById("timeOut");
+    const speedOut = document.getElementById("speedOut");
+    const wavelengthOut = document.getElementById("wavelengthOut");
+    const periodOut = document.getElementById("periodOut");
+
+    const pauseButton = document.getElementById("pauseButton");
+    const resetButton = document.getElementById("resetButton");
+
+    const stringLength = 10;
+    const linearDensity = 0.05;
+    const points = 280;
+
+    let time = 0;
+    let paused = false;
+    let previousTimestamp = null;
+    let history = [];
+
+    function params() {
+      return {
+        frequency: Number(frequencyInput.value),
+        amplitude: Number(amplitudeInput.value),
+        tension: Number(tensionInput.value),
+        damping: Number(dampingInput.value),
+        boundary: boundaryInput.value
+      };
+    }
+
+    function waveSpeed(p) {
+      return Math.sqrt(p.tension / linearDensity);
+    }
+
+    function displacement(x, currentTime, p) {
+      const speed = waveSpeed(p);
+      const omega = 2 * Math.PI * p.frequency;
+      const k = omega / speed;
+
+      const incoming = p.amplitude * Math.sin(omega * currentTime - k * x);
+      const reflectedSign = p.boundary === "fixed" ? -1 : 1;
+      const reflected = reflectedSign * p.amplitude *
+        Math.sin(omega * currentTime + k * x - 2 * k * stringLength);
+
+      return (incoming + reflected) * Math.exp(-p.damping * x);
+    }
+
+    function resizeCanvas(canvas) {
+      const ratio = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = Math.round(rect.width * ratio);
+      canvas.height = Math.round(rect.height * ratio);
+      const context = canvas.getContext("2d");
+      context.setTransform(ratio, 0, 0, ratio, 0, 0);
+      return { width: rect.width, height: rect.height };
+    }
+
+    function line(context, x1, y1, x2, y2, color, width = 1) {
+      context.strokeStyle = color;
+      context.lineWidth = width;
+      context.beginPath();
+      context.moveTo(x1, y1);
+      context.lineTo(x2, y2);
+      context.stroke();
+    }
+
+    function drawMainCanvas(p) {
+      const { width, height } = resizeCanvas(waveCanvas);
+      const marginX = 42;
+      const baseline = height / 2;
+      const drawWidth = width - marginX * 2;
+      const pixelsPerMeterY = Math.min(height * 0.32 / 1.5, 105);
+
+      waveCtx.clearRect(0, 0, width, height);
+      waveCtx.fillStyle = "#0c1425";
+      waveCtx.fillRect(0, 0, width, height);
+
+      waveCtx.strokeStyle = "rgba(174,187,211,0.13)";
+      waveCtx.lineWidth = 1;
+
+      for (let x = marginX; x <= width - marginX; x += drawWidth / 10) {
+        waveCtx.beginPath();
+        waveCtx.moveTo(x, 22);
+        waveCtx.lineTo(x, height - 28);
+        waveCtx.stroke();
+      }
+
+      for (let y = 30; y < height - 20; y += 45) {
+        waveCtx.beginPath();
+        waveCtx.moveTo(marginX, y);
+        waveCtx.lineTo(width - marginX, y);
+        waveCtx.stroke();
+      }
+
+      line(waveCtx, marginX, baseline, width - marginX, baseline, "rgba(174,187,211,0.45)", 1);
+
+      waveCtx.fillStyle = "#61e7b6";
+      waveCtx.fillRect(marginX - 5, baseline - 54, 7, 108);
+
+      waveCtx.fillStyle = "#ff7b8e";
+      waveCtx.fillRect(width - marginX - 2, baseline - 54, 6, 108);
+
+      if (standingWaveInput.checked) {
+        waveCtx.setLineDash([5, 7]);
+        waveCtx.strokeStyle = "rgba(97,180,255,0.32)";
+        waveCtx.lineWidth = 1;
+
+        waveCtx.beginPath();
+        for (let i = 0; i <= points; i++) {
+          const fraction = i / points;
+          const x = fraction * stringLength;
+          const y = 2 * p.amplitude * Math.exp(-p.damping * x);
+          const px = marginX + fraction * drawWidth;
+          const py = baseline - y * pixelsPerMeterY;
+          if (i === 0) waveCtx.moveTo(px, py);
+          else waveCtx.lineTo(px, py);
+        }
+        waveCtx.stroke();
+
+        waveCtx.beginPath();
+        for (let i = 0; i <= points; i++) {
+          const fraction = i / points;
+          const x = fraction * stringLength;
+          const y = -2 * p.amplitude * Math.exp(-p.damping * x);
+          const px = marginX + fraction * drawWidth;
+          const py = baseline - y * pixelsPerMeterY;
+          if (i === 0) waveCtx.moveTo(px, py);
+          else waveCtx.lineTo(px, py);
+        }
+        waveCtx.stroke();
+        waveCtx.setLineDash([]);
+      }
+
+      waveCtx.strokeStyle = "#61b4ff";
+      waveCtx.lineWidth = 3;
+      waveCtx.beginPath();
+
+      for (let i = 0; i <= points; i++) {
+        const fraction = i / points;
+        const x = fraction * stringLength;
+        const y = displacement(x, time, p);
+        const px = marginX + fraction * drawWidth;
+        const py = baseline - y * pixelsPerMeterY;
+
+        if (i === 0) waveCtx.moveTo(px, py);
+        else waveCtx.lineTo(px, py);
+      }
+
+      waveCtx.stroke();
+
+      if (particlesInput.checked) {
+        waveCtx.fillStyle = "#61e7b6";
+
+        for (let i = 0; i <= 28; i++) {
+          const fraction = i / 28;
+          const x = fraction * stringLength;
+          const y = displacement(x, time, p);
+          const px = marginX + fraction * drawWidth;
+          const py = baseline - y * pixelsPerMeterY;
+          waveCtx.beginPath();
+          waveCtx.arc(px, py, 3.3, 0, Math.PI * 2);
+          waveCtx.fill();
+        }
+      }
+
+      waveCtx.fillStyle = "#aebbd3";
+      waveCtx.font = "12px system-ui";
+      waveCtx.fillText("0 m", marginX - 8, height - 10);
+      waveCtx.fillText("10 m", width - marginX - 12, height - 10);
+      waveCtx.fillStyle = "#61e7b6";
+      waveCtx.fillText("driver", marginX - 18, baseline - 67);
+      waveCtx.fillStyle = "#ff7b8e";
+      waveCtx.fillText(p.boundary, width - marginX - 34, baseline - 67);
+    }
+
+    function drawAxes(context, width, height, label) {
+      const left = 38;
+      const right = 12;
+      const top = 15;
+      const bottom = 27;
+
+      context.clearRect(0, 0, width, height);
+      context.fillStyle = "#0c1425";
+      context.fillRect(0, 0, width, height);
+
+      context.strokeStyle = "rgba(174,187,211,0.16)";
+      context.lineWidth = 1;
+
+      for (let i = 0; i <= 4; i++) {
+        const y = top + i * ((height - top - bottom) / 4);
+        context.beginPath();
+        context.moveTo(left, y);
+        context.lineTo(width - right, y);
+        context.stroke();
+      }
+
+      line(context, left, top, left, height - bottom, "rgba(174,187,211,0.55)");
+      line(context, left, height - bottom, width - right, height - bottom, "rgba(174,187,211,0.55)");
+
+      context.fillStyle = "#aebbd3";
+      context.font = "11px system-ui";
+      context.fillText(label, 7, 16);
+
+      return { left, right, top, bottom };
+    }
+
+    function drawShapeGraph(p) {
+      const { width, height } = resizeCanvas(shapeGraph);
+      const area = drawAxes(shapeCtx, width, height, "y");
+
+      const middle = (area.top + height - area.bottom) / 2;
+      const graphWidth = width - area.left - area.right;
+      const scale = (height - area.top - area.bottom) / (4 * Math.max(p.amplitude, 0.2));
+
+      shapeCtx.strokeStyle = "#61b4ff";
+      shapeCtx.lineWidth = 2.5;
+      shapeCtx.beginPath();
+
+      for (let i = 0; i <= points; i++) {
+        const fraction = i / points;
+        const x = fraction * stringLength;
+        const y = displacement(x, time, p);
+        const px = area.left + fraction * graphWidth;
+        const py = middle - y * scale;
+
+        if (i === 0) shapeCtx.moveTo(px, py);
+        else shapeCtx.lineTo(px, py);
+      }
+
+      shapeCtx.stroke();
+      shapeCtx.fillStyle = "#aebbd3";
+      shapeCtx.font = "11px system-ui";
+      shapeCtx.fillText("0", area.left - 3, height - 8);
+      shapeCtx.fillText("x (m)", width - 39, height - 8);
+      shapeCtx.fillText("10", width - area.right - 17, height - 8);
+    }
+
+    function drawTimeGraph(p) {
+      const { width, height } = resizeCanvas(timeGraph);
+      const area = drawAxes(timeCtx, width, height, "y");
+      const graphWidth = width - area.left - area.right;
+      const graphHeight = height - area.top - area.bottom;
+      const middle = area.top + graphHeight / 2;
+      const historySeconds = 8;
+      const maxAmplitude = Math.max(p.amplitude * 2, 0.2);
+
+      const recent = history.filter(point => point.t >= time - historySeconds);
+      if (recent.length > 1) {
+        timeCtx.strokeStyle = "#61e7b6";
+        timeCtx.lineWidth = 2.5;
+        timeCtx.beginPath();
+
+        for (let i = 0; i < recent.length; i++) {
+          const point = recent[i];
+          const relative = (point.t - (time - historySeconds)) / historySeconds;
+          const px = area.left + relative * graphWidth;
+          const py = middle - (point.y / maxAmplitude) * (graphHeight / 2 - 8);
+
+          if (i === 0) timeCtx.moveTo(px, py);
+          else timeCtx.lineTo(px, py);
+        }
+
+        timeCtx.stroke();
+      }
+
+      timeCtx.fillStyle = "#aebbd3";
+      timeCtx.font = "11px system-ui";
+      timeCtx.fillText("-8 s", area.left, height - 8);
+      timeCtx.fillText("now", width - area.right - 23, height - 8);
+    }
+
+    function updateOutputs(p) {
+      const speed = waveSpeed(p);
+      const wavelength = speed / p.frequency;
+
+      frequencyOut.textContent = `${p.frequency.toFixed(1)} Hz`;
+      amplitudeOut.textContent = `${p.amplitude.toFixed(2)} m`;
+      tensionOut.textContent = `${p.tension.toFixed(0)} N`;
+      dampingOut.textContent = p.damping.toFixed(2);
+
+      timeOut.textContent = `${time.toFixed(2)} s`;
+      speedOut.textContent = `${speed.toFixed(2)} m/s`;
+      wavelengthOut.textContent = `${wavelength.toFixed(2)} m`;
+      periodOut.textContent = `${(1 / p.frequency).toFixed(2)} s`;
+    }
+
+    function updateFrame(timestamp) {
+      if (previousTimestamp === null) previousTimestamp = timestamp;
+
+      const elapsed = Math.min((timestamp - previousTimestamp) / 1000, 0.05);
+      previousTimestamp = timestamp;
+
+      if (!paused) {
+        time += elapsed;
+        const p = params();
+        history.push({
+          t: time,
+          y: p.amplitude * Math.sin(2 * Math.PI * p.frequency * time)
+        });
+
+        history = history.filter(point => point.t >= time - 9);
+      }
+
+      const p = params();
+      updateOutputs(p);
+      drawMainCanvas(p);
+      drawShapeGraph(p);
+      drawTimeGraph(p);
+
+      requestAnimationFrame(updateFrame);
+    }
+
+    pauseButton.addEventListener("click", () => {
+      paused = !paused;
+      pauseButton.textContent = paused ? "Play" : "Pause";
+    });
+
+    resetButton.addEventListener("click", () => {
+      time = 0;
+      history = [];
+      paused = false;
+      pauseButton.textContent = "Pause";
+    });
+
+    window.addEventListener("resize", () => {
+      previousTimestamp = null;
+    });
+
+    requestAnimationFrame(updateFrame);
+  </script>
+</body>
+</html>
