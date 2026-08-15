@@ -1,0 +1,765 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Forces & Friction | Physics Simulations</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121a2e;
+      --canvas: #0c1425;
+      --border: #263658;
+      --text: #f2f7ff;
+      --muted: #aebbd3;
+      --blue: #61b4ff;
+      --green: #61e7b6;
+      --red: #ff7b8e;
+      --yellow: #ffd56a;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 20% 0%, #193563 0%, transparent 32rem),
+        var(--bg);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .page {
+      width: min(1180px, calc(100% - 32px));
+      margin: auto;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 28px 0 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+    }
+
+    h2 {
+      margin: 0 0 16px;
+      font-size: 1.1rem;
+    }
+
+    .subtitle {
+      margin: 7px 0 0;
+      color: var(--muted);
+    }
+
+    .back {
+      color: var(--blue);
+      text-decoration: none;
+      white-space: nowrap;
+      padding-top: 6px;
+    }
+
+    .back:hover { text-decoration: underline; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.75fr);
+      gap: 18px;
+      padding: 22px 0 18px;
+    }
+
+    .panel {
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: rgba(18, 26, 46, 0.9);
+    }
+
+    .simulation {
+      position: relative;
+      min-height: 440px;
+    }
+
+    #simCanvas {
+      display: block;
+      width: 100%;
+      height: 440px;
+      background: var(--canvas);
+    }
+
+    .canvas-label {
+      position: absolute;
+      top: 12px;
+      left: 14px;
+      color: var(--muted);
+      font-size: 0.84rem;
+      pointer-events: none;
+    }
+
+    .controls { padding: 20px; }
+
+    .control { margin-bottom: 19px; }
+
+    label {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    output {
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      cursor: pointer;
+      accent-color: var(--blue);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 5px 0 20px;
+    }
+
+    button {
+      cursor: pointer;
+      border: 0;
+      border-radius: 9px;
+      padding: 10px 14px;
+      color: #08101c;
+      background: linear-gradient(135deg, var(--blue), var(--green));
+      font: inherit;
+      font-weight: 750;
+    }
+
+    button.secondary {
+      color: var(--text);
+      border: 1px solid var(--border);
+      background: transparent;
+    }
+
+    .checks {
+      display: grid;
+      gap: 10px;
+    }
+
+    .checks label {
+      justify-content: flex-start;
+      align-items: center;
+      margin: 0;
+      cursor: pointer;
+    }
+
+    .checks input { accent-color: var(--blue); }
+
+    .readouts {
+      margin-top: 22px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--canvas);
+    }
+
+    .readouts h3 {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .readouts p {
+      display: flex;
+      justify-content: space-between;
+      margin: 6px 0;
+      font-size: 0.92rem;
+    }
+
+    .readouts strong {
+      font-variant-numeric: tabular-nums;
+    }
+
+    .graphs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      padding-bottom: 40px;
+    }
+
+    .graph { padding: 14px; }
+
+    .graph h2 {
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .graph canvas {
+      display: block;
+      width: 100%;
+      height: 205px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--canvas);
+    }
+
+    .legend {
+      display: flex;
+      gap: 14px;
+      margin-top: 9px;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .blue { color: var(--blue); }
+    .green { color: var(--green); }
+
+    @media (max-width: 850px) {
+      header { flex-direction: column; }
+      .layout, .graphs { grid-template-columns: 1fr; }
+      #simCanvas { height: 360px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div>
+        <h1>Forces & Friction</h1>
+        <p class="subtitle">Push a block across a surface and investigate friction, net force, and acceleration.</p>
+      </div>
+      <a class="back" href="index.html">← All simulations</a>
+    </header>
+
+    <main class="layout">
+      <section class="panel simulation">
+        <canvas id="simCanvas"></canvas>
+        <div class="canvas-label">Blue: applied force · Red: friction · Green: net force</div>
+      </section>
+
+      <aside class="panel controls">
+        <h2>Controls</h2>
+
+        <div class="control">
+          <label for="mass">
+            <span>Block mass</span>
+            <output id="massOut">10 kg</output>
+          </label>
+          <input id="mass" type="range" min="1" max="50" value="10" step="1">
+        </div>
+
+        <div class="control">
+          <label for="force">
+            <span>Applied force</span>
+            <output id="forceOut">50 N</output>
+          </label>
+          <input id="force" type="range" min="-150" max="150" value="50" step="5">
+        </div>
+
+        <div class="control">
+          <label for="friction">
+            <span>Friction coefficient μ</span>
+            <output id="frictionOut">0.20</output>
+          </label>
+          <input id="friction" type="range" min="0" max="1" value="0.2" step="0.01">
+        </div>
+
+        <div class="control">
+          <label for="gravity">
+            <span>Gravity</span>
+            <output id="gravityOut">9.81 m/s²</output>
+          </label>
+          <input id="gravity" type="range" min="1" max="20" value="9.81" step="0.01">
+        </div>
+
+        <div class="actions">
+          <button id="pauseButton" type="button">Pause</button>
+          <button id="resetButton" class="secondary" type="button">Reset</button>
+        </div>
+
+        <div class="checks">
+          <label><input id="vectors" type="checkbox" checked> Show force vectors</label>
+          <label><input id="trail" type="checkbox" checked> Show motion trail</label>
+        </div>
+
+        <section class="readouts">
+          <h3>Live readouts</h3>
+          <p><span>Position</span><strong id="positionOut">0.0 m</strong></p>
+          <p><span>Velocity</span><strong id="velocityOut">0.00 m/s</strong></p>
+          <p><span>Acceleration</span><strong id="accelerationOut">0.00 m/s²</strong></p>
+          <p><span>Friction force</span><strong id="frictionForceOut">0.0 N</strong></p>
+          <p><span>Net force</span><strong id="netForceOut">0.0 N</strong></p>
+        </section>
+      </aside>
+    </main>
+
+    <section class="graphs">
+      <section class="panel graph">
+        <h2>Position & velocity</h2>
+        <canvas id="motionGraph"></canvas>
+        <div class="legend">
+          <span class="blue">● position</span>
+          <span class="green">● velocity</span>
+        </div>
+      </section>
+
+      <section class="panel graph">
+        <h2>Forces</h2>
+        <canvas id="forceGraph"></canvas>
+        <div class="legend">
+          <span class="blue">● applied</span>
+          <span class="green">● net</span>
+        </div>
+      </section>
+    </section>
+  </div>
+
+  <script>
+    const simCanvas = document.getElementById("simCanvas");
+    const simCtx = simCanvas.getContext("2d");
+    const motionGraph = document.getElementById("motionGraph");
+    const motionCtx = motionGraph.getContext("2d");
+    const forceGraph = document.getElementById("forceGraph");
+    const forceCtx = forceGraph.getContext("2d");
+
+    const massInput = document.getElementById("mass");
+    const forceInput = document.getElementById("force");
+    const frictionInput = document.getElementById("friction");
+    const gravityInput = document.getElementById("gravity");
+    const vectorsInput = document.getElementById("vectors");
+    const trailInput = document.getElementById("trail");
+
+    const massOut = document.getElementById("massOut");
+    const forceOut = document.getElementById("forceOut");
+    const frictionOut = document.getElementById("frictionOut");
+    const gravityOut = document.getElementById("gravityOut");
+
+    const positionOut = document.getElementById("positionOut");
+    const velocityOut = document.getElementById("velocityOut");
+    const accelerationOut = document.getElementById("accelerationOut");
+    const frictionForceOut = document.getElementById("frictionForceOut");
+    const netForceOut = document.getElementById("netForceOut");
+
+    const pauseButton = document.getElementById("pauseButton");
+    const resetButton = document.getElementById("resetButton");
+
+    let position = 0;
+    let velocity = 0;
+    let acceleration = 0;
+    let time = 0;
+    let paused = false;
+    let history = [];
+    let trail = [];
+    let previousTimestamp = null;
+
+    function values() {
+      return {
+        mass: Number(massInput.value),
+        appliedForce: Number(forceInput.value),
+        frictionCoefficient: Number(frictionInput.value),
+        gravity: Number(gravityInput.value)
+      };
+    }
+
+    function reset() {
+      position = 0;
+      velocity = 0;
+      acceleration = 0;
+      time = 0;
+      history = [];
+      trail = [];
+      paused = false;
+      pauseButton.textContent = "Pause";
+    }
+
+    function resizeCanvas(canvas) {
+      const ratio = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+
+      canvas.width = Math.round(rect.width * ratio);
+      canvas.height = Math.round(rect.height * ratio);
+
+      const ctx = canvas.getContext("2d");
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+
+      return { width: rect.width, height: rect.height };
+    }
+
+    function line(ctx, x1, y1, x2, y2, color, width = 1) {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+    }
+
+    function arrow(ctx, x1, y1, x2, y2, color) {
+      const head = 8;
+      const direction = Math.atan2(y2 - y1, x2 - x1);
+
+      line(ctx, x1, y1, x2, y2, color, 2);
+
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(
+        x2 - head * Math.cos(direction - Math.PI / 6),
+        y2 - head * Math.sin(direction - Math.PI / 6)
+      );
+      ctx.lineTo(
+        x2 - head * Math.cos(direction + Math.PI / 6),
+        y2 - head * Math.sin(direction + Math.PI / 6)
+      );
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function calculate(p) {
+      const normalForce = p.mass * p.gravity;
+      const maximumStaticFriction = p.frictionCoefficient * normalForce;
+
+      let frictionForce = 0;
+
+      if (Math.abs(velocity) < 0.002 && Math.abs(p.appliedForce) <= maximumStaticFriction) {
+        frictionForce = -p.appliedForce;
+      } else {
+        const direction = velocity === 0 ? Math.sign(p.appliedForce) : Math.sign(velocity);
+        frictionForce = -maximumStaticFriction * direction;
+      }
+
+      const netForce = p.appliedForce + frictionForce;
+      const calculatedAcceleration = netForce / p.mass;
+
+      return {
+        normalForce,
+        frictionForce,
+        netForce,
+        acceleration: calculatedAcceleration
+      };
+    }
+
+    function updatePhysics(delta, p) {
+      if (paused) return;
+
+      const result = calculate(p);
+      acceleration = result.acceleration;
+
+      velocity += acceleration * delta;
+
+      if (
+        Math.abs(velocity) < 0.003 &&
+        Math.abs(p.appliedForce) <= p.frictionCoefficient * p.mass * p.gravity
+      ) {
+        velocity = 0;
+      }
+
+      position += velocity * delta;
+      time += delta;
+
+      const historyPoint = {
+        t: time,
+        position,
+        velocity,
+        appliedForce: p.appliedForce,
+        netForce: result.netForce
+      };
+
+      if (history.length === 0 || time - history[history.length - 1].t > 0.04) {
+        history.push(historyPoint);
+      }
+
+      history = history.filter(point => point.t >= time - 12);
+    }
+
+    function updateLabels(p, result) {
+      massOut.textContent = `${p.mass.toFixed(0)} kg`;
+      forceOut.textContent = `${p.appliedForce.toFixed(0)} N`;
+      frictionOut.textContent = p.frictionCoefficient.toFixed(2);
+      gravityOut.textContent = `${p.gravity.toFixed(2)} m/s²`;
+
+      positionOut.textContent = `${position.toFixed(1)} m`;
+      velocityOut.textContent = `${velocity.toFixed(2)} m/s`;
+      accelerationOut.textContent = `${acceleration.toFixed(2)} m/s²`;
+      frictionForceOut.textContent = `${result.frictionForce.toFixed(1)} N`;
+      netForceOut.textContent = `${result.netForce.toFixed(1)} N`;
+    }
+
+    function drawSimulation(p, result) {
+      const { width, height } = resizeCanvas(simCanvas);
+      const groundY = height * 0.70;
+      const blockWidth = 92;
+      const blockHeight = 60;
+      const blockX = width / 2 + Math.tanh(position / 12) * width * 0.33;
+      const blockY = groundY - blockHeight;
+
+      simCtx.clearRect(0, 0, width, height);
+      simCtx.fillStyle = "#0c1425";
+      simCtx.fillRect(0, 0, width, height);
+
+      simCtx.strokeStyle = "rgba(174,187,211,0.13)";
+      simCtx.lineWidth = 1;
+
+      for (let x = 0; x < width; x += 50) {
+        simCtx.beginPath();
+        simCtx.moveTo(x, 0);
+        simCtx.lineTo(x, groundY);
+        simCtx.stroke();
+      }
+
+      simCtx.fillStyle = "#263658";
+      simCtx.fillRect(0, groundY, width, height - groundY);
+
+      for (let x = 0; x < width; x += 26) {
+        line(simCtx, x, groundY + 16, x + 13, groundY + 4, "rgba(174,187,211,0.22)", 1);
+      }
+
+      if (trailInput.checked) {
+        trail.push({ x: blockX + blockWidth / 2, y: groundY + 10 });
+
+        if (trail.length > 180) trail.shift();
+
+        simCtx.fillStyle = "rgba(97, 180, 255, 0.45)";
+        trail.forEach(point => {
+          simCtx.beginPath();
+          simCtx.arc(point.x, point.y, 2.2, 0, Math.PI * 2);
+          simCtx.fill();
+        });
+      }
+
+      simCtx.fillStyle = "#61b4ff";
+      simCtx.fillRect(blockX, blockY, blockWidth, blockHeight);
+
+      simCtx.strokeStyle = "#06101d";
+      simCtx.lineWidth = 2;
+      simCtx.strokeRect(blockX, blockY, blockWidth, blockHeight);
+
+      simCtx.fillStyle = "#f2f7ff";
+      simCtx.font = "13px system-ui";
+      simCtx.fillText(`${p.mass.toFixed(0)} kg`, blockX + 28, blockY + 35);
+
+      if (vectorsInput.checked) {
+        const centerX = blockX + blockWidth / 2;
+        const centerY = blockY + blockHeight / 2;
+        const scale = 1.4;
+
+        arrow(
+          simCtx,
+          centerX,
+          centerY,
+          centerX + p.appliedForce * scale,
+          centerY,
+          "#61b4ff"
+        );
+
+        arrow(
+          simCtx,
+          centerX,
+          centerY + 12,
+          centerX + result.frictionForce * scale,
+          centerY + 12,
+          "#ff7b8e"
+        );
+
+        arrow(
+          simCtx,
+          centerX,
+          centerY - 12,
+          centerX + result.netForce * scale,
+          centerY - 12,
+          "#61e7b6"
+        );
+      }
+
+      simCtx.fillStyle = "#aebbd3";
+      simCtx.font = "12px system-ui";
+      simCtx.fillText("rough surface", 20, groundY - 12);
+    }
+
+    function graphBase(ctx, canvas, label) {
+      const { width, height } = resizeCanvas(canvas);
+      const left = 40;
+      const right = 12;
+      const top = 15;
+      const bottom = 27;
+
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = "#0c1425";
+      ctx.fillRect(0, 0, width, height);
+
+      ctx.strokeStyle = "rgba(174,187,211,0.15)";
+      ctx.lineWidth = 1;
+
+      for (let i = 0; i <= 4; i++) {
+        const y = top + i * (height - top - bottom) / 4;
+        ctx.beginPath();
+        ctx.moveTo(left, y);
+        ctx.lineTo(width - right, y);
+        ctx.stroke();
+      }
+
+      line(ctx, left, top, left, height - bottom, "rgba(174,187,211,0.55)", 1);
+      line(ctx, left, height - bottom, width - right, height - bottom, "rgba(174,187,211,0.55)", 1);
+
+      ctx.fillStyle = "#aebbd3";
+      ctx.font = "11px system-ui";
+      ctx.fillText(label, 7, 16);
+
+      return { width, height, left, right, top, bottom };
+    }
+
+    function drawSeries(ctx, points, color, mapX, mapY) {
+      if (points.length < 2) return;
+
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+
+      points.forEach((point, index) => {
+        const x = mapX(point.t);
+        const y = mapY(point.value);
+
+        if (index === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+
+      ctx.stroke();
+    }
+
+    function drawMotionGraph() {
+      const area = graphBase(motionCtx, motionGraph, "motion");
+      if (history.length < 2) return;
+
+      const start = history[0].t;
+      const duration = Math.max(history[history.length - 1].t - start, 1);
+
+      const maxPosition = Math.max(1, ...history.map(point => Math.abs(point.position)));
+      const maxVelocity = Math.max(1, ...history.map(point => Math.abs(point.velocity)));
+
+      const maxValue = Math.max(maxPosition, maxVelocity);
+      const middle = (area.top + area.height - area.bottom) / 2;
+
+      const mapX = t =>
+        area.left + (t - start) / duration * (area.width - area.left - area.right);
+
+      const mapY = value =>
+        middle - value / maxValue * ((area.height - area.top - area.bottom) / 2 - 7);
+
+      line(
+        motionCtx,
+        area.left,
+        middle,
+        area.width - area.right,
+        middle,
+        "rgba(174,187,211,0.35)"
+      );
+
+      drawSeries(
+        motionCtx,
+        history.map(point => ({ t: point.t, value: point.position })),
+        "#61b4ff",
+        mapX,
+        mapY
+      );
+
+      drawSeries(
+        motionCtx,
+        history.map(point => ({ t: point.t, value: point.velocity })),
+        "#61e7b6",
+        mapX,
+        mapY
+      );
+    }
+
+    function drawForceGraph() {
+      const area = graphBase(forceCtx, forceGraph, "force");
+      if (history.length < 2) return;
+
+      const start = history[0].t;
+      const duration = Math.max(history[history.length - 1].t - start, 1);
+
+      const maxValue = Math.max(
+        1,
+        ...history.map(point => Math.max(
+          Math.abs(point.appliedForce),
+          Math.abs(point.netForce)
+        ))
+      );
+
+      const middle = (area.top + area.height - area.bottom) / 2;
+
+      const mapX = t =>
+        area.left + (t - start) / duration * (area.width - area.left - area.right);
+
+      const mapY = value =>
+        middle - value / maxValue * ((area.height - area.top - area.bottom) / 2 - 7);
+
+      line(
+        forceCtx,
+        area.left,
+        middle,
+        area.width - area.right,
+        middle,
+        "rgba(174,187,211,0.35)"
+      );
+
+      drawSeries(
+        forceCtx,
+        history.map(point => ({ t: point.t, value: point.appliedForce })),
+        "#61b4ff",
+        mapX,
+        mapY
+      );
+
+      drawSeries(
+        forceCtx,
+        history.map(point => ({ t: point.t, value: point.netForce })),
+        "#61e7b6",
+        mapX,
+        mapY
+      );
+    }
+
+    function animate(timestamp) {
+      if (previousTimestamp === null) previousTimestamp = timestamp;
+
+      const delta = Math.min((timestamp - previousTimestamp) / 1000, 0.04);
+      previousTimestamp = timestamp;
+
+      const p = values();
+      updatePhysics(delta, p);
+      const result = calculate(p);
+
+      updateLabels(p, result);
+      drawSimulation(p, result);
+      drawMotionGraph();
+      drawForceGraph();
+
+      requestAnimationFrame(animate);
+    }
+
+    pauseButton.addEventListener("click", () => {
+      paused = !paused;
+      pauseButton.textContent = paused ? "Resume" : "Pause";
+    });
+
+    resetButton.addEventListener("click", reset);
+
+    window.addEventListener("resize", () => {
+      previousTimestamp = null;
+    });
+
+    reset();
+    requestAnimationFrame(animate);
+  </script>
+</body>
+</html>
