@@ -1,0 +1,587 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Buoyancy Lab | Physics Simulations</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121a2e;
+      --canvas: #0c1425;
+      --border: #263658;
+      --text: #f2f7ff;
+      --muted: #aebbd3;
+      --blue: #61b4ff;
+      --green: #61e7b6;
+      --red: #ff7b8e;
+      --yellow: #ffd56a;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 20% 0%, #193563 0%, transparent 32rem),
+        var(--bg);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .page {
+      width: min(1180px, calc(100% - 32px));
+      margin: auto;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 28px 0 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+    }
+
+    h2 {
+      margin: 0 0 16px;
+      font-size: 1.1rem;
+    }
+
+    .subtitle {
+      margin: 7px 0 0;
+      color: var(--muted);
+    }
+
+    .back {
+      color: var(--blue);
+      text-decoration: none;
+      white-space: nowrap;
+      padding-top: 6px;
+    }
+
+    .back:hover { text-decoration: underline; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.75fr);
+      gap: 18px;
+      padding: 22px 0 18px;
+    }
+
+    .panel {
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: rgba(18, 26, 46, 0.9);
+    }
+
+    .simulation {
+      position: relative;
+      min-height: 440px;
+    }
+
+    #simCanvas {
+      display: block;
+      width: 100%;
+      height: 440px;
+      background: var(--canvas);
+    }
+
+    .canvas-label {
+      position: absolute;
+      top: 12px;
+      left: 14px;
+      color: var(--muted);
+      font-size: 0.84rem;
+      pointer-events: none;
+    }
+
+    .controls { padding: 20px; }
+    .control { margin-bottom: 19px; }
+
+    label {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    output {
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      cursor: pointer;
+      accent-color: var(--blue);
+    }
+
+    select {
+      width: 100%;
+      padding: 10px;
+      color: var(--text);
+      background: var(--canvas);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      font: inherit;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 5px 0 20px;
+    }
+
+    button {
+      cursor: pointer;
+      border: 0;
+      border-radius: 9px;
+      padding: 10px 14px;
+      color: #08101c;
+      background: linear-gradient(135deg, var(--blue), var(--green));
+      font: inherit;
+      font-weight: 750;
+    }
+
+    button.secondary {
+      color: var(--text);
+      border: 1px solid var(--border);
+      background: transparent;
+    }
+
+    .checks {
+      display: grid;
+      gap: 10px;
+    }
+
+    .checks label {
+      justify-content: flex-start;
+      align-items: center;
+      margin: 0;
+      cursor: pointer;
+    }
+
+    .checks input { accent-color: var(--blue); }
+
+    .readouts {
+      margin-top: 22px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--canvas);
+    }
+
+    .readouts h3 {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .readouts p {
+      display: flex;
+      justify-content: space-between;
+      margin: 6px 0;
+      font-size: 0.92rem;
+    }
+
+    .readouts strong { font-variant-numeric: tabular-nums; }
+
+    @media (max-width: 850px) {
+      header { flex-direction: column; }
+      .layout { grid-template-columns: 1fr; }
+      #simCanvas { height: 360px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div>
+        <h1>Buoyancy Lab</h1>
+        <p class="subtitle">Change the object and fluid properties to investigate floating, sinking, displacement, and Archimedes’ principle.</p>
+      </div>
+      <a class="back" href="index.html">← All simulations</a>
+    </header>
+
+    <main class="layout">
+      <section class="panel simulation">
+        <canvas id="simCanvas"></canvas>
+        <div class="canvas-label">Blue arrow: buoyant force · Yellow arrow: weight</div>
+      </section>
+
+      <aside class="panel controls">
+        <h2>Object controls</h2>
+
+        <div class="control">
+          <label for="objectDensity">
+            <span>Object density</span>
+            <output id="objectDensityOut">700 kg/m³</output>
+          </label>
+          <input id="objectDensity" type="range" min="100" max="3000" value="700" step="50">
+        </div>
+
+        <div class="control">
+          <label for="volume">
+            <span>Object volume</span>
+            <output id="volumeOut">1.0 m³</output>
+          </label>
+          <input id="volume" type="range" min="0.2" max="3" value="1" step="0.1">
+        </div>
+
+        <div class="control">
+          <label for="fluidDensity">
+            <span>Fluid density</span>
+            <output id="fluidDensityOut">1000 kg/m³</output>
+          </label>
+          <input id="fluidDensity" type="range" min="500" max="1800" value="1000" step="50">
+        </div>
+
+        <div class="control">
+          <label for="gravity">
+            <span>Gravity</span>
+            <output id="gravityOut">9.81 m/s²</output>
+          </label>
+          <input id="gravity" type="range" min="1" max="20" value="9.81" step="0.01">
+        </div>
+
+        <div class="actions">
+          <button id="dropButton" type="button">Drop object</button>
+          <button id="resetButton" class="secondary" type="button">Reset</button>
+        </div>
+
+        <div class="checks">
+          <label><input id="vectors" type="checkbox" checked> Show force vectors</label>
+          <label><input id="waterline" type="checkbox" checked> Show waterline</label>
+        </div>
+
+        <section class="readouts">
+          <h3>Live readouts</h3>
+          <p><span>Object mass</span><strong id="massOut">0.0 kg</strong></p>
+          <p><span>Object weight</span><strong id="weightOut">0.0 N</strong></p>
+          <p><span>Buoyant force</span><strong id="buoyantOut">0.0 N</strong></p>
+          <p><span>Submerged volume</span><strong id="submergedOut">0.00 m³</strong></p>
+          <p><span>Result</span><strong id="resultOut">Floating</strong></p>
+        </section>
+      </aside>
+    </main>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("simCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const objectDensityInput = document.getElementById("objectDensity");
+    const volumeInput = document.getElementById("volume");
+    const fluidDensityInput = document.getElementById("fluidDensity");
+    const gravityInput = document.getElementById("gravity");
+    const vectorsInput = document.getElementById("vectors");
+    const waterlineInput = document.getElementById("waterline");
+
+    const objectDensityOut = document.getElementById("objectDensityOut");
+    const volumeOut = document.getElementById("volumeOut");
+    const fluidDensityOut = document.getElementById("fluidDensityOut");
+    const gravityOut = document.getElementById("gravityOut");
+
+    const massOut = document.getElementById("massOut");
+    const weightOut = document.getElementById("weightOut");
+    const buoyantOut = document.getElementById("buoyantOut");
+    const submergedOut = document.getElementById("submergedOut");
+    const resultOut = document.getElementById("resultOut");
+
+    const dropButton = document.getElementById("dropButton");
+    const resetButton = document.getElementById("resetButton");
+
+    let y = 0.34;
+    let velocity = 0;
+    let falling = false;
+    let previousTimestamp = null;
+
+    function values() {
+      return {
+        objectDensity: Number(objectDensityInput.value),
+        volume: Number(volumeInput.value),
+        fluidDensity: Number(fluidDensityInput.value),
+        gravity: Number(gravityInput.value)
+      };
+    }
+
+    function reset() {
+      y = 0.24;
+      velocity = 0;
+      falling = false;
+    }
+
+    function resizeCanvas() {
+      const ratio = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+
+      canvas.width = Math.round(rect.width * ratio);
+      canvas.height = Math.round(rect.height * ratio);
+
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+
+      return { width: rect.width, height: rect.height };
+    }
+
+    function arrow(x1, y1, x2, y2, colour) {
+      const head = 8;
+      const angle = Math.atan2(y2 - y1, x2 - x1);
+
+      ctx.strokeStyle = colour;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+
+      ctx.fillStyle = colour;
+      ctx.beginPath();
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(
+        x2 - head * Math.cos(angle - Math.PI / 6),
+        y2 - head * Math.sin(angle - Math.PI / 6)
+      );
+      ctx.lineTo(
+        x2 - head * Math.cos(angle + Math.PI / 6),
+        y2 - head * Math.sin(angle + Math.PI / 6)
+      );
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function calculate(v, objectTop, objectBottom, waterY, objectHeight) {
+      const mass = v.objectDensity * v.volume;
+      const weight = mass * v.gravity;
+
+      const submergedHeight = Math.max(
+        0,
+        Math.min(objectBottom, 1) - Math.max(objectTop, waterY)
+      );
+
+      const fractionSubmerged = Math.max(
+        0,
+        Math.min(1, submergedHeight / objectHeight)
+      );
+
+      const submergedVolume = v.volume * fractionSubmerged;
+      const buoyantForce = v.fluidDensity * v.gravity * submergedVolume;
+
+      return { mass, weight, submergedVolume, buoyantForce, fractionSubmerged };
+    }
+
+    function updatePhysics(delta, v) {
+      if (!falling) return;
+
+      const objectHeight = 0.18 + Math.cbrt(v.volume) * 0.12;
+      const waterY = 0.50;
+      const objectTop = y - objectHeight / 2;
+      const objectBottom = y + objectHeight / 2;
+
+      const result = calculate(v, objectTop, objectBottom, waterY, objectHeight);
+      const force = result.buoyantForce - result.weight;
+      const acceleration = force / result.mass;
+
+      velocity += acceleration * delta;
+      velocity *= 0.996;
+      y += velocity * delta;
+
+      const targetFraction = Math.min(1, v.objectDensity / v.fluidDensity);
+
+      if (v.objectDensity < v.fluidDensity) {
+        const targetY = waterY + objectHeight / 2 - targetFraction * objectHeight;
+
+        if (Math.abs(y - targetY) < 0.002 && Math.abs(velocity) < 0.025) {
+          y = targetY;
+          velocity = 0;
+          falling = false;
+        }
+      } else {
+        const bottomLimit = 0.89 - objectHeight / 2;
+
+        if (y > bottomLimit) {
+          y = bottomLimit;
+          velocity = 0;
+          falling = false;
+        }
+      }
+    }
+
+    function draw(v) {
+      const { width, height } = resizeCanvas();
+      const waterTop = height * 0.50;
+      const tankLeft = width * 0.19;
+      const tankRight = width * 0.81;
+      const tankBottom = height * 0.89;
+
+      const objectWidth = 72 + Math.cbrt(v.volume) * 28;
+      const objectHeight = 55 + Math.cbrt(v.volume) * 30;
+      const objectX = width / 2 - objectWidth / 2;
+      const objectY = y * height - objectHeight / 2;
+
+      const objectTopNormalized = (objectY / height);
+      const objectBottomNormalized = ((objectY + objectHeight) / height);
+      const waterNormalized = waterTop / height;
+
+      const c = calculate(
+        v,
+        objectTopNormalized,
+        objectBottomNormalized,
+        waterNormalized,
+        objectHeight / height
+      );
+
+      objectDensityOut.textContent = `${v.objectDensity.toFixed(0)} kg/m³`;
+      volumeOut.textContent = `${v.volume.toFixed(1)} m³`;
+      fluidDensityOut.textContent = `${v.fluidDensity.toFixed(0)} kg/m³`;
+      gravityOut.textContent = `${v.gravity.toFixed(2)} m/s²`;
+
+      massOut.textContent = `${c.mass.toFixed(1)} kg`;
+      weightOut.textContent = `${c.weight.toFixed(1)} N`;
+      buoyantOut.textContent = `${c.buoyantForce.toFixed(1)} N`;
+      submergedOut.textContent = `${c.submergedVolume.toFixed(2)} m³`;
+
+      if (v.objectDensity < v.fluidDensity) {
+        resultOut.textContent = "Floating";
+      } else if (v.objectDensity === v.fluidDensity) {
+        resultOut.textContent = "Neutrally buoyant";
+      } else {
+        resultOut.textContent = "Sinking";
+      }
+
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = "#0c1425";
+      ctx.fillRect(0, 0, width, height);
+
+      ctx.strokeStyle = "rgba(174,187,211,0.12)";
+      ctx.lineWidth = 1;
+
+      for (let x = 0; x < width; x += 45) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, height);
+        ctx.stroke();
+      }
+
+      ctx.fillStyle = "rgba(97, 180, 255, 0.30)";
+      ctx.fillRect(tankLeft, waterTop, tankRight - tankLeft, tankBottom - waterTop);
+
+      if (waterlineInput.checked) {
+        ctx.strokeStyle = "#61b4ff";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(tankLeft, waterTop);
+        ctx.lineTo(tankRight, waterTop);
+        ctx.stroke();
+      }
+
+      ctx.strokeStyle = "#aebbd3";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(tankLeft, height * 0.16);
+      ctx.lineTo(tankLeft, tankBottom);
+      ctx.lineTo(tankRight, tankBottom);
+      ctx.lineTo(tankRight, height * 0.16);
+      ctx.stroke();
+
+      const objectColour =
+        v.objectDensity < v.fluidDensity ? "#61e7b6" :
+        v.objectDensity > v.fluidDensity ? "#ff7b8e" :
+        "#ffd56a";
+
+      ctx.fillStyle = objectColour;
+      ctx.fillRect(objectX, objectY, objectWidth, objectHeight);
+
+      ctx.strokeStyle = "#06101d";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(objectX, objectY, objectWidth, objectHeight);
+
+      const submergedPixels = Math.max(
+        0,
+        Math.min(objectY + objectHeight, waterTop + (tankBottom - waterTop)) - Math.max(objectY, waterTop)
+      );
+
+      if (submergedPixels > 0) {
+        ctx.fillStyle = "rgba(97, 180, 255, 0.25)";
+        ctx.fillRect(objectX, Math.max(objectY, waterTop), objectWidth, submergedPixels);
+      }
+
+      ctx.fillStyle = "#f2f7ff";
+      ctx.font = "13px system-ui";
+      ctx.fillText("object", objectX + 13, objectY + objectHeight / 2 + 5);
+
+      if (vectorsInput.checked) {
+        const centerX = objectX + objectWidth / 2;
+        const centerY = objectY + objectHeight / 2;
+        const scale = 0.022;
+
+        arrow(
+          centerX,
+          centerY,
+          centerX,
+          centerY - c.buoyantForce * scale,
+          "#61b4ff"
+        );
+
+        arrow(
+          centerX + 18,
+          centerY,
+          centerX + 18,
+          centerY + c.weight * scale,
+          "#ffd56a"
+        );
+      }
+
+      ctx.fillStyle = "#aebbd3";
+      ctx.font = "12px system-ui";
+      ctx.fillText("fluid", tankLeft + 12, waterTop + 24);
+    }
+
+    function animate(timestamp) {
+      if (previousTimestamp === null) previousTimestamp = timestamp;
+
+      const delta = Math.min((timestamp - previousTimestamp) / 1000, 0.04);
+      previousTimestamp = timestamp;
+
+      const v = values();
+      updatePhysics(delta, v);
+      draw(v);
+
+      requestAnimationFrame(animate);
+    }
+
+    dropButton.addEventListener("click", () => {
+      falling = true;
+      velocity = 0;
+    });
+
+    resetButton.addEventListener("click", reset);
+
+    [
+      objectDensityInput,
+      volumeInput,
+      fluidDensityInput,
+      gravityInput,
+      vectorsInput,
+      waterlineInput
+    ].forEach(input => input.addEventListener("input", () => {
+      if (!falling) reset();
+    }));
+
+    window.addEventListener("resize", () => {
+      previousTimestamp = null;
+    });
+
+    reset();
+    requestAnimationFrame(animate);
+  </script>
+</body>
+</html>
