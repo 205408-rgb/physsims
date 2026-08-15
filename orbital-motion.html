@@ -1,0 +1,735 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Orbital Motion | Physics Simulations</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121a2e;
+      --canvas: #080d1a;
+      --border: #263658;
+      --text: #f2f7ff;
+      --muted: #aebbd3;
+      --blue: #61b4ff;
+      --green: #61e7b6;
+      --red: #ff7b8e;
+      --yellow: #ffd56a;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 20% 0%, #193563 0%, transparent 32rem),
+        var(--bg);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .page {
+      width: min(1180px, calc(100% - 32px));
+      margin: auto;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 28px 0 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+    }
+
+    h2 {
+      margin: 0 0 16px;
+      font-size: 1.1rem;
+    }
+
+    .subtitle {
+      margin: 7px 0 0;
+      color: var(--muted);
+    }
+
+    .back {
+      color: var(--blue);
+      text-decoration: none;
+      white-space: nowrap;
+      padding-top: 6px;
+    }
+
+    .back:hover { text-decoration: underline; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.75fr);
+      gap: 18px;
+      padding: 22px 0 18px;
+    }
+
+    .panel {
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: rgba(18, 26, 46, 0.9);
+    }
+
+    .simulation {
+      position: relative;
+      min-height: 440px;
+    }
+
+    #simCanvas {
+      display: block;
+      width: 100%;
+      height: 440px;
+      background: var(--canvas);
+    }
+
+    .canvas-label {
+      position: absolute;
+      top: 12px;
+      left: 14px;
+      color: var(--muted);
+      font-size: 0.84rem;
+      pointer-events: none;
+    }
+
+    .controls { padding: 20px; }
+
+    .control { margin-bottom: 19px; }
+
+    label {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    output {
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      cursor: pointer;
+      accent-color: var(--blue);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 5px 0 20px;
+    }
+
+    button {
+      cursor: pointer;
+      border: 0;
+      border-radius: 9px;
+      padding: 10px 14px;
+      color: #08101c;
+      background: linear-gradient(135deg, var(--blue), var(--green));
+      font: inherit;
+      font-weight: 750;
+    }
+
+    button.secondary {
+      color: var(--text);
+      border: 1px solid var(--border);
+      background: transparent;
+    }
+
+    .checks {
+      display: grid;
+      gap: 10px;
+    }
+
+    .checks label {
+      justify-content: flex-start;
+      align-items: center;
+      margin: 0;
+      cursor: pointer;
+    }
+
+    .checks input { accent-color: var(--blue); }
+
+    .readouts {
+      margin-top: 22px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--canvas);
+    }
+
+    .readouts h3 {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .readouts p {
+      display: flex;
+      justify-content: space-between;
+      margin: 6px 0;
+      font-size: 0.92rem;
+    }
+
+    .readouts strong { font-variant-numeric: tabular-nums; }
+
+    .graphs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      padding-bottom: 40px;
+    }
+
+    .graph { padding: 14px; }
+
+    .graph h2 {
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .graph canvas {
+      display: block;
+      width: 100%;
+      height: 205px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--canvas);
+    }
+
+    .legend {
+      display: flex;
+      gap: 14px;
+      margin-top: 9px;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .blue { color: var(--blue); }
+    .green { color: var(--green); }
+    .yellow { color: var(--yellow); }
+
+    @media (max-width: 850px) {
+      header { flex-direction: column; }
+      .layout, .graphs { grid-template-columns: 1fr; }
+      #simCanvas { height: 360px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div>
+        <h1>Orbital Motion</h1>
+        <p class="subtitle">Change the starting conditions and observe circular, elliptical, escape, and collision paths.</p>
+      </div>
+      <a class="back" href="index.html">← All simulations</a>
+    </header>
+
+    <main class="layout">
+      <section class="panel simulation">
+        <canvas id="simCanvas"></canvas>
+        <div class="canvas-label">Green: velocity vector · Blue: orbital trail</div>
+      </section>
+
+      <aside class="panel controls">
+        <h2>Controls</h2>
+
+        <div class="control">
+          <label for="centralMass">
+            <span>Central mass</span>
+            <output id="centralMassOut">100</output>
+          </label>
+          <input id="centralMass" type="range" min="20" max="300" value="100" step="10">
+        </div>
+
+        <div class="control">
+          <label for="distance">
+            <span>Starting distance</span>
+            <output id="distanceOut">160</output>
+          </label>
+          <input id="distance" type="range" min="80" max="260" value="160" step="5">
+        </div>
+
+        <div class="control">
+          <label for="speed">
+            <span>Starting speed</span>
+            <output id="speedOut">0.80</output>
+          </label>
+          <input id="speed" type="range" min="0.1" max="2.2" value="0.8" step="0.05">
+        </div>
+
+        <div class="control">
+          <label for="angle">
+            <span>Velocity angle</span>
+            <output id="angleOut">90°</output>
+          </label>
+          <input id="angle" type="range" min="0" max="180" value="90" step="1">
+        </div>
+
+        <div class="actions">
+          <button id="restartButton" type="button">Restart orbit</button>
+          <button id="pauseButton" class="secondary" type="button">Pause</button>
+          <button id="clearButton" class="secondary" type="button">Clear trail</button>
+        </div>
+
+        <div class="checks">
+          <label><input id="trails" type="checkbox" checked> Show orbital trail</label>
+          <label><input id="vectors" type="checkbox" checked> Show velocity vector</label>
+        </div>
+
+        <section class="readouts">
+          <h3>Live readouts</h3>
+          <p><span>Simulation time</span><strong id="timeOut">0.0 s</strong></p>
+          <p><span>Distance from star</span><strong id="distanceLiveOut">0.0</strong></p>
+          <p><span>Orbital speed</span><strong id="speedLiveOut">0.00</strong></p>
+          <p><span>Total energy</span><strong id="energyOut">0.000</strong></p>
+          <p><span>Orbit status</span><strong id="statusOut">Ready</strong></p>
+        </section>
+      </aside>
+    </main>
+
+    <section class="graphs">
+      <section class="panel graph">
+        <h2>Distance from central mass</h2>
+        <canvas id="distanceGraph"></canvas>
+        <div class="legend"><span class="blue">● distance r(t)</span></div>
+      </section>
+
+      <section class="panel graph">
+        <h2>Orbital speed</h2>
+        <canvas id="speedGraph"></canvas>
+        <div class="legend"><span class="green">● speed v(t)</span></div>
+      </section>
+    </section>
+  </div>
+
+  <script>
+    const simCanvas = document.getElementById("simCanvas");
+    const simCtx = simCanvas.getContext("2d");
+    const distanceGraph = document.getElementById("distanceGraph");
+    const distanceCtx = distanceGraph.getContext("2d");
+    const speedGraph = document.getElementById("speedGraph");
+    const speedCtx = speedGraph.getContext("2d");
+
+    const centralMassInput = document.getElementById("centralMass");
+    const distanceInput = document.getElementById("distance");
+    const speedInput = document.getElementById("speed");
+    const angleInput = document.getElementById("angle");
+    const trailsInput = document.getElementById("trails");
+    const vectorsInput = document.getElementById("vectors");
+
+    const centralMassOut = document.getElementById("centralMassOut");
+    const distanceOut = document.getElementById("distanceOut");
+    const speedOut = document.getElementById("speedOut");
+    const angleOut = document.getElementById("angleOut");
+
+    const restartButton = document.getElementById("restartButton");
+    const pauseButton = document.getElementById("pauseButton");
+    const clearButton = document.getElementById("clearButton");
+
+    const timeOut = document.getElementById("timeOut");
+    const distanceLiveOut = document.getElementById("distanceLiveOut");
+    const speedLiveOut = document.getElementById("speedLiveOut");
+    const energyOut = document.getElementById("energyOut");
+    const statusOut = document.getElementById("statusOut");
+
+    const G = 1;
+    const bodyMass = 1;
+
+    let body;
+    let time = 0;
+    let trail = [];
+    let history = [];
+    let paused = false;
+    let status = "Orbiting";
+    let lastTimestamp = null;
+
+    function values() {
+      return {
+        mass: Number(centralMassInput.value),
+        distance: Number(distanceInput.value),
+        speed: Number(speedInput.value),
+        angle: Number(angleInput.value)
+      };
+    }
+
+    function restart() {
+      const v = values();
+      const angleRadians = v.angle * Math.PI / 180;
+
+      body = {
+        x: v.distance,
+        y: 0,
+        vx: v.speed * Math.cos(angleRadians),
+        vy: v.speed * Math.sin(angleRadians)
+      };
+
+      time = 0;
+      trail = [{ x: body.x, y: body.y }];
+      history = [];
+      paused = false;
+      status = "Orbiting";
+      pauseButton.textContent = "Pause";
+    }
+
+    function resizeCanvas(canvas) {
+      const ratio = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = Math.round(rect.width * ratio);
+      canvas.height = Math.round(rect.height * ratio);
+      const context = canvas.getContext("2d");
+      context.setTransform(ratio, 0, 0, ratio, 0, 0);
+      return { width: rect.width, height: rect.height };
+    }
+
+    function line(ctx, x1, y1, x2, y2, color, width = 1) {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+    }
+
+    function arrow(ctx, x1, y1, x2, y2, color) {
+      const head = 8;
+      const angle = Math.atan2(y2 - y1, x2 - x1);
+
+      line(ctx, x1, y1, x2, y2, color, 2);
+
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(
+        x2 - head * Math.cos(angle - Math.PI / 6),
+        y2 - head * Math.sin(angle - Math.PI / 6)
+      );
+      ctx.lineTo(
+        x2 - head * Math.cos(angle + Math.PI / 6),
+        y2 - head * Math.sin(angle + Math.PI / 6)
+      );
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function physics(delta, v) {
+      if (paused || status === "Collision" || status === "Escaped") return;
+
+      const steps = Math.max(1, Math.ceil(delta / 0.008));
+      const dt = delta / steps;
+
+      for (let i = 0; i < steps; i++) {
+        const rSquared = body.x * body.x + body.y * body.y;
+        const r = Math.sqrt(rSquared);
+
+        if (r < 13) {
+          status = "Collision";
+          break;
+        }
+
+        if (r > 2000) {
+          status = "Escaped";
+          break;
+        }
+
+        const acceleration = G * v.mass / rSquared;
+        const ax = -acceleration * body.x / r;
+        const ay = -acceleration * body.y / r;
+
+        body.vx += ax * dt;
+        body.vy += ay * dt;
+        body.x += body.vx * dt;
+        body.y += body.vy * dt;
+        time += dt;
+      }
+
+      const r = Math.hypot(body.x, body.y);
+      const speed = Math.hypot(body.vx, body.vy);
+      const totalEnergy = 0.5 * bodyMass * speed * speed - G * v.mass * bodyMass / r;
+
+      if (history.length === 0 || time - history[history.length - 1].t > 0.05) {
+        history.push({ t: time, r, speed });
+        trail.push({ x: body.x, y: body.y });
+      }
+
+      if (trail.length > 2400) trail.shift();
+      history = history.filter(point => point.t >= time - 25);
+
+      if (totalEnergy > 0 && status === "Orbiting") {
+        status = "Escape trajectory";
+      }
+    }
+
+    function labels(v) {
+      const r = Math.hypot(body.x, body.y);
+      const speed = Math.hypot(body.vx, body.vy);
+      const totalEnergy = 0.5 * speed * speed - G * v.mass / r;
+
+      centralMassOut.textContent = v.mass.toFixed(0);
+      distanceOut.textContent = v.distance.toFixed(0);
+      speedOut.textContent = v.speed.toFixed(2);
+      angleOut.textContent = `${v.angle.toFixed(0)}°`;
+
+      timeOut.textContent = `${time.toFixed(1)} s`;
+      distanceLiveOut.textContent = r.toFixed(1);
+      speedLiveOut.textContent = speed.toFixed(2);
+      energyOut.textContent = totalEnergy.toFixed(3);
+      statusOut.textContent = status;
+    }
+
+    function drawSpace(v) {
+      const { width, height } = resizeCanvas(simCanvas);
+      const centerX = width / 2;
+      const centerY = height / 2;
+
+      const maxDistance = Math.max(
+        v.distance * 1.35,
+        Math.hypot(body.x, body.y) * 1.25,
+        ...trail.map(point => Math.hypot(point.x, point.y) * 1.15),
+        200
+      );
+
+      const scale = Math.min(width, height) * 0.43 / maxDistance;
+      const mapX = x => centerX + x * scale;
+      const mapY = y => centerY + y * scale;
+
+      simCtx.clearRect(0, 0, width, height);
+      simCtx.fillStyle = "#080d1a";
+      simCtx.fillRect(0, 0, width, height);
+
+      for (let i = 0; i < 75; i++) {
+        const x = (i * 97) % width;
+        const y = (i * 173) % height;
+        const size = i % 6 === 0 ? 1.7 : 0.8;
+        simCtx.fillStyle = i % 9 === 0 ? "#61b4ff" : "rgba(242,247,255,0.65)";
+        simCtx.beginPath();
+        simCtx.arc(x, y, size, 0, Math.PI * 2);
+        simCtx.fill();
+      }
+
+      if (trailsInput.checked && trail.length > 1) {
+        simCtx.strokeStyle = "rgba(97, 180, 255, 0.65)";
+        simCtx.lineWidth = 1.5;
+        simCtx.beginPath();
+
+        trail.forEach((point, index) => {
+          const x = mapX(point.x);
+          const y = mapY(point.y);
+
+          if (index === 0) simCtx.moveTo(x, y);
+          else simCtx.lineTo(x, y);
+        });
+
+        simCtx.stroke();
+      }
+
+      const starRadius = 10 + Math.sqrt(v.mass) * 0.8;
+
+      const glow = simCtx.createRadialGradient(
+        centerX,
+        centerY,
+        0,
+        centerX,
+        centerY,
+        starRadius * 3
+      );
+
+      glow.addColorStop(0, "rgba(255, 213, 106, 0.95)");
+      glow.addColorStop(0.3, "rgba(255, 170, 60, 0.35)");
+      glow.addColorStop(1, "rgba(255, 170, 60, 0)");
+
+      simCtx.fillStyle = glow;
+      simCtx.beginPath();
+      simCtx.arc(centerX, centerY, starRadius * 3, 0, Math.PI * 2);
+      simCtx.fill();
+
+      simCtx.fillStyle = "#ffd56a";
+      simCtx.beginPath();
+      simCtx.arc(centerX, centerY, starRadius, 0, Math.PI * 2);
+      simCtx.fill();
+
+      const bodyX = mapX(body.x);
+      const bodyY = mapY(body.y);
+
+      simCtx.fillStyle = "#61b4ff";
+      simCtx.beginPath();
+      simCtx.arc(bodyX, bodyY, 7, 0, Math.PI * 2);
+      simCtx.fill();
+
+      simCtx.strokeStyle = "#06101d";
+      simCtx.lineWidth = 2;
+      simCtx.stroke();
+
+      if (vectorsInput.checked) {
+        const velocityScale = Math.min(20, scale * 13);
+        arrow(
+          simCtx,
+          bodyX,
+          bodyY,
+          bodyX + body.vx * velocityScale,
+          bodyY + body.vy * velocityScale,
+          "#61e7b6"
+        );
+      }
+
+      simCtx.fillStyle = "#aebbd3";
+      simCtx.font = "12px system-ui";
+      simCtx.fillText("central mass", centerX - 34, centerY + starRadius + 20);
+      simCtx.fillText(status, 18, height - 20);
+    }
+
+    function graphBase(ctx, canvas, label) {
+      const { width, height } = resizeCanvas(canvas);
+      const left = 40;
+      const right = 12;
+      const top = 15;
+      const bottom = 27;
+
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = "#080d1a";
+      ctx.fillRect(0, 0, width, height);
+
+      ctx.strokeStyle = "rgba(174,187,211,0.15)";
+      ctx.lineWidth = 1;
+
+      for (let i = 0; i <= 4; i++) {
+        const y = top + i * (height - top - bottom) / 4;
+        ctx.beginPath();
+        ctx.moveTo(left, y);
+        ctx.lineTo(width - right, y);
+        ctx.stroke();
+      }
+
+      line(ctx, left, top, left, height - bottom, "rgba(174,187,211,0.55)", 1);
+      line(ctx, left, height - bottom, width - right, height - bottom, "rgba(174,187,211,0.55)", 1);
+
+      ctx.fillStyle = "#aebbd3";
+      ctx.font = "11px system-ui";
+      ctx.fillText(label, 7, 16);
+
+      return { width, height, left, right, top, bottom };
+    }
+
+    function drawSeries(ctx, series, color, mapX, mapY) {
+      if (series.length < 2) return;
+
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+
+      series.forEach((point, index) => {
+        const x = mapX(point.t);
+        const y = mapY(point.value);
+
+        if (index === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+
+      ctx.stroke();
+    }
+
+    function drawDistanceGraph() {
+      const area = graphBase(distanceCtx, distanceGraph, "distance");
+      if (history.length < 2) return;
+
+      const start = history[0].t;
+      const duration = Math.max(history[history.length - 1].t - start, 1);
+      const maxValue = Math.max(1, ...history.map(point => point.r));
+
+      const mapX = t => area.left +
+        (t - start) / duration * (area.width - area.left - area.right);
+
+      const mapY = value => area.height - area.bottom -
+        value / maxValue * (area.height - area.top - area.bottom);
+
+      drawSeries(
+        distanceCtx,
+        history.map(point => ({ t: point.t, value: point.r })),
+        "#61b4ff",
+        mapX,
+        mapY
+      );
+
+      distanceCtx.fillStyle = "#aebbd3";
+      distanceCtx.font = "11px system-ui";
+      distanceCtx.fillText("time", area.width - 33, area.height - 8);
+    }
+
+    function drawSpeedGraph() {
+      const area = graphBase(speedCtx, speedGraph, "speed");
+      if (history.length < 2) return;
+
+      const start = history[0].t;
+      const duration = Math.max(history[history.length - 1].t - start, 1);
+      const maxValue = Math.max(0.1, ...history.map(point => point.speed));
+
+      const mapX = t => area.left +
+        (t - start) / duration * (area.width - area.left - area.right);
+
+      const mapY = value => area.height - area.bottom -
+        value / maxValue * (area.height - area.top - area.bottom);
+
+      drawSeries(
+        speedCtx,
+        history.map(point => ({ t: point.t, value: point.speed })),
+        "#61e7b6",
+        mapX,
+        mapY
+      );
+
+      speedCtx.fillStyle = "#aebbd3";
+      speedCtx.font = "11px system-ui";
+      speedCtx.fillText("time", area.width - 33, area.height - 8);
+    }
+
+    function frame(timestamp) {
+      if (lastTimestamp === null) lastTimestamp = timestamp;
+
+      const delta = Math.min((timestamp - lastTimestamp) / 1000, 0.04);
+      lastTimestamp = timestamp;
+
+      const v = values();
+      physics(delta, v);
+      labels(v);
+      drawSpace(v);
+      drawDistanceGraph();
+      drawSpeedGraph();
+
+      requestAnimationFrame(frame);
+    }
+
+    restartButton.addEventListener("click", restart);
+
+    pauseButton.addEventListener("click", () => {
+      paused = !paused;
+      pauseButton.textContent = paused ? "Resume" : "Pause";
+    });
+
+    clearButton.addEventListener("click", () => {
+      trail = [{ x: body.x, y: body.y }];
+      history = [];
+    });
+
+    window.addEventListener("resize", () => {
+      lastTimestamp = null;
+    });
+
+    restart();
+    requestAnimationFrame(frame);
+  </script>
+</body>
+</html>
