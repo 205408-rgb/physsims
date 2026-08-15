@@ -1,0 +1,621 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Electric Fields & Charges | Physics Simulations</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121a2e;
+      --canvas: #0c1425;
+      --border: #263658;
+      --text: #f2f7ff;
+      --muted: #aebbd3;
+      --blue: #61b4ff;
+      --green: #61e7b6;
+      --red: #ff7b8e;
+      --yellow: #ffd56a;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 20% 0%, #193563 0%, transparent 32rem),
+        var(--bg);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .page {
+      width: min(1180px, calc(100% - 32px));
+      margin: auto;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 28px 0 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    h1 { margin: 0; font-size: clamp(1.8rem, 4vw, 2.6rem); }
+    h2 { margin: 0 0 16px; font-size: 1.1rem; }
+
+    .subtitle {
+      margin: 7px 0 0;
+      color: var(--muted);
+    }
+
+    .back {
+      color: var(--blue);
+      text-decoration: none;
+      white-space: nowrap;
+      padding-top: 6px;
+    }
+
+    .back:hover { text-decoration: underline; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.75fr);
+      gap: 18px;
+      padding: 22px 0 18px;
+    }
+
+    .panel {
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: rgba(18, 26, 46, 0.9);
+    }
+
+    .simulation {
+      position: relative;
+      min-height: 440px;
+    }
+
+    #simCanvas {
+      display: block;
+      width: 100%;
+      height: 440px;
+      background: var(--canvas);
+      touch-action: none;
+      cursor: crosshair;
+    }
+
+    .canvas-label {
+      position: absolute;
+      top: 12px;
+      left: 14px;
+      color: var(--muted);
+      font-size: 0.84rem;
+      pointer-events: none;
+    }
+
+    .controls { padding: 20px; }
+    .control { margin-bottom: 19px; }
+
+    label {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    output {
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      cursor: pointer;
+      accent-color: var(--blue);
+    }
+
+    select {
+      width: 100%;
+      padding: 10px;
+      color: var(--text);
+      background: var(--canvas);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      font: inherit;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 5px 0 20px;
+    }
+
+    button {
+      cursor: pointer;
+      border: 0;
+      border-radius: 9px;
+      padding: 10px 14px;
+      color: #08101c;
+      background: linear-gradient(135deg, var(--blue), var(--green));
+      font: inherit;
+      font-weight: 750;
+    }
+
+    button.secondary {
+      color: var(--text);
+      border: 1px solid var(--border);
+      background: transparent;
+    }
+
+    .checks {
+      display: grid;
+      gap: 10px;
+    }
+
+    .checks label {
+      justify-content: flex-start;
+      align-items: center;
+      margin: 0;
+      cursor: pointer;
+    }
+
+    .checks input { accent-color: var(--blue); }
+
+    .readouts {
+      margin-top: 22px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--canvas);
+    }
+
+    .readouts h3 {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .readouts p {
+      display: flex;
+      justify-content: space-between;
+      margin: 6px 0;
+      font-size: 0.92rem;
+    }
+
+    .readouts strong { font-variant-numeric: tabular-nums; }
+
+    .help {
+      margin: 18px 0 0;
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.45;
+    }
+
+    @media (max-width: 850px) {
+      header { flex-direction: column; }
+      .layout { grid-template-columns: 1fr; }
+      #simCanvas { height: 360px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div>
+        <h1>Electric Fields & Charges</h1>
+        <p class="subtitle">Add charges, drag them on the field map, and observe the electric field and force on a test charge.</p>
+      </div>
+      <a class="back" href="index.html">← All simulations</a>
+    </header>
+
+    <main class="layout">
+      <section class="panel simulation">
+        <canvas id="simCanvas"></canvas>
+        <div class="canvas-label">Click to add a charge · Drag a charge to move it</div>
+      </section>
+
+      <aside class="panel controls">
+        <h2>Charge controls</h2>
+
+        <div class="control">
+          <label for="newCharge">
+            <span>New charge type</span>
+          </label>
+          <select id="newCharge">
+            <option value="1">Positive (+)</option>
+            <option value="-1">Negative (−)</option>
+          </select>
+        </div>
+
+        <div class="control">
+          <label for="strength">
+            <span>New charge strength</span>
+            <output id="strengthOut">1.0</output>
+          </label>
+          <input id="strength" type="range" min="0.5" max="3" value="1" step="0.5">
+        </div>
+
+        <div class="control">
+          <label for="testCharge">
+            <span>Test charge</span>
+            <output id="testChargeOut">+1.0</output>
+          </label>
+          <input id="testCharge" type="range" min="-2" max="2" value="1" step="0.5">
+        </div>
+
+        <div class="actions">
+          <button id="presetButton" type="button">Dipole preset</button>
+          <button id="clearButton" class="secondary" type="button">Clear charges</button>
+        </div>
+
+        <div class="checks">
+          <label><input id="fieldArrows" type="checkbox" checked> Show field arrows</label>
+          <label><input id="fieldLines" type="checkbox"> Show approximate field lines</label>
+          <label><input id="testMarker" type="checkbox" checked> Show test charge at centre</label>
+        </div>
+
+        <section class="readouts">
+          <h3>Centre readout</h3>
+          <p><span>Electric-field x</span><strong id="exOut">0.00</strong></p>
+          <p><span>Electric-field y</span><strong id="eyOut">0.00</strong></p>
+          <p><span>Field magnitude</span><strong id="fieldOut">0.00</strong></p>
+          <p><span>Force on test charge</span><strong id="forceOut">0.00</strong></p>
+          <p><span>Charges placed</span><strong id="countOut">0</strong></p>
+        </section>
+
+        <p class="help">
+          This uses a scaled version of Coulomb’s law. The field arrows point in the direction a positive test charge would move.
+        </p>
+      </aside>
+    </main>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("simCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const newChargeInput = document.getElementById("newCharge");
+    const strengthInput = document.getElementById("strength");
+    const testChargeInput = document.getElementById("testCharge");
+
+    const strengthOut = document.getElementById("strengthOut");
+    const testChargeOut = document.getElementById("testChargeOut");
+
+    const presetButton = document.getElementById("presetButton");
+    const clearButton = document.getElementById("clearButton");
+
+    const arrowsInput = document.getElementById("fieldArrows");
+    const linesInput = document.getElementById("fieldLines");
+    const testMarkerInput = document.getElementById("testMarker");
+
+    const exOut = document.getElementById("exOut");
+    const eyOut = document.getElementById("eyOut");
+    const fieldOut = document.getElementById("fieldOut");
+    const forceOut = document.getElementById("forceOut");
+    const countOut = document.getElementById("countOut");
+
+    let charges = [
+      { x: 0.33, y: 0.50, q: 1.5 },
+      { x: 0.67, y: 0.50, q: -1.5 }
+    ];
+
+    let draggingIndex = null;
+
+    function resizeCanvas() {
+      const ratio = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+
+      canvas.width = Math.round(rect.width * ratio);
+      canvas.height = Math.round(rect.height * ratio);
+
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+
+      return { width: rect.width, height: rect.height };
+    }
+
+    function fieldAt(x, y, width, height) {
+      let ex = 0;
+      let ey = 0;
+
+      charges.forEach(charge => {
+        const chargeX = charge.x * width;
+        const chargeY = charge.y * height;
+
+        const dx = x - chargeX;
+        const dy = y - chargeY;
+        const distanceSquared = dx * dx + dy * dy + 500;
+        const distance = Math.sqrt(distanceSquared);
+
+        const field = charge.q * 18000 / distanceSquared;
+
+        ex += field * dx / distance;
+        ey += field * dy / distance;
+      });
+
+      return { ex, ey, magnitude: Math.hypot(ex, ey) };
+    }
+
+    function arrow(x1, y1, x2, y2, colour, width = 1.5) {
+      const head = 5;
+      const angle = Math.atan2(y2 - y1, x2 - x1);
+
+      ctx.strokeStyle = colour;
+      ctx.lineWidth = width;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+
+      ctx.fillStyle = colour;
+      ctx.beginPath();
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(
+        x2 - head * Math.cos(angle - Math.PI / 6),
+        y2 - head * Math.sin(angle - Math.PI / 6)
+      );
+      ctx.lineTo(
+        x2 - head * Math.cos(angle + Math.PI / 6),
+        y2 - head * Math.sin(angle + Math.PI / 6)
+      );
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function drawFieldArrows(width, height) {
+      const gap = 42;
+
+      for (let x = gap / 2; x < width; x += gap) {
+        for (let y = gap / 2; y < height; y += gap) {
+          const field = fieldAt(x, y, width, height);
+
+          if (field.magnitude < 0.01) continue;
+
+          const length = Math.min(16, 4 + Math.log(field.magnitude + 1) * 3);
+          const dx = field.ex / field.magnitude * length;
+          const dy = field.ey / field.magnitude * length;
+
+          arrow(x, y, x + dx, y + dy, "rgba(97, 180, 255, 0.62)", 1.1);
+        }
+      }
+    }
+
+    function drawFieldLines(width, height) {
+      charges
+        .filter(charge => charge.q > 0)
+        .forEach(charge => {
+          const startX = charge.x * width;
+          const startY = charge.y * height;
+
+          for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 8) {
+            let x = startX + Math.cos(angle) * 18;
+            let y = startY + Math.sin(angle) * 18;
+
+            ctx.strokeStyle = "rgba(97, 231, 182, 0.25)";
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+
+            for (let step = 0; step < 120; step++) {
+              const field = fieldAt(x, y, width, height);
+
+              if (field.magnitude < 0.01) break;
+
+              const stepSize = 5;
+              x += field.ex / field.magnitude * stepSize;
+              y += field.ey / field.magnitude * stepSize;
+
+              if (x < 0 || x > width || y < 0 || y > height) break;
+              ctx.lineTo(x, y);
+            }
+
+            ctx.stroke();
+          }
+        });
+    }
+
+    function drawCharge(charge, width, height) {
+      const x = charge.x * width;
+      const y = charge.y * height;
+      const radius = 14 + Math.abs(charge.q) * 4;
+      const positive = charge.q > 0;
+
+      const glow = ctx.createRadialGradient(x, y, 0, x, y, radius * 2.6);
+
+      glow.addColorStop(
+        0,
+        positive ? "rgba(255, 123, 142, 0.9)" : "rgba(97, 180, 255, 0.9)"
+      );
+      glow.addColorStop(1, "rgba(0, 0, 0, 0)");
+
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(x, y, radius * 2.6, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = positive ? "#ff7b8e" : "#61b4ff";
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = "#06101d";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 18px system-ui";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(positive ? "+" : "−", x, y - 1);
+
+      ctx.font = "11px system-ui";
+      ctx.fillStyle = "#f2f7ff";
+      ctx.fillText(charge.q.toFixed(1), x, y + radius + 13);
+
+      ctx.textAlign = "start";
+      ctx.textBaseline = "alphabetic";
+    }
+
+    function draw() {
+      const { width, height } = resizeCanvas();
+
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = "#0c1425";
+      ctx.fillRect(0, 0, width, height);
+
+      ctx.strokeStyle = "rgba(174,187,211,0.10)";
+      ctx.lineWidth = 1;
+
+      for (let x = 0; x < width; x += 50) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, height);
+        ctx.stroke();
+      }
+
+      for (let y = 0; y < height; y += 50) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+        ctx.stroke();
+      }
+
+      if (linesInput.checked) {
+        drawFieldLines(width, height);
+      }
+
+      if (arrowsInput.checked) {
+        drawFieldArrows(width, height);
+      }
+
+      charges.forEach(charge => drawCharge(charge, width, height));
+
+      const centerX = width / 2;
+      const centerY = height / 2;
+      const field = fieldAt(centerX, centerY, width, height);
+      const testCharge = Number(testChargeInput.value);
+
+      if (testMarkerInput.checked) {
+        ctx.strokeStyle = "#ffd56a";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, 10, 0, Math.PI * 2);
+        ctx.stroke();
+
+        const forceScale = Math.min(42, field.magnitude * Math.abs(testCharge) * 3);
+        const sign = testCharge >= 0 ? 1 : -1;
+
+        if (field.magnitude > 0.01) {
+          arrow(
+            centerX,
+            centerY,
+            centerX + field.ex / field.magnitude * forceScale * sign,
+            centerY + field.ey / field.magnitude * forceScale * sign,
+            "#ffd56a",
+            2
+          );
+        }
+
+        ctx.fillStyle = "#ffd56a";
+        ctx.font = "11px system-ui";
+        ctx.fillText("test charge", centerX + 13, centerY - 13);
+      }
+
+      strengthOut.textContent = Number(strengthInput.value).toFixed(1);
+      testChargeOut.textContent =
+        `${testCharge >= 0 ? "+" : ""}${testCharge.toFixed(1)}`;
+
+      exOut.textContent = field.ex.toFixed(2);
+      eyOut.textContent = field.ey.toFixed(2);
+      fieldOut.textContent = field.magnitude.toFixed(2);
+      forceOut.textContent = (field.magnitude * Math.abs(testCharge)).toFixed(2);
+      countOut.textContent = charges.length.toString();
+    }
+
+    function canvasPoint(event) {
+      const rect = canvas.getBoundingClientRect();
+      return {
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top,
+        width: rect.width,
+        height: rect.height
+      };
+    }
+
+    canvas.addEventListener("pointerdown", event => {
+      const point = canvasPoint(event);
+
+      const clickedIndex = charges.findIndex(charge => {
+        const x = charge.x * point.width;
+        const y = charge.y * point.height;
+        return Math.hypot(point.x - x, point.y - y) < 30;
+      });
+
+      if (clickedIndex >= 0) {
+        draggingIndex = clickedIndex;
+        canvas.setPointerCapture(event.pointerId);
+        return;
+      }
+
+      const sign = Number(newChargeInput.value);
+      const strength = Number(strengthInput.value);
+
+      charges.push({
+        x: Math.max(0.05, Math.min(0.95, point.x / point.width)),
+        y: Math.max(0.07, Math.min(0.93, point.y / point.height)),
+        q: sign * strength
+      });
+
+      draw();
+    });
+
+    canvas.addEventListener("pointermove", event => {
+      if (draggingIndex === null) return;
+
+      const point = canvasPoint(event);
+
+      charges[draggingIndex].x = Math.max(0.05, Math.min(0.95, point.x / point.width));
+      charges[draggingIndex].y = Math.max(0.07, Math.min(0.93, point.y / point.height));
+
+      draw();
+    });
+
+    function stopDragging() {
+      draggingIndex = null;
+    }
+
+    canvas.addEventListener("pointerup", stopDragging);
+    canvas.addEventListener("pointercancel", stopDragging);
+
+    presetButton.addEventListener("click", () => {
+      charges = [
+        { x: 0.33, y: 0.50, q: 1.5 },
+        { x: 0.67, y: 0.50, q: -1.5 }
+      ];
+      draw();
+    });
+
+    clearButton.addEventListener("click", () => {
+      charges = [];
+      draw();
+    });
+
+    [
+      strengthInput,
+      testChargeInput,
+      arrowsInput,
+      linesInput,
+      testMarkerInput
+    ].forEach(input => input.addEventListener("input", draw));
+
+    window.addEventListener("resize", draw);
+
+    draw();
+  </script>
+</body>
+</html>
