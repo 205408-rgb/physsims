@@ -1,0 +1,792 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Projectile Motion | Physics Simulations</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121a2e;
+      --canvas: #0c1425;
+      --border: #263658;
+      --text: #f2f7ff;
+      --muted: #aebbd3;
+      --accent: #61b4ff;
+      --accent2: #61e7b6;
+      --red: #ff7b8e;
+      --yellow: #ffd56a;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 20% 0%, #193563 0%, transparent 32rem),
+        var(--bg);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.45;
+    }
+
+    .page {
+      width: min(1180px, calc(100% - 32px));
+      margin: auto;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 18px;
+      padding: 28px 0 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+    }
+
+    h2 {
+      margin: 0 0 16px;
+      font-size: 1.1rem;
+    }
+
+    .subtitle {
+      margin: 7px 0 0;
+      color: var(--muted);
+    }
+
+    .back {
+      color: var(--accent);
+      text-decoration: none;
+      white-space: nowrap;
+      padding-top: 6px;
+    }
+
+    .back:hover { text-decoration: underline; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.75fr);
+      gap: 18px;
+      padding: 22px 0 18px;
+    }
+
+    .panel {
+      background: rgba(18, 26, 46, 0.9);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .simulation {
+      position: relative;
+      min-height: 440px;
+    }
+
+    #simCanvas {
+      display: block;
+      width: 100%;
+      height: 440px;
+      background: var(--canvas);
+    }
+
+    .canvas-label {
+      position: absolute;
+      left: 14px;
+      top: 12px;
+      font-size: 0.84rem;
+      color: var(--muted);
+      pointer-events: none;
+    }
+
+    .controls {
+      padding: 20px;
+    }
+
+    .control {
+      margin-bottom: 19px;
+    }
+
+    label {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+    }
+
+    output {
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 5px 0 20px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 9px;
+      padding: 10px 14px;
+      cursor: pointer;
+      color: #08101c;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      font: inherit;
+      font-weight: 750;
+    }
+
+    button.secondary {
+      color: var(--text);
+      border: 1px solid var(--border);
+      background: transparent;
+    }
+
+    .checks {
+      display: grid;
+      gap: 10px;
+    }
+
+    .checks label {
+      justify-content: flex-start;
+      align-items: center;
+      margin: 0;
+      cursor: pointer;
+    }
+
+    .checks input {
+      accent-color: var(--accent);
+    }
+
+    .readouts {
+      margin-top: 22px;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--canvas);
+    }
+
+    .readouts h3 {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .readouts p {
+      display: flex;
+      justify-content: space-between;
+      margin: 6px 0;
+      font-size: 0.92rem;
+    }
+
+    .readouts strong {
+      font-variant-numeric: tabular-nums;
+    }
+
+    .graphs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      padding-bottom: 40px;
+    }
+
+    .graph {
+      padding: 14px;
+    }
+
+    .graph h2 {
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin-bottom: 10px;
+    }
+
+    .graph canvas {
+      display: block;
+      width: 100%;
+      height: 205px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--canvas);
+    }
+
+    .legend {
+      display: flex;
+      gap: 14px;
+      margin-top: 9px;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .blue { color: var(--accent); }
+    .red { color: var(--red); }
+    .green { color: var(--accent2); }
+
+    @media (max-width: 850px) {
+      header { flex-direction: column; }
+      .layout, .graphs { grid-template-columns: 1fr; }
+      #simCanvas { height: 360px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div>
+        <h1>Projectile Motion</h1>
+        <p class="subtitle">Launch a projectile and explore how speed, angle, gravity, and drag change its path.</p>
+      </div>
+      <a class="back" href="index.html">← All simulations</a>
+    </header>
+
+    <main class="layout">
+      <section class="panel simulation">
+        <canvas id="simCanvas"></canvas>
+        <div class="canvas-label">Blue: trajectory · Red: velocity vector</div>
+      </section>
+
+      <aside class="panel controls">
+        <h2>Controls</h2>
+
+        <div class="control">
+          <label for="angle">
+            <span>Launch angle</span>
+            <output id="angleOut">45°</output>
+          </label>
+          <input id="angle" type="range" min="5" max="85" value="45" step="1">
+        </div>
+
+        <div class="control">
+          <label for="speed">
+            <span>Initial speed</span>
+            <output id="speedOut">30 m/s</output>
+          </label>
+          <input id="speed" type="range" min="5" max="80" value="30" step="1">
+        </div>
+
+        <div class="control">
+          <label for="gravity">
+            <span>Gravity</span>
+            <output id="gravityOut">9.81 m/s²</output>
+          </label>
+          <input id="gravity" type="range" min="1" max="20" value="9.81" step="0.01">
+        </div>
+
+        <div class="control">
+          <label for="drag">
+            <span>Air resistance</span>
+            <output id="dragOut">0.00</output>
+          </label>
+          <input id="drag" type="range" min="0" max="0.25" value="0" step="0.01">
+        </div>
+
+        <div class="actions">
+          <button id="launchButton" type="button">Launch</button>
+          <button id="pauseButton" class="secondary" type="button">Pause</button>
+          <button id="resetButton" class="secondary" type="button">Reset</button>
+        </div>
+
+        <div class="checks">
+          <label><input id="vectors" type="checkbox" checked> Show velocity vector</label>
+          <label><input id="grid" type="checkbox" checked> Show grid</label>
+        </div>
+
+        <section class="readouts">
+          <h3>Live readouts</h3>
+          <p><span>Time</span><strong id="timeOut">0.00 s</strong></p>
+          <p><span>Position</span><strong id="positionOut">0.0, 0.0 m</strong></p>
+          <p><span>Speed</span><strong id="liveSpeedOut">0.0 m/s</strong></p>
+          <p><span>Range</span><strong id="rangeOut">0.0 m</strong></p>
+          <p><span>Maximum height</span><strong id="heightOut">0.0 m</strong></p>
+        </section>
+      </aside>
+    </main>
+
+    <section class="graphs">
+      <section class="panel graph">
+        <h2>Position vs. time</h2>
+        <canvas id="positionGraph"></canvas>
+        <div class="legend">
+          <span class="blue">● horizontal position x</span>
+          <span class="red">● vertical position y</span>
+        </div>
+      </section>
+
+      <section class="panel graph">
+        <h2>Velocity vs. time</h2>
+        <canvas id="velocityGraph"></canvas>
+        <div class="legend">
+          <span class="green">● horizontal velocity vx</span>
+          <span class="red">● vertical velocity vy</span>
+        </div>
+      </section>
+    </section>
+  </div>
+
+  <script>
+    const simCanvas = document.getElementById("simCanvas");
+    const simCtx = simCanvas.getContext("2d");
+    const positionGraph = document.getElementById("positionGraph");
+    const positionCtx = positionGraph.getContext("2d");
+    const velocityGraph = document.getElementById("velocityGraph");
+    const velocityCtx = velocityGraph.getContext("2d");
+
+    const angleInput = document.getElementById("angle");
+    const speedInput = document.getElementById("speed");
+    const gravityInput = document.getElementById("gravity");
+    const dragInput = document.getElementById("drag");
+    const vectorsInput = document.getElementById("vectors");
+    const gridInput = document.getElementById("grid");
+
+    const angleOut = document.getElementById("angleOut");
+    const speedOut = document.getElementById("speedOut");
+    const gravityOut = document.getElementById("gravityOut");
+    const dragOut = document.getElementById("dragOut");
+
+    const timeOut = document.getElementById("timeOut");
+    const positionOut = document.getElementById("positionOut");
+    const liveSpeedOut = document.getElementById("liveSpeedOut");
+    const rangeOut = document.getElementById("rangeOut");
+    const heightOut = document.getElementById("heightOut");
+
+    const launchButton = document.getElementById("launchButton");
+    const pauseButton = document.getElementById("pauseButton");
+    const resetButton = document.getElementById("resetButton");
+
+    let projectile;
+    let trajectory = [];
+    let data = [];
+    let launched = false;
+    let paused = false;
+    let lastTimestamp = null;
+
+    function parameters() {
+      return {
+        angle: Number(angleInput.value),
+        speed: Number(speedInput.value),
+        gravity: Number(gravityInput.value),
+        drag: Number(dragInput.value)
+      };
+    }
+
+    function resetProjectile() {
+      const p = parameters();
+      const radians = p.angle * Math.PI / 180;
+
+      projectile = {
+        x: 0,
+        y: 0,
+        vx: p.speed * Math.cos(radians),
+        vy: p.speed * Math.sin(radians),
+        time: 0,
+        maxHeight: 0,
+        range: 0
+      };
+
+      trajectory = [{ x: 0, y: 0 }];
+      data = [{ t: 0, x: 0, y: 0, vx: projectile.vx, vy: projectile.vy }];
+      launched = false;
+      paused = false;
+      pauseButton.textContent = "Pause";
+      updateLabels();
+    }
+
+    function launch() {
+      resetProjectile();
+      launched = true;
+    }
+
+    function updateLabels() {
+      const p = parameters();
+      angleOut.textContent = `${p.angle.toFixed(0)}°`;
+      speedOut.textContent = `${p.speed.toFixed(0)} m/s`;
+      gravityOut.textContent = `${p.gravity.toFixed(2)} m/s²`;
+      dragOut.textContent = p.drag.toFixed(2);
+
+      const currentSpeed = Math.hypot(projectile.vx, projectile.vy);
+      timeOut.textContent = `${projectile.time.toFixed(2)} s`;
+      positionOut.textContent = `${projectile.x.toFixed(1)}, ${projectile.y.toFixed(1)} m`;
+      liveSpeedOut.textContent = `${currentSpeed.toFixed(1)} m/s`;
+      rangeOut.textContent = `${projectile.range.toFixed(1)} m`;
+      heightOut.textContent = `${projectile.maxHeight.toFixed(1)} m`;
+    }
+
+    function updatePhysics(delta) {
+      if (!launched || paused) return;
+
+      const p = parameters();
+      const subSteps = Math.max(1, Math.ceil(delta / 0.012));
+      const step = delta / subSteps;
+
+      for (let n = 0; n < subSteps; n++) {
+        const speed = Math.hypot(projectile.vx, projectile.vy);
+
+        const ax = -p.drag * speed * projectile.vx;
+        const ay = -p.gravity - p.drag * speed * projectile.vy;
+
+        projectile.vx += ax * step;
+        projectile.vy += ay * step;
+        projectile.x += projectile.vx * step;
+        projectile.y += projectile.vy * step;
+        projectile.time += step;
+
+        if (projectile.y > projectile.maxHeight) {
+          projectile.maxHeight = projectile.y;
+        }
+
+        if (projectile.y <= 0 && projectile.time > 0.05) {
+          projectile.y = 0;
+          projectile.range = projectile.x;
+          launched = false;
+          break;
+        }
+
+        projectile.range = projectile.x;
+      }
+
+      trajectory.push({ x: projectile.x, y: projectile.y });
+
+      if (data.length === 0 || projectile.time - data[data.length - 1].t > 0.04) {
+        data.push({
+          t: projectile.time,
+          x: projectile.x,
+          y: projectile.y,
+          vx: projectile.vx,
+          vy: projectile.vy
+        });
+      }
+
+      if (trajectory.length > 1800) trajectory.shift();
+      if (data.length > 350) data.shift();
+    }
+
+    function resizeCanvas(canvas) {
+      const ratio = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = Math.round(rect.width * ratio);
+      canvas.height = Math.round(rect.height * ratio);
+      const context = canvas.getContext("2d");
+      context.setTransform(ratio, 0, 0, ratio, 0, 0);
+      return { width: rect.width, height: rect.height };
+    }
+
+    function drawLine(ctx, x1, y1, x2, y2, color, width = 1) {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+    }
+
+    function drawArrow(ctx, x1, y1, x2, y2, color) {
+      const headLength = 9;
+      const angle = Math.atan2(y2 - y1, x2 - x1);
+
+      drawLine(ctx, x1, y1, x2, y2, color, 2);
+
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(
+        x2 - headLength * Math.cos(angle - Math.PI / 6),
+        y2 - headLength * Math.sin(angle - Math.PI / 6)
+      );
+      ctx.lineTo(
+        x2 - headLength * Math.cos(angle + Math.PI / 6),
+        y2 - headLength * Math.sin(angle + Math.PI / 6)
+      );
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function drawSimulation() {
+      const { width, height } = resizeCanvas(simCanvas);
+      const margin = { left: 45, right: 22, top: 25, bottom: 42 };
+      const usableWidth = width - margin.left - margin.right;
+      const usableHeight = height - margin.top - margin.bottom;
+
+      const xLimit = Math.max(
+        25,
+        projectile.range * 1.2,
+        projectile.x * 1.2,
+        ...trajectory.map(point => point.x * 1.15)
+      );
+
+      const yLimit = Math.max(
+        15,
+        projectile.maxHeight * 1.25,
+        projectile.y * 1.25,
+        ...trajectory.map(point => point.y * 1.15)
+      );
+
+      const scaleX = usableWidth / xLimit;
+      const scaleY = usableHeight / yLimit;
+
+      const mapX = x => margin.left + x * scaleX;
+      const mapY = y => height - margin.bottom - y * scaleY;
+
+      simCtx.clearRect(0, 0, width, height);
+      simCtx.fillStyle = "#0c1425";
+      simCtx.fillRect(0, 0, width, height);
+
+      if (gridInput.checked) {
+        simCtx.strokeStyle = "rgba(174,187,211,0.13)";
+        simCtx.lineWidth = 1;
+
+        for (let i = 0; i <= 10; i++) {
+          const x = margin.left + i * usableWidth / 10;
+          simCtx.beginPath();
+          simCtx.moveTo(x, margin.top);
+          simCtx.lineTo(x, height - margin.bottom);
+          simCtx.stroke();
+        }
+
+        for (let i = 0; i <= 6; i++) {
+          const y = margin.top + i * usableHeight / 6;
+          simCtx.beginPath();
+          simCtx.moveTo(margin.left, y);
+          simCtx.lineTo(width - margin.right, y);
+          simCtx.stroke();
+        }
+      }
+
+      drawLine(
+        simCtx,
+        margin.left,
+        height - margin.bottom,
+        width - margin.right,
+        height - margin.bottom,
+        "rgba(174,187,211,0.7)",
+        1
+      );
+
+      drawLine(
+        simCtx,
+        margin.left,
+        margin.top,
+        margin.left,
+        height - margin.bottom,
+        "rgba(174,187,211,0.7)",
+        1
+      );
+
+      if (trajectory.length > 1) {
+        simCtx.strokeStyle = "#61b4ff";
+        simCtx.lineWidth = 2.5;
+        simCtx.beginPath();
+
+        trajectory.forEach((point, index) => {
+          const px = mapX(point.x);
+          const py = mapY(point.y);
+          if (index === 0) simCtx.moveTo(px, py);
+          else simCtx.lineTo(px, py);
+        });
+
+        simCtx.stroke();
+      }
+
+      const px = mapX(projectile.x);
+      const py = mapY(projectile.y);
+
+      simCtx.fillStyle = "#61e7b6";
+      simCtx.beginPath();
+      simCtx.arc(px, py, 7, 0, Math.PI * 2);
+      simCtx.fill();
+
+      simCtx.strokeStyle = "#06101d";
+      simCtx.lineWidth = 2;
+      simCtx.stroke();
+
+      if (vectorsInput.checked && (launched || projectile.time > 0)) {
+        const velocityScale = Math.min(3.3, usableWidth / 200);
+        const vectorX = px + projectile.vx * velocityScale;
+        const vectorY = py - projectile.vy * velocityScale;
+        drawArrow(simCtx, px, py, vectorX, vectorY, "#ff7b8e");
+      }
+
+      simCtx.fillStyle = "#aebbd3";
+      simCtx.font = "11px system-ui";
+      simCtx.fillText("0", margin.left - 4, height - margin.bottom + 18);
+      simCtx.fillText(`${xLimit.toFixed(0)} m`, width - margin.right - 31, height - margin.bottom + 18);
+      simCtx.fillText(`${yLimit.toFixed(0)} m`, margin.left - 30, margin.top + 6);
+      simCtx.fillText("x", width - margin.right + 4, height - margin.bottom + 4);
+      simCtx.fillText("y", margin.left - 4, margin.top - 8);
+    }
+
+    function drawGraphBase(ctx, canvas, label) {
+      const { width, height } = resizeCanvas(canvas);
+      const left = 40;
+      const right = 12;
+      const top = 15;
+      const bottom = 27;
+
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = "#0c1425";
+      ctx.fillRect(0, 0, width, height);
+
+      ctx.strokeStyle = "rgba(174,187,211,0.15)";
+      ctx.lineWidth = 1;
+
+      for (let i = 0; i <= 4; i++) {
+        const y = top + i * (height - top - bottom) / 4;
+        ctx.beginPath();
+        ctx.moveTo(left, y);
+        ctx.lineTo(width - right, y);
+        ctx.stroke();
+      }
+
+      drawLine(ctx, left, top, left, height - bottom, "rgba(174,187,211,0.55)");
+      drawLine(ctx, left, height - bottom, width - right, height - bottom, "rgba(174,187,211,0.55)");
+
+      ctx.fillStyle = "#aebbd3";
+      ctx.font = "11px system-ui";
+      ctx.fillText(label, 7, 16);
+
+      return { width, height, left, right, top, bottom };
+    }
+
+    function drawSeries(ctx, values, colour, mapX, mapY) {
+      if (values.length < 2) return;
+
+      ctx.strokeStyle = colour;
+      ctx.lineWidth = 2.3;
+      ctx.beginPath();
+
+      values.forEach((point, index) => {
+        const x = mapX(point.t);
+        const y = mapY(point.value);
+
+        if (index === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+
+      ctx.stroke();
+    }
+
+    function drawPositionGraph() {
+      const area = drawGraphBase(positionCtx, positionGraph, "position");
+      if (data.length < 2) return;
+
+      const duration = Math.max(data[data.length - 1].t, 1);
+      const maxValue = Math.max(
+        1,
+        ...data.map(point => Math.max(point.x, point.y))
+      );
+
+      const mapX = t => area.left + (t / duration) * (area.width - area.left - area.right);
+      const mapY = value => area.height - area.bottom - (value / maxValue) * (area.height - area.top - area.bottom);
+
+      drawSeries(
+        positionCtx,
+        data.map(point => ({ t: point.t, value: point.x })),
+        "#61b4ff",
+        mapX,
+        mapY
+      );
+
+      drawSeries(
+        positionCtx,
+        data.map(point => ({ t: point.t, value: point.y })),
+        "#ff7b8e",
+        mapX,
+        mapY
+      );
+
+      positionCtx.fillStyle = "#aebbd3";
+      positionCtx.font = "11px system-ui";
+      positionCtx.fillText("0", area.left - 3, area.height - 8);
+      positionCtx.fillText(`${duration.toFixed(1)} s`, area.width - area.right - 28, area.height - 8);
+    }
+
+    function drawVelocityGraph() {
+      const area = drawGraphBase(velocityCtx, velocityGraph, "velocity");
+      if (data.length < 2) return;
+
+      const duration = Math.max(data[data.length - 1].t, 1);
+      const maxAbs = Math.max(
+        1,
+        ...data.map(point => Math.max(Math.abs(point.vx), Math.abs(point.vy)))
+      );
+
+      const mapX = t => area.left + (t / duration) * (area.width - area.left - area.right);
+      const mapY = value => {
+        const middle = (area.top + area.height - area.bottom) / 2;
+        return middle - (value / maxAbs) * ((area.height - area.top - area.bottom) / 2);
+      };
+
+      const middle = (area.top + area.height - area.bottom) / 2;
+      drawLine(velocityCtx, area.left, middle, area.width - area.right, middle, "rgba(174,187,211,0.35)");
+
+      drawSeries(
+        velocityCtx,
+        data.map(point => ({ t: point.t, value: point.vx })),
+        "#61e7b6",
+        mapX,
+        mapY
+      );
+
+      drawSeries(
+        velocityCtx,
+        data.map(point => ({ t: point.t, value: point.vy })),
+        "#ff7b8e",
+        mapX,
+        mapY
+      );
+
+      velocityCtx.fillStyle = "#aebbd3";
+      velocityCtx.font = "11px system-ui";
+      velocityCtx.fillText("0", area.left - 3, area.height - 8);
+      velocityCtx.fillText(`${duration.toFixed(1)} s`, area.width - area.right - 28, area.height - 8);
+    }
+
+    function frame(timestamp) {
+      if (lastTimestamp === null) lastTimestamp = timestamp;
+      const delta = Math.min((timestamp - lastTimestamp) / 1000, 0.04);
+      lastTimestamp = timestamp;
+
+      updatePhysics(delta);
+      updateLabels();
+      drawSimulation();
+      drawPositionGraph();
+      drawVelocityGraph();
+
+      requestAnimationFrame(frame);
+    }
+
+    launchButton.addEventListener("click", launch);
+
+    pauseButton.addEventListener("click", () => {
+      paused = !paused;
+      pauseButton.textContent = paused ? "Resume" : "Pause";
+    });
+
+    resetButton.addEventListener("click", resetProjectile);
+
+    [angleInput, speedInput, gravityInput, dragInput].forEach(input => {
+      input.addEventListener("input", () => {
+        if (!launched) resetProjectile();
+      });
+    });
+
+    window.addEventListener("resize", () => {
+      lastTimestamp = null;
+    });
+
+    resetProjectile();
+    requestAnimationFrame(frame);
+  </script>
+</body>
+</html>
