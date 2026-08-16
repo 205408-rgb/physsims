@@ -14,7 +14,6 @@
       --muted: #aebbd3;
       --blue: #61b4ff;
       --green: #61e7b6;
-      --red: #ff7b8e;
       --yellow: #ffd56a;
     }
 
@@ -22,10 +21,10 @@
 
     body {
       margin: 0;
-      color: var(--text);
       background:
         radial-gradient(circle at 20% 0%, #193563 0%, transparent 32rem),
         var(--bg);
+      color: var(--text);
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
@@ -68,9 +67,9 @@
 
     .layout {
       display: grid;
-      grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.75fr);
+      grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.8fr);
       gap: 18px;
-      padding: 22px 0 18px;
+      padding: 22px 0 38px;
     }
 
     .panel {
@@ -80,16 +79,15 @@
       background: rgba(18, 26, 46, 0.9);
     }
 
-    .simulation {
-      position: relative;
-      min-height: 440px;
-    }
-
     #simCanvas {
       display: block;
       width: 100%;
-      height: 440px;
+      height: 460px;
       background: var(--canvas);
+    }
+
+    .simulation {
+      position: relative;
     }
 
     .canvas-label {
@@ -102,7 +100,8 @@
     }
 
     .controls { padding: 20px; }
-    .control { margin-bottom: 19px; }
+
+    .control { margin-bottom: 20px; }
 
     label {
       display: flex;
@@ -128,7 +127,7 @@
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
-      margin: 5px 0 20px;
+      margin: 8px 0 20px;
     }
 
     button {
@@ -185,45 +184,16 @@
 
     .readouts strong { font-variant-numeric: tabular-nums; }
 
-    .graphs {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 18px;
-      padding-bottom: 40px;
-    }
-
-    .graph { padding: 14px; }
-
-    .graph h2 {
-      margin-bottom: 10px;
-      color: var(--muted);
-      font-size: 0.95rem;
-    }
-
-    .graph canvas {
-      display: block;
-      width: 100%;
-      height: 205px;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      background: var(--canvas);
-    }
-
-    .legend {
-      display: flex;
-      gap: 14px;
-      margin-top: 9px;
+    .formula {
+      margin: 16px 0 0;
       color: var(--muted);
       font-size: 0.82rem;
+      line-height: 1.45;
     }
-
-    .blue { color: var(--blue); }
-    .green { color: var(--green); }
-    .yellow { color: var(--yellow); }
 
     @media (max-width: 850px) {
       header { flex-direction: column; }
-      .layout, .graphs { grid-template-columns: 1fr; }
+      .layout { grid-template-columns: 1fr; }
       #simCanvas { height: 360px; }
     }
   </style>
@@ -233,7 +203,7 @@
     <header>
       <div>
         <h1>Gas Laws Lab</h1>
-        <p class="subtitle">Change temperature, volume, and particle count to explore pressure and particle collisions.</p>
+        <p class="subtitle">Change temperature, volume, and particle count to observe gas pressure and molecular motion.</p>
       </div>
       <a class="back" href="index.html">← All simulations</a>
     </header>
@@ -241,11 +211,11 @@
     <main class="layout">
       <section class="panel simulation">
         <canvas id="simCanvas"></canvas>
-        <div class="canvas-label">Particle speed increases as temperature rises</div>
+        <div class="canvas-label">Warmer gas particles move faster</div>
       </section>
 
       <aside class="panel controls">
-        <h2>Gas controls</h2>
+        <h2>Controls</h2>
 
         <div class="control">
           <label for="temperature">
@@ -264,11 +234,11 @@
         </div>
 
         <div class="control">
-          <label for="particles">
+          <label for="particleCount">
             <span>Number of particles</span>
-            <output id="particlesOut">40</output>
+            <output id="particleCountOut">40</output>
           </label>
-          <input id="particles" type="range" min="10" max="100" value="40" step="5">
+          <input id="particleCount" type="range" min="10" max="100" value="40" step="5">
         </div>
 
         <div class="actions">
@@ -277,52 +247,38 @@
         </div>
 
         <div class="checks">
-          <label><input id="trails" type="checkbox"> Show particle trails</label>
-          <label><input id="pressureMeter" type="checkbox" checked> Show pressure meter</label>
+          <label><input id="trails" type="checkbox"> Show trails</label>
+          <label><input id="meter" type="checkbox" checked> Show pressure meter</label>
         </div>
 
         <section class="readouts">
           <h3>Gas readouts</h3>
           <p><span>Pressure</span><strong id="pressureOut">0.00 kPa</strong></p>
-          <p><span>Average speed</span><strong id="speedOut">0.00</strong></p>
-          <p><span>Particle count</span><strong id="countOut">0</strong></p>
-          <p><span>PV / nT</span><strong id="ratioOut">—</strong></p>
+          <p><span>Average speed</span><strong id="speedOut">0.00 units/s</strong></p>
+          <p><span>Particles</span><strong id="countOut">0</strong></p>
+          <p><span>Relative \(PV/NT\)</span><strong id="ratioOut">1.00</strong></p>
         </section>
+
+        <p class="formula">
+          This is a scaled ideal-gas model: \(P \propto \frac{NT}{V}\).
+        </p>
       </aside>
     </main>
-
-    <section class="graphs">
-      <section class="panel graph">
-        <h2>Pressure vs. time</h2>
-        <canvas id="pressureGraph"></canvas>
-        <div class="legend"><span class="blue">● pressure</span></div>
-      </section>
-
-      <section class="panel graph">
-        <h2>Temperature vs. time</h2>
-        <canvas id="temperatureGraph"></canvas>
-        <div class="legend"><span class="yellow">● temperature</span></div>
-      </section>
-    </section>
   </div>
 
   <script>
-    const simCanvas = document.getElementById("simCanvas");
-    const simCtx = simCanvas.getContext("2d");
-    const pressureGraph = document.getElementById("pressureGraph");
-    const pressureCtx = pressureGraph.getContext("2d");
-    const temperatureGraph = document.getElementById("temperatureGraph");
-    const temperatureCtx = temperatureGraph.getContext("2d");
+    const canvas = document.getElementById("simCanvas");
+    const ctx = canvas.getContext("2d");
 
     const temperatureInput = document.getElementById("temperature");
     const volumeInput = document.getElementById("volume");
-    const particlesInput = document.getElementById("particles");
+    const particleCountInput = document.getElementById("particleCount");
     const trailsInput = document.getElementById("trails");
-    const pressureMeterInput = document.getElementById("pressureMeter");
+    const meterInput = document.getElementById("meter");
 
     const temperatureOut = document.getElementById("temperatureOut");
     const volumeOut = document.getElementById("volumeOut");
-    const particlesOut = document.getElementById("particlesOut");
+    const particleCountOut = document.getElementById("particleCountOut");
 
     const pressureOut = document.getElementById("pressureOut");
     const speedOut = document.getElementById("speedOut");
@@ -332,236 +288,289 @@
     const pauseButton = document.getElementById("pauseButton");
     const resetButton = document.getElementById("resetButton");
 
-    let gas = [];
+    let particles = [];
     let paused = false;
-    let time = 0;
-    let history = [];
-    let previousTimestamp = null;
+    let lastTime = null;
 
-    function values() {
+    function getValues() {
       return {
         temperature: Number(temperatureInput.value),
         volume: Number(volumeInput.value),
-        count: Number(particlesInput.value)
+        particleCount: Number(particleCountInput.value)
       };
     }
 
-    function resizeCanvas(canvas) {
+    function getCanvasSize() {
       const ratio = window.devicePixelRatio || 1;
       const rect = canvas.getBoundingClientRect();
 
       canvas.width = Math.round(rect.width * ratio);
       canvas.height = Math.round(rect.height * ratio);
 
-      const ctx = canvas.getContext("2d");
       ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
 
-      return { width: rect.width, height: rect.height };
-    }
-
-    function gasBox(v, width, height) {
-      const maxWidth = width * 0.72;
-      const minWidth = width * 0.31;
-
-      const fraction = (v.volume - 2) / 8;
-      const boxWidth = minWidth + fraction * (maxWidth - minWidth);
-
       return {
-        x: (width - boxWidth) / 2,
-        y: height * 0.18,
-        width: boxWidth,
-        height: height * 0.64
+        width: rect.width,
+        height: rect.height
       };
     }
 
-    function speedForTemperature(temp) {
-      return 1.4 + Math.sqrt(temp / 100) * 1.7;
+    function getContainer(v, width, height) {
+      const left = width * 0.16;
+      const top = height * 0.18;
+      const bottom = height * 0.84;
+
+      const minWidth = width * 0.34;
+      const maxWidth = width * 0.70;
+
+      const fraction = (v.volume - 2) / 8;
+      const containerWidth = minWidth + fraction * (maxWidth - minWidth);
+
+      return {
+        x: (width - containerWidth) / 2,
+        y: top,
+        width: containerWidth,
+        height: bottom - top
+      };
     }
 
-    function makeParticle(box, speed) {
-      const angle = Math.random() * Math.PI * 2;
+    function targetSpeed(temperature) {
+      return 55 + Math.sqrt(temperature) * 4.3;
+    }
+
+    function newParticle(box, speed) {
+      const direction = Math.random() * Math.PI * 2;
+      const randomSpeed = speed * (0.65 + Math.random() * 0.55);
+
       return {
-        x: box.x + 10 + Math.random() * (box.width - 20),
-        y: box.y + 10 + Math.random() * (box.height - 20),
-        vx: Math.cos(angle) * speed * (0.6 + Math.random() * 0.8),
-        vy: Math.sin(angle) * speed * (0.6 + Math.random() * 0.8),
+        x: box.x + 8 + Math.random() * (box.width - 16),
+        y: box.y + 8 + Math.random() * (box.height - 16),
+        vx: Math.cos(direction) * randomSpeed,
+        vy: Math.sin(direction) * randomSpeed,
         trail: []
       };
     }
 
-    function resetGas() {
-      const v = values();
-      const rect = simCanvas.getBoundingClientRect();
-      const box = gasBox(v, rect.width || 600, rect.height || 440);
-      const speed = speedForTemperature(v.temperature);
+    function resetParticles() {
+      const size = getCanvasSize();
+      const v = getValues();
+      const box = getContainer(v, size.width, size.height);
+      const speed = targetSpeed(v.temperature);
 
-      gas = Array.from(
-        { length: v.count },
-        () => makeParticle(box, speed)
-      );
+      particles = [];
 
-      time = 0;
-      history = [];
+      for (let i = 0; i < v.particleCount; i++) {
+        particles.push(newParticle(box, speed));
+      }
+
       paused = false;
       pauseButton.textContent = "Pause";
     }
 
-    function updateParticleCount(v, box) {
-      const desired = v.count;
-      const speed = speedForTemperature(v.temperature);
+    function syncParticles(v, box) {
+      const target = v.particleCount;
+      const speed = targetSpeed(v.temperature);
 
-      while (gas.length < desired) {
-        gas.push(makeParticle(box, speed));
+      while (particles.length < target) {
+        particles.push(newParticle(box, speed));
       }
 
-      while (gas.length > desired) {
-        gas.pop();
+      while (particles.length > target) {
+        particles.pop();
       }
+
+      particles.forEach(particle => {
+        particle.x = Math.max(box.x + 6, Math.min(box.x + box.width - 6, particle.x));
+        particle.y = Math.max(box.y + 6, Math.min(box.y + box.height - 6, particle.y));
+      });
     }
 
-    function updatePhysics(delta, v, box) {
+    function updateParticles(delta, v, box) {
       if (paused) return;
 
-      const desiredSpeed = speedForTemperature(v.temperature);
-      let collisionCount = 0;
+      const speedGoal = targetSpeed(v.temperature);
 
-      gas.forEach(particle => {
-        const currentSpeed = Math.hypot(particle.vx, particle.vy);
+      particles.forEach(particle => {
+        const speed = Math.hypot(particle.vx, particle.vy);
 
-        if (currentSpeed > 0.001) {
-          const scale = desiredSpeed / currentSpeed;
-          particle.vx += (particle.vx * scale - particle.vx) * 0.015;
-          particle.vy += (particle.vy * scale - particle.vy) * 0.015;
+        if (speed > 0.001) {
+          const factor = speedGoal / speed;
+
+          particle.vx += (particle.vx * factor - particle.vx) * 0.03;
+          particle.vy += (particle.vy * factor - particle.vy) * 0.03;
         }
 
-        particle.x += particle.vx * delta * 18;
-        particle.y += particle.vy * delta * 18;
+        particle.x += particle.vx * delta;
+        particle.y += particle.vy * delta;
 
-        if (particle.x < box.x + 5) {
+        if (particle.x <= box.x + 5) {
           particle.x = box.x + 5;
           particle.vx = Math.abs(particle.vx);
-          collisionCount++;
         }
 
-        if (particle.x > box.x + box.width - 5) {
+        if (particle.x >= box.x + box.width - 5) {
           particle.x = box.x + box.width - 5;
           particle.vx = -Math.abs(particle.vx);
-          collisionCount++;
         }
 
-        if (particle.y < box.y + 5) {
+        if (particle.y <= box.y + 5) {
           particle.y = box.y + 5;
           particle.vy = Math.abs(particle.vy);
-          collisionCount++;
         }
 
-        if (particle.y > box.y + box.height - 5) {
+        if (particle.y >= box.y + box.height - 5) {
           particle.y = box.y + box.height - 5;
           particle.vy = -Math.abs(particle.vy);
-          collisionCount++;
         }
 
         if (trailsInput.checked) {
           particle.trail.push({ x: particle.x, y: particle.y });
-          if (particle.trail.length > 16) particle.trail.shift();
+
+          if (particle.trail.length > 18) {
+            particle.trail.shift();
+          }
         } else {
           particle.trail = [];
         }
       });
-
-      time += delta;
-
-      const pressure = v.count * v.temperature / v.volume * 0.0007;
-      const averageSpeed =
-        gas.reduce((sum, particle) => sum + Math.hypot(particle.vx, particle.vy), 0) /
-        Math.max(gas.length, 1);
-
-      if (history.length === 0 || time - history[history.length - 1].t > 0.08) {
-        history.push({
-          t: time,
-          pressure,
-          temperature: v.temperature,
-          averageSpeed,
-          collisions: collisionCount
-        });
-      }
-
-      history = history.filter(point => point.t >= time - 15);
     }
 
-    function draw(v) {
-      const { width, height } = resizeCanvas(simCanvas);
-      const box = gasBox(v, width, height);
+    function draw(v, box, width, height) {
+      const pressure = 0.004 * v.particleCount * v.temperature / v.volume;
 
-      updateParticleCount(v, box);
-
-      const pressure = v.count * v.temperature / v.volume * 0.0007;
       const averageSpeed =
-        gas.reduce((sum, particle) => sum + Math.hypot(particle.vx, particle.vy), 0) /
-        Math.max(gas.length, 1);
+        particles.reduce(
+          (total, particle) => total + Math.hypot(particle.vx, particle.vy),
+          0
+        ) / Math.max(particles.length, 1);
 
       temperatureOut.textContent = `${v.temperature.toFixed(0)} K`;
       volumeOut.textContent = `${v.volume.toFixed(1)} L`;
-      particlesOut.textContent = v.count.toFixed(0);
+      particleCountOut.textContent = `${v.particleCount}`;
 
       pressureOut.textContent = `${pressure.toFixed(2)} kPa`;
-      speedOut.textContent = averageSpeed.toFixed(2);
-      countOut.textContent = gas.length.toString();
-      ratioOut.textContent = (pressure * v.volume / (v.count * v.temperature)).toExponential(2);
+      speedOut.textContent = `${averageSpeed.toFixed(1)} units/s`;
+      countOut.textContent = particles.length;
+      ratioOut.textContent = "1.00";
 
-      simCtx.clearRect(0, 0, width, height);
-      simCtx.fillStyle = "#0c1425";
-      simCtx.fillRect(0, 0, width, height);
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = "#0c1425";
+      ctx.fillRect(0, 0, width, height);
 
-      simCtx.fillStyle = "rgba(97, 180, 255, 0.10)";
-      simCtx.fillRect(box.x, box.y, box.width, box.height);
+      ctx.strokeStyle = "rgba(174,187,211,0.12)";
+      ctx.lineWidth = 1;
 
-      simCtx.strokeStyle = "#aebbd3";
-      simCtx.lineWidth = 3;
-      simCtx.strokeRect(box.x, box.y, box.width, box.height);
+      for (let x = 0; x < width; x += 44) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, height);
+        ctx.stroke();
+      }
+
+      ctx.fillStyle = "rgba(97, 180, 255, 0.09)";
+      ctx.fillRect(box.x, box.y, box.width, box.height);
+
+      ctx.strokeStyle = "#aebbd3";
+      ctx.lineWidth = 3;
+      ctx.strokeRect(box.x, box.y, box.width, box.height);
 
       if (trailsInput.checked) {
-        gas.forEach(particle => {
+        particles.forEach(particle => {
           if (particle.trail.length < 2) return;
 
-          simCtx.strokeStyle = "rgba(97, 180, 255, 0.22)";
-          simCtx.lineWidth = 1;
-          simCtx.beginPath();
+          ctx.strokeStyle = "rgba(97, 180, 255, 0.25)";
+          ctx.lineWidth = 1;
+          ctx.beginPath();
 
           particle.trail.forEach((point, index) => {
-            if (index === 0) simCtx.moveTo(point.x, point.y);
-            else simCtx.lineTo(point.x, point.y);
+            if (index === 0) {
+              ctx.moveTo(point.x, point.y);
+            } else {
+              ctx.lineTo(point.x, point.y);
+            }
           });
 
-          simCtx.stroke();
+          ctx.stroke();
         });
       }
 
-      const heatColour = `hsl(${Math.max(0, 210 - v.temperature / 800 * 170)}, 92%, 65%)`;
+      const hue = Math.max(5, 215 - (v.temperature - 100) / 700 * 180);
 
-      gas.forEach(particle => {
-        simCtx.fillStyle = heatColour;
-        simCtx.beginPath();
-        simCtx.arc(particle.x, particle.y, 4, 0, Math.PI * 2);
-        simCtx.fill();
+      particles.forEach(particle => {
+        ctx.fillStyle = `hsl(${hue}, 90%, 66%)`;
+        ctx.beginPath();
+        ctx.arc(particle.x, particle.y, 4.2, 0, Math.PI * 2);
+        ctx.fill();
       });
 
-      if (pressureMeterInput.checked) {
-        const meterX = width * 0.10;
-        const meterY = height * 0.22;
-        const meterHeight = height * 0.56;
-        const fillHeight = Math.min(meterHeight, pressure / 12 * meterHeight);
+      if (meterInput.checked) {
+        const meterX = width * 0.08;
+        const meterY = height * 0.23;
+        const meterWidth = 24;
+        const meterHeight = height * 0.55;
+        const maximumPressure = 20;
+        const fill = Math.min(1, pressure / maximumPressure);
 
-        simCtx.strokeStyle = "#aebbd3";
-        simCtx.lineWidth = 2;
-        simCtx.strokeRect(meterX, meterY, 22, meterHeight);
+        ctx.strokeStyle = "#aebbd3";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(meterX, meterY, meterWidth, meterHeight);
 
-        simCtx.fillStyle = "#61e7b6";
-        simCtx.fillRect(
+        ctx.fillStyle = "#61e7b6";
+        ctx.fillRect(
           meterX + 3,
-          meterY + meterHeight - fillHeight,
-          16,
-          fillHeight
+          meterY + meterHeight * (1 - fill),
+          meterWidth - 6,
+          meterHeight * fill
         );
 
-        simCtx.fillStyle = "#aebbd3";
+        ctx.fillStyle = "#aebbd3";
+        ctx.font = "12px system-ui";
+        ctx.fillText("P", meterX + 8, meterY - 10);
+        ctx.fillText(`${pressure.toFixed(1)}`, meterX - 8, meterY + meterHeight + 23);
+      }
+
+      ctx.fillStyle = "#aebbd3";
+      ctx.font = "12px system-ui";
+      ctx.fillText("Gas container", box.x + 8, box.y - 12);
+    }
+
+    function animate(timestamp) {
+      if (lastTime === null) {
+        lastTime = timestamp;
+      }
+
+      const delta = Math.min((timestamp - lastTime) / 1000, 0.04);
+      lastTime = timestamp;
+
+      const size = getCanvasSize();
+      const v = getValues();
+      const box = getContainer(v, size.width, size.height);
+
+      syncParticles(v, box);
+      updateParticles(delta, v, box);
+      draw(v, box, size.width, size.height);
+
+      requestAnimationFrame(animate);
+    }
+
+    pauseButton.addEventListener("click", () => {
+      paused = !paused;
+      pauseButton.textContent = paused ? "Resume" : "Pause";
+    });
+
+    resetButton.addEventListener("click", resetParticles);
+
+    [temperatureInput, volumeInput, particleCountInput].forEach(input => {
+      input.addEventListener("input", resetParticles);
+    });
+
+    window.addEventListener("resize", () => {
+      lastTime = null;
+      resetParticles();
+    });
+
+    resetParticles();
+    requestAnimationFrame(animate);
+  </script>
+</body>
+</html>
