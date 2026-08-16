@@ -1,0 +1,567 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gas Laws Lab | Physics Simulations</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121a2e;
+      --canvas: #0c1425;
+      --border: #263658;
+      --text: #f2f7ff;
+      --muted: #aebbd3;
+      --blue: #61b4ff;
+      --green: #61e7b6;
+      --red: #ff7b8e;
+      --yellow: #ffd56a;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 20% 0%, #193563 0%, transparent 32rem),
+        var(--bg);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .page {
+      width: min(1180px, calc(100% - 32px));
+      margin: auto;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 28px 0 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+    }
+
+    h2 {
+      margin: 0 0 16px;
+      font-size: 1.1rem;
+    }
+
+    .subtitle {
+      margin: 7px 0 0;
+      color: var(--muted);
+    }
+
+    .back {
+      color: var(--blue);
+      text-decoration: none;
+      white-space: nowrap;
+      padding-top: 6px;
+    }
+
+    .back:hover { text-decoration: underline; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.75fr);
+      gap: 18px;
+      padding: 22px 0 18px;
+    }
+
+    .panel {
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: rgba(18, 26, 46, 0.9);
+    }
+
+    .simulation {
+      position: relative;
+      min-height: 440px;
+    }
+
+    #simCanvas {
+      display: block;
+      width: 100%;
+      height: 440px;
+      background: var(--canvas);
+    }
+
+    .canvas-label {
+      position: absolute;
+      top: 12px;
+      left: 14px;
+      color: var(--muted);
+      font-size: 0.84rem;
+      pointer-events: none;
+    }
+
+    .controls { padding: 20px; }
+    .control { margin-bottom: 19px; }
+
+    label {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    output {
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      cursor: pointer;
+      accent-color: var(--blue);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 5px 0 20px;
+    }
+
+    button {
+      cursor: pointer;
+      border: 0;
+      border-radius: 9px;
+      padding: 10px 14px;
+      color: #08101c;
+      background: linear-gradient(135deg, var(--blue), var(--green));
+      font: inherit;
+      font-weight: 750;
+    }
+
+    button.secondary {
+      color: var(--text);
+      border: 1px solid var(--border);
+      background: transparent;
+    }
+
+    .checks {
+      display: grid;
+      gap: 10px;
+    }
+
+    .checks label {
+      justify-content: flex-start;
+      align-items: center;
+      margin: 0;
+      cursor: pointer;
+    }
+
+    .checks input { accent-color: var(--blue); }
+
+    .readouts {
+      margin-top: 22px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--canvas);
+    }
+
+    .readouts h3 {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .readouts p {
+      display: flex;
+      justify-content: space-between;
+      margin: 6px 0;
+      font-size: 0.92rem;
+    }
+
+    .readouts strong { font-variant-numeric: tabular-nums; }
+
+    .graphs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      padding-bottom: 40px;
+    }
+
+    .graph { padding: 14px; }
+
+    .graph h2 {
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .graph canvas {
+      display: block;
+      width: 100%;
+      height: 205px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--canvas);
+    }
+
+    .legend {
+      display: flex;
+      gap: 14px;
+      margin-top: 9px;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .blue { color: var(--blue); }
+    .green { color: var(--green); }
+    .yellow { color: var(--yellow); }
+
+    @media (max-width: 850px) {
+      header { flex-direction: column; }
+      .layout, .graphs { grid-template-columns: 1fr; }
+      #simCanvas { height: 360px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div>
+        <h1>Gas Laws Lab</h1>
+        <p class="subtitle">Change temperature, volume, and particle count to explore pressure and particle collisions.</p>
+      </div>
+      <a class="back" href="index.html">← All simulations</a>
+    </header>
+
+    <main class="layout">
+      <section class="panel simulation">
+        <canvas id="simCanvas"></canvas>
+        <div class="canvas-label">Particle speed increases as temperature rises</div>
+      </section>
+
+      <aside class="panel controls">
+        <h2>Gas controls</h2>
+
+        <div class="control">
+          <label for="temperature">
+            <span>Temperature</span>
+            <output id="temperatureOut">300 K</output>
+          </label>
+          <input id="temperature" type="range" min="100" max="800" value="300" step="10">
+        </div>
+
+        <div class="control">
+          <label for="volume">
+            <span>Container volume</span>
+            <output id="volumeOut">5.0 L</output>
+          </label>
+          <input id="volume" type="range" min="2" max="10" value="5" step="0.5">
+        </div>
+
+        <div class="control">
+          <label for="particles">
+            <span>Number of particles</span>
+            <output id="particlesOut">40</output>
+          </label>
+          <input id="particles" type="range" min="10" max="100" value="40" step="5">
+        </div>
+
+        <div class="actions">
+          <button id="pauseButton" type="button">Pause</button>
+          <button id="resetButton" class="secondary" type="button">Reset gas</button>
+        </div>
+
+        <div class="checks">
+          <label><input id="trails" type="checkbox"> Show particle trails</label>
+          <label><input id="pressureMeter" type="checkbox" checked> Show pressure meter</label>
+        </div>
+
+        <section class="readouts">
+          <h3>Gas readouts</h3>
+          <p><span>Pressure</span><strong id="pressureOut">0.00 kPa</strong></p>
+          <p><span>Average speed</span><strong id="speedOut">0.00</strong></p>
+          <p><span>Particle count</span><strong id="countOut">0</strong></p>
+          <p><span>PV / nT</span><strong id="ratioOut">—</strong></p>
+        </section>
+      </aside>
+    </main>
+
+    <section class="graphs">
+      <section class="panel graph">
+        <h2>Pressure vs. time</h2>
+        <canvas id="pressureGraph"></canvas>
+        <div class="legend"><span class="blue">● pressure</span></div>
+      </section>
+
+      <section class="panel graph">
+        <h2>Temperature vs. time</h2>
+        <canvas id="temperatureGraph"></canvas>
+        <div class="legend"><span class="yellow">● temperature</span></div>
+      </section>
+    </section>
+  </div>
+
+  <script>
+    const simCanvas = document.getElementById("simCanvas");
+    const simCtx = simCanvas.getContext("2d");
+    const pressureGraph = document.getElementById("pressureGraph");
+    const pressureCtx = pressureGraph.getContext("2d");
+    const temperatureGraph = document.getElementById("temperatureGraph");
+    const temperatureCtx = temperatureGraph.getContext("2d");
+
+    const temperatureInput = document.getElementById("temperature");
+    const volumeInput = document.getElementById("volume");
+    const particlesInput = document.getElementById("particles");
+    const trailsInput = document.getElementById("trails");
+    const pressureMeterInput = document.getElementById("pressureMeter");
+
+    const temperatureOut = document.getElementById("temperatureOut");
+    const volumeOut = document.getElementById("volumeOut");
+    const particlesOut = document.getElementById("particlesOut");
+
+    const pressureOut = document.getElementById("pressureOut");
+    const speedOut = document.getElementById("speedOut");
+    const countOut = document.getElementById("countOut");
+    const ratioOut = document.getElementById("ratioOut");
+
+    const pauseButton = document.getElementById("pauseButton");
+    const resetButton = document.getElementById("resetButton");
+
+    let gas = [];
+    let paused = false;
+    let time = 0;
+    let history = [];
+    let previousTimestamp = null;
+
+    function values() {
+      return {
+        temperature: Number(temperatureInput.value),
+        volume: Number(volumeInput.value),
+        count: Number(particlesInput.value)
+      };
+    }
+
+    function resizeCanvas(canvas) {
+      const ratio = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+
+      canvas.width = Math.round(rect.width * ratio);
+      canvas.height = Math.round(rect.height * ratio);
+
+      const ctx = canvas.getContext("2d");
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+
+      return { width: rect.width, height: rect.height };
+    }
+
+    function gasBox(v, width, height) {
+      const maxWidth = width * 0.72;
+      const minWidth = width * 0.31;
+
+      const fraction = (v.volume - 2) / 8;
+      const boxWidth = minWidth + fraction * (maxWidth - minWidth);
+
+      return {
+        x: (width - boxWidth) / 2,
+        y: height * 0.18,
+        width: boxWidth,
+        height: height * 0.64
+      };
+    }
+
+    function speedForTemperature(temp) {
+      return 1.4 + Math.sqrt(temp / 100) * 1.7;
+    }
+
+    function makeParticle(box, speed) {
+      const angle = Math.random() * Math.PI * 2;
+      return {
+        x: box.x + 10 + Math.random() * (box.width - 20),
+        y: box.y + 10 + Math.random() * (box.height - 20),
+        vx: Math.cos(angle) * speed * (0.6 + Math.random() * 0.8),
+        vy: Math.sin(angle) * speed * (0.6 + Math.random() * 0.8),
+        trail: []
+      };
+    }
+
+    function resetGas() {
+      const v = values();
+      const rect = simCanvas.getBoundingClientRect();
+      const box = gasBox(v, rect.width || 600, rect.height || 440);
+      const speed = speedForTemperature(v.temperature);
+
+      gas = Array.from(
+        { length: v.count },
+        () => makeParticle(box, speed)
+      );
+
+      time = 0;
+      history = [];
+      paused = false;
+      pauseButton.textContent = "Pause";
+    }
+
+    function updateParticleCount(v, box) {
+      const desired = v.count;
+      const speed = speedForTemperature(v.temperature);
+
+      while (gas.length < desired) {
+        gas.push(makeParticle(box, speed));
+      }
+
+      while (gas.length > desired) {
+        gas.pop();
+      }
+    }
+
+    function updatePhysics(delta, v, box) {
+      if (paused) return;
+
+      const desiredSpeed = speedForTemperature(v.temperature);
+      let collisionCount = 0;
+
+      gas.forEach(particle => {
+        const currentSpeed = Math.hypot(particle.vx, particle.vy);
+
+        if (currentSpeed > 0.001) {
+          const scale = desiredSpeed / currentSpeed;
+          particle.vx += (particle.vx * scale - particle.vx) * 0.015;
+          particle.vy += (particle.vy * scale - particle.vy) * 0.015;
+        }
+
+        particle.x += particle.vx * delta * 18;
+        particle.y += particle.vy * delta * 18;
+
+        if (particle.x < box.x + 5) {
+          particle.x = box.x + 5;
+          particle.vx = Math.abs(particle.vx);
+          collisionCount++;
+        }
+
+        if (particle.x > box.x + box.width - 5) {
+          particle.x = box.x + box.width - 5;
+          particle.vx = -Math.abs(particle.vx);
+          collisionCount++;
+        }
+
+        if (particle.y < box.y + 5) {
+          particle.y = box.y + 5;
+          particle.vy = Math.abs(particle.vy);
+          collisionCount++;
+        }
+
+        if (particle.y > box.y + box.height - 5) {
+          particle.y = box.y + box.height - 5;
+          particle.vy = -Math.abs(particle.vy);
+          collisionCount++;
+        }
+
+        if (trailsInput.checked) {
+          particle.trail.push({ x: particle.x, y: particle.y });
+          if (particle.trail.length > 16) particle.trail.shift();
+        } else {
+          particle.trail = [];
+        }
+      });
+
+      time += delta;
+
+      const pressure = v.count * v.temperature / v.volume * 0.0007;
+      const averageSpeed =
+        gas.reduce((sum, particle) => sum + Math.hypot(particle.vx, particle.vy), 0) /
+        Math.max(gas.length, 1);
+
+      if (history.length === 0 || time - history[history.length - 1].t > 0.08) {
+        history.push({
+          t: time,
+          pressure,
+          temperature: v.temperature,
+          averageSpeed,
+          collisions: collisionCount
+        });
+      }
+
+      history = history.filter(point => point.t >= time - 15);
+    }
+
+    function draw(v) {
+      const { width, height } = resizeCanvas(simCanvas);
+      const box = gasBox(v, width, height);
+
+      updateParticleCount(v, box);
+
+      const pressure = v.count * v.temperature / v.volume * 0.0007;
+      const averageSpeed =
+        gas.reduce((sum, particle) => sum + Math.hypot(particle.vx, particle.vy), 0) /
+        Math.max(gas.length, 1);
+
+      temperatureOut.textContent = `${v.temperature.toFixed(0)} K`;
+      volumeOut.textContent = `${v.volume.toFixed(1)} L`;
+      particlesOut.textContent = v.count.toFixed(0);
+
+      pressureOut.textContent = `${pressure.toFixed(2)} kPa`;
+      speedOut.textContent = averageSpeed.toFixed(2);
+      countOut.textContent = gas.length.toString();
+      ratioOut.textContent = (pressure * v.volume / (v.count * v.temperature)).toExponential(2);
+
+      simCtx.clearRect(0, 0, width, height);
+      simCtx.fillStyle = "#0c1425";
+      simCtx.fillRect(0, 0, width, height);
+
+      simCtx.fillStyle = "rgba(97, 180, 255, 0.10)";
+      simCtx.fillRect(box.x, box.y, box.width, box.height);
+
+      simCtx.strokeStyle = "#aebbd3";
+      simCtx.lineWidth = 3;
+      simCtx.strokeRect(box.x, box.y, box.width, box.height);
+
+      if (trailsInput.checked) {
+        gas.forEach(particle => {
+          if (particle.trail.length < 2) return;
+
+          simCtx.strokeStyle = "rgba(97, 180, 255, 0.22)";
+          simCtx.lineWidth = 1;
+          simCtx.beginPath();
+
+          particle.trail.forEach((point, index) => {
+            if (index === 0) simCtx.moveTo(point.x, point.y);
+            else simCtx.lineTo(point.x, point.y);
+          });
+
+          simCtx.stroke();
+        });
+      }
+
+      const heatColour = `hsl(${Math.max(0, 210 - v.temperature / 800 * 170)}, 92%, 65%)`;
+
+      gas.forEach(particle => {
+        simCtx.fillStyle = heatColour;
+        simCtx.beginPath();
+        simCtx.arc(particle.x, particle.y, 4, 0, Math.PI * 2);
+        simCtx.fill();
+      });
+
+      if (pressureMeterInput.checked) {
+        const meterX = width * 0.10;
+        const meterY = height * 0.22;
+        const meterHeight = height * 0.56;
+        const fillHeight = Math.min(meterHeight, pressure / 12 * meterHeight);
+
+        simCtx.strokeStyle = "#aebbd3";
+        simCtx.lineWidth = 2;
+        simCtx.strokeRect(meterX, meterY, 22, meterHeight);
+
+        simCtx.fillStyle = "#61e7b6";
+        simCtx.fillRect(
+          meterX + 3,
+          meterY + meterHeight - fillHeight,
+          16,
+          fillHeight
+        );
+
+        simCtx.fillStyle = "#aebbd3";
