@@ -1,0 +1,624 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Magnet & Compass | Physics Simulations</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121a2e;
+      --canvas: #0c1425;
+      --border: #263658;
+      --text: #f2f7ff;
+      --muted: #aebbd3;
+      --blue: #61b4ff;
+      --green: #61e7b6;
+      --red: #ff7b8e;
+      --yellow: #ffd56a;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 20% 0%, #193563 0%, transparent 32rem),
+        var(--bg);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .page {
+      width: min(1180px, calc(100% - 32px));
+      margin: auto;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 28px 0 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+    }
+
+    h2 {
+      margin: 0 0 16px;
+      font-size: 1.1rem;
+    }
+
+    .subtitle {
+      margin: 7px 0 0;
+      color: var(--muted);
+    }
+
+    .back {
+      color: var(--blue);
+      text-decoration: none;
+      white-space: nowrap;
+      padding-top: 6px;
+    }
+
+    .back:hover { text-decoration: underline; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.75fr);
+      gap: 18px;
+      padding: 22px 0 40px;
+    }
+
+    .panel {
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: rgba(18, 26, 46, 0.9);
+    }
+
+    .simulation {
+      position: relative;
+    }
+
+    #simCanvas {
+      display: block;
+      width: 100%;
+      height: 460px;
+      background: var(--canvas);
+      cursor: grab;
+      touch-action: none;
+    }
+
+    #simCanvas:active {
+      cursor: grabbing;
+    }
+
+    .canvas-label {
+      position: absolute;
+      top: 12px;
+      left: 14px;
+      color: var(--muted);
+      font-size: 0.84rem;
+      pointer-events: none;
+    }
+
+    .controls { padding: 20px; }
+
+    .control { margin-bottom: 20px; }
+
+    label {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    output {
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      cursor: pointer;
+      accent-color: var(--blue);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 8px 0 20px;
+    }
+
+    button {
+      cursor: pointer;
+      border: 0;
+      border-radius: 9px;
+      padding: 10px 14px;
+      color: #08101c;
+      background: linear-gradient(135deg, var(--blue), var(--green));
+      font: inherit;
+      font-weight: 750;
+    }
+
+    button.secondary {
+      color: var(--text);
+      border: 1px solid var(--border);
+      background: transparent;
+    }
+
+    .checks {
+      display: grid;
+      gap: 10px;
+    }
+
+    .checks label {
+      justify-content: flex-start;
+      align-items: center;
+      margin: 0;
+      cursor: pointer;
+    }
+
+    .checks input { accent-color: var(--blue); }
+
+    .readouts {
+      margin-top: 22px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--canvas);
+    }
+
+    .readouts h3 {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .readouts p {
+      display: flex;
+      justify-content: space-between;
+      margin: 6px 0;
+      font-size: 0.92rem;
+    }
+
+    .readouts strong { font-variant-numeric: tabular-nums; }
+
+    .help {
+      margin: 16px 0 0;
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.45;
+    }
+
+    @media (max-width: 850px) {
+      header { flex-direction: column; }
+      .layout { grid-template-columns: 1fr; }
+      #simCanvas { height: 360px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div>
+        <h1>Magnet & Compass</h1>
+        <p class="subtitle">Drag a bar magnet around the field map and observe how compasses align with the magnetic field.</p>
+      </div>
+      <a class="back" href="index.html">← All simulations</a>
+    </header>
+
+    <main class="layout">
+      <section class="panel simulation">
+        <canvas id="simCanvas"></canvas>
+        <div class="canvas-label">Drag the magnet · Red ends of compasses point along the field</div>
+      </section>
+
+      <aside class="panel controls">
+        <h2>Magnet controls</h2>
+
+        <div class="control">
+          <label for="strength">
+            <span>Magnet strength</span>
+            <output id="strengthOut">1.0</output>
+          </label>
+          <input id="strength" type="range" min="0.2" max="3" value="1" step="0.1">
+        </div>
+
+        <div class="control">
+          <label for="angle">
+            <span>Magnet angle</span>
+            <output id="angleOut">0°</output>
+          </label>
+          <input id="angle" type="range" min="0" max="360" value="0" step="1">
+        </div>
+
+        <div class="actions">
+          <button id="resetButton" type="button">Centre magnet</button>
+          <button id="flipButton" class="secondary" type="button">Flip poles</button>
+        </div>
+
+        <div class="checks">
+          <label><input id="compasses" type="checkbox" checked> Show compasses</label>
+          <label><input id="arrows" type="checkbox" checked> Show field arrows</label>
+          <label><input id="lines" type="checkbox"> Show field lines</label>
+        </div>
+
+        <section class="readouts">
+          <h3>Field at centre</h3>
+          <p><span>Field x-component</span><strong id="bxOut">0.00</strong></p>
+          <p><span>Field y-component</span><strong id="byOut">0.00</strong></p>
+          <p><span>Field magnitude</span><strong id="bOut">0.00</strong></p>
+          <p><span>Direction</span><strong id="directionOut">0°</strong></p>
+        </section>
+
+        <p class="help">
+          This visualizes a simplified magnetic dipole field. Compasses align with the local field direction.
+        </p>
+      </aside>
+    </main>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("simCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const strengthInput = document.getElementById("strength");
+    const angleInput = document.getElementById("angle");
+    const compassesInput = document.getElementById("compasses");
+    const arrowsInput = document.getElementById("arrows");
+    const linesInput = document.getElementById("lines");
+
+    const strengthOut = document.getElementById("strengthOut");
+    const angleOut = document.getElementById("angleOut");
+
+    const resetButton = document.getElementById("resetButton");
+    const flipButton = document.getElementById("flipButton");
+
+    const bxOut = document.getElementById("bxOut");
+    const byOut = document.getElementById("byOut");
+    const bOut = document.getElementById("bOut");
+    const directionOut = document.getElementById("directionOut");
+
+    let magnetX = 0.5;
+    let magnetY = 0.5;
+    let dragging = false;
+    let flipped = false;
+
+    function resizeCanvas() {
+      const ratio = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+
+      canvas.width = Math.round(rect.width * ratio);
+      canvas.height = Math.round(rect.height * ratio);
+
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+
+      return { width: rect.width, height: rect.height };
+    }
+
+    function getSettings() {
+      return {
+        strength: Number(strengthInput.value) * (flipped ? -1 : 1),
+        angle: Number(angleInput.value) * Math.PI / 180
+      };
+    }
+
+    function fieldAt(x, y, width, height, settings) {
+      const mx = magnetX * width;
+      const my = magnetY * height;
+
+      const dx = (x - mx) / 80;
+      const dy = (y - my) / 80;
+
+      const r2 = dx * dx + dy * dy + 0.15;
+      const r = Math.sqrt(r2);
+
+      const px = Math.cos(settings.angle);
+      const py = Math.sin(settings.angle);
+
+      const dot = dx * px + dy * py;
+
+      const factor = settings.strength / Math.pow(r, 5);
+
+      const bx = factor * (3 * dot * dx - px * r2);
+      const by = factor * (3 * dot * dy - py * r2);
+
+      return {
+        bx,
+        by,
+        magnitude: Math.hypot(bx, by)
+      };
+    }
+
+    function arrow(x1, y1, x2, y2, colour, width = 1.5, size = 5) {
+      const angle = Math.atan2(y2 - y1, x2 - x1);
+
+      ctx.strokeStyle = colour;
+      ctx.lineWidth = width;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+
+      ctx.fillStyle = colour;
+      ctx.beginPath();
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(
+        x2 - size * Math.cos(angle - Math.PI / 6),
+        y2 - size * Math.sin(angle - Math.PI / 6)
+      );
+      ctx.lineTo(
+        x2 - size * Math.cos(angle + Math.PI / 6),
+        y2 - size * Math.sin(angle + Math.PI / 6)
+      );
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function drawMagnet(width, height, settings) {
+      const x = magnetX * width;
+      const y = magnetY * height;
+      const length = 128;
+      const thickness = 35;
+
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(settings.angle);
+
+      ctx.fillStyle = "#ff7b8e";
+      ctx.fillRect(-length / 2, -thickness / 2, length / 2, thickness);
+
+      ctx.fillStyle = "#61b4ff";
+      ctx.fillRect(0, -thickness / 2, length / 2, thickness);
+
+      ctx.strokeStyle = "#06101d";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(-length / 2, -thickness / 2, length, thickness);
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 16px system-ui";
+      ctx.fillText("N", -length / 4 - 6, 6);
+      ctx.fillText("S", length / 4 - 5, 6);
+
+      ctx.restore();
+    }
+
+    function drawCompass(x, y, field) {
+      if (field.magnitude < 0.001) return;
+
+      const angle = Math.atan2(field.by, field.bx);
+      const radius = 10;
+
+      ctx.fillStyle = "rgba(18, 26, 46, 0.92)";
+      ctx.strokeStyle = "rgba(174, 187, 211, 0.65)";
+      ctx.lineWidth = 1.2;
+
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      const redX = x + Math.cos(angle) * 8;
+      const redY = y + Math.sin(angle) * 8;
+      const blueX = x - Math.cos(angle) * 8;
+      const blueY = y - Math.sin(angle) * 8;
+
+      ctx.strokeStyle = "#ff7b8e";
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(redX, redY);
+      ctx.stroke();
+
+      ctx.strokeStyle = "#61b4ff";
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(blueX, blueY);
+      ctx.stroke();
+    }
+
+    function drawFieldArrows(width, height, settings) {
+      const spacing = 47;
+
+      for (let x = spacing / 2; x < width; x += spacing) {
+        for (let y = spacing / 2; y < height; y += spacing) {
+          const field = fieldAt(x, y, width, height, settings);
+
+          if (field.magnitude < 0.002) continue;
+
+          const arrowLength = Math.min(
+            16,
+            4 + Math.log(field.magnitude + 1) * 3.5
+          );
+
+          arrow(
+            x,
+            y,
+            x + field.bx / field.magnitude * arrowLength,
+            y + field.by / field.magnitude * arrowLength,
+            "rgba(97, 180, 255, 0.50)",
+            1,
+            4
+          );
+        }
+      }
+    }
+
+    function drawFieldLines(width, height, settings) {
+      const magnetCentreX = magnetX * width;
+      const magnetCentreY = magnetY * height;
+      const angle = settings.angle;
+      const length = 64;
+
+      for (let a = 0; a < Math.PI * 2; a += Math.PI / 10) {
+        let x = magnetCentreX + Math.cos(angle) * length + Math.cos(a) * 18;
+        let y = magnetCentreY + Math.sin(angle) * length + Math.sin(a) * 18;
+
+        ctx.strokeStyle = "rgba(97, 231, 182, 0.22)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+
+        for (let step = 0; step < 160; step++) {
+          const field = fieldAt(x, y, width, height, settings);
+
+          if (field.magnitude < 0.002) break;
+
+          x += field.bx / field.magnitude * 4;
+          y += field.by / field.magnitude * 4;
+
+          if (x < 0 || x > width || y < 0 || y > height) break;
+
+          ctx.lineTo(x, y);
+        }
+
+        ctx.stroke();
+      }
+    }
+
+    function draw() {
+      const { width, height } = resizeCanvas();
+      const settings = getSettings();
+
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = "#0c1425";
+      ctx.fillRect(0, 0, width, height);
+
+      ctx.strokeStyle = "rgba(174,187,211,0.10)";
+      ctx.lineWidth = 1;
+
+      for (let x = 0; x < width; x += 50) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, height);
+        ctx.stroke();
+      }
+
+      for (let y = 0; y < height; y += 50) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+        ctx.stroke();
+      }
+
+      if (linesInput.checked) {
+        drawFieldLines(width, height, settings);
+      }
+
+      if (arrowsInput.checked) {
+        drawFieldArrows(width, height, settings);
+      }
+
+      if (compassesInput.checked) {
+        const spacing = 80;
+
+        for (let x = spacing / 2; x < width; x += spacing) {
+          for (let y = spacing / 2; y < height; y += spacing) {
+            const field = fieldAt(x, y, width, height, settings);
+            drawCompass(x, y, field);
+          }
+        }
+      }
+
+      drawMagnet(width, height, settings);
+
+      const centreField = fieldAt(
+        width / 2,
+        height / 2,
+        width,
+        height,
+        settings
+      );
+
+      const direction = Math.atan2(
+        centreField.by,
+        centreField.bx
+      ) * 180 / Math.PI;
+
+      strengthOut.textContent =
+        Math.abs(Number(strengthInput.value)).toFixed(1);
+
+      angleOut.textContent =
+        `${Number(angleInput.value).toFixed(0)}°`;
+
+      bxOut.textContent = centreField.bx.toFixed(2);
+      byOut.textContent = centreField.by.toFixed(2);
+      bOut.textContent = centreField.magnitude.toFixed(2);
+      directionOut.textContent = `${direction.toFixed(0)}°`;
+    }
+
+    function pointFromEvent(event) {
+      const rect = canvas.getBoundingClientRect();
+
+      return {
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top,
+        width: rect.width,
+        height: rect.height
+      };
+    }
+
+    canvas.addEventListener("pointerdown", event => {
+      const point = pointFromEvent(event);
+      const mx = magnetX * point.width;
+      const my = magnetY * point.height;
+
+      if (Math.hypot(point.x - mx, point.y - my) < 90) {
+        dragging = true;
+        canvas.setPointerCapture(event.pointerId);
+      }
+    });
+
+    canvas.addEventListener("pointermove", event => {
+      if (!dragging) return;
+
+      const point = pointFromEvent(event);
+
+      magnetX = Math.max(0.14, Math.min(0.86, point.x / point.width));
+      magnetY = Math.max(0.14, Math.min(0.86, point.y / point.height));
+
+      draw();
+    });
+
+    function stopDrag() {
+      dragging = false;
+    }
+
+    canvas.addEventListener("pointerup", stopDrag);
+    canvas.addEventListener("pointercancel", stopDrag);
+
+    resetButton.addEventListener("click", () => {
+      magnetX = 0.5;
+      magnetY = 0.5;
+      angleInput.value = 0;
+      flipped = false;
+      draw();
+    });
+
+    flipButton.addEventListener("click", () => {
+      flipped = !flipped;
+      draw();
+    });
+
+    [
+      strengthInput,
+      angleInput,
+      compassesInput,
+      arrowsInput,
+      linesInput
+    ].forEach(input => input.addEventListener("input", draw));
+
+    window.addEventListener("resize", draw);
+
+    draw();
+  </script>
+</body>
+</html>
