@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Magnet & Compass | Physics Simulations</title>
+
   <style>
     :root {
       --bg: #0b1020;
@@ -106,9 +107,13 @@
       pointer-events: none;
     }
 
-    .controls { padding: 20px; }
+    .controls {
+      padding: 20px;
+    }
 
-    .control { margin-bottom: 20px; }
+    .control {
+      margin-bottom: 20px;
+    }
 
     label {
       display: flex;
@@ -166,7 +171,9 @@
       cursor: pointer;
     }
 
-    .checks input { accent-color: var(--blue); }
+    .checks input {
+      accent-color: var(--blue);
+    }
 
     .readouts {
       margin-top: 22px;
@@ -189,7 +196,9 @@
       font-size: 0.92rem;
     }
 
-    .readouts strong { font-variant-numeric: tabular-nums; }
+    .readouts strong {
+      font-variant-numeric: tabular-nums;
+    }
 
     .help {
       margin: 16px 0 0;
@@ -205,20 +214,24 @@
     }
   </style>
 </head>
+
 <body>
   <div class="page">
     <header>
       <div>
         <h1>Magnet & Compass</h1>
-        <p class="subtitle">Drag a bar magnet around the field map and observe how compasses align with the magnetic field.</p>
+        <p class="subtitle">Drag a bar magnet and observe compasses and field lines around it.</p>
       </div>
+
       <a class="back" href="index.html">← All simulations</a>
     </header>
 
     <main class="layout">
       <section class="panel simulation">
         <canvas id="simCanvas"></canvas>
-        <div class="canvas-label">Drag the magnet · Red ends of compasses point along the field</div>
+        <div class="canvas-label">
+          Drag the magnet · Green field-line arrows point from N to S outside the magnet
+        </div>
       </section>
 
       <aside class="panel controls">
@@ -248,19 +261,19 @@
         <div class="checks">
           <label><input id="compasses" type="checkbox" checked> Show compasses</label>
           <label><input id="arrows" type="checkbox" checked> Show field arrows</label>
-          <label><input id="lines" type="checkbox"> Show field lines</label>
+          <label><input id="lines" type="checkbox" checked> Show field lines</label>
         </div>
 
         <section class="readouts">
-          <h3>Field at centre</h3>
+          <h3>Field at canvas centre</h3>
           <p><span>Field x-component</span><strong id="bxOut">0.00</strong></p>
           <p><span>Field y-component</span><strong id="byOut">0.00</strong></p>
           <p><span>Field magnitude</span><strong id="bOut">0.00</strong></p>
-          <p><span>Direction</span><strong id="directionOut">0°</strong></p>
+          <p><span>Field direction</span><strong id="directionOut">0°</strong></p>
         </section>
 
         <p class="help">
-          This visualizes a simplified magnetic dipole field. Compasses align with the local field direction.
+          The model treats the bar magnet as a north pole and a south pole. Outside the magnet, magnetic field lines run from north to south. The full physical field forms closed loops, returning through the magnet.
         </p>
       </aside>
     </main>
@@ -272,6 +285,7 @@
 
     const strengthInput = document.getElementById("strength");
     const angleInput = document.getElementById("angle");
+
     const compassesInput = document.getElementById("compasses");
     const arrowsInput = document.getElementById("arrows");
     const linesInput = document.getElementById("lines");
@@ -289,8 +303,8 @@
 
     let magnetX = 0.5;
     let magnetY = 0.5;
-    let dragging = false;
     let flipped = false;
+    let dragging = false;
 
     function resizeCanvas() {
       const ratio = window.devicePixelRatio || 1;
@@ -301,35 +315,81 @@
 
       ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
 
-      return { width: rect.width, height: rect.height };
+      return {
+        width: rect.width,
+        height: rect.height
+      };
     }
 
-    function getSettings() {
+    function settings() {
       return {
-        strength: Number(strengthInput.value) * (flipped ? -1 : 1),
+        strength: Number(strengthInput.value),
         angle: Number(angleInput.value) * Math.PI / 180
       };
     }
 
-    function fieldAt(x, y, width, height, settings) {
-      const mx = magnetX * width;
-      const my = magnetY * height;
+    function polePositions(width, height, s) {
+      const centreX = magnetX * width;
+      const centreY = magnetY * height;
 
-      const dx = (x - mx) / 80;
-      const dy = (y - my) / 80;
+      const halfLength = 60;
+      const axisX = Math.cos(s.angle);
+      const axisY = Math.sin(s.angle);
 
-      const r2 = dx * dx + dy * dy + 0.15;
-      const r = Math.sqrt(r2);
+      let northX = centreX + axisX * halfLength;
+      let northY = centreY + axisY * halfLength;
 
-      const px = Math.cos(settings.angle);
-      const py = Math.sin(settings.angle);
+      let southX = centreX - axisX * halfLength;
+      let southY = centreY - axisY * halfLength;
 
-      const dot = dx * px + dy * py;
+      if (flipped) {
+        [northX, southX] = [southX, northX];
+        [northY, southY] = [southY, northY];
+      }
 
-      const factor = settings.strength / Math.pow(r, 5);
+      return {
+        centreX,
+        centreY,
+        northX,
+        northY,
+        southX,
+        southY,
+        axisX,
+        axisY
+      };
+    }
 
-      const bx = factor * (3 * dot * dx - px * r2);
-      const by = factor * (3 * dot * dy - py * r2);
+    /*
+      Simplified field: vector away from N plus vector toward S.
+      This is not a full Maxwell-equation simulation, but it gives
+      stable and understandable N → S external field direction.
+    */
+    function fieldAt(x, y, width, height, s) {
+      const poles = polePositions(width, height, s);
+
+      const northDX = x - poles.northX;
+      const northDY = y - poles.northY;
+
+      const southDX = x - poles.southX;
+      const southDY = y - poles.southY;
+
+      const northR2 = northDX * northDX + northDY * northDY + 500;
+      const southR2 = southDX * southDX + southDY * southDY + 500;
+
+      const northR = Math.sqrt(northR2);
+      const southR = Math.sqrt(southR2);
+
+      /*
+        Positive source: field points away.
+        Negative source: field points toward it.
+      */
+      const bx =
+        s.strength * northDX / (northR2 * northR) -
+        s.strength * southDX / (southR2 * southR);
+
+      const by =
+        s.strength * northDY / (northR2 * northR) -
+        s.strength * southDY / (southR2 * southR);
 
       return {
         bx,
@@ -338,7 +398,7 @@
       };
     }
 
-    function arrow(x1, y1, x2, y2, colour, width = 1.5, size = 5) {
+    function drawArrow(x1, y1, x2, y2, colour, width = 1.5, headSize = 5) {
       const angle = Math.atan2(y2 - y1, x2 - x1);
 
       ctx.strokeStyle = colour;
@@ -352,49 +412,139 @@
       ctx.beginPath();
       ctx.moveTo(x2, y2);
       ctx.lineTo(
-        x2 - size * Math.cos(angle - Math.PI / 6),
-        y2 - size * Math.sin(angle - Math.PI / 6)
+        x2 - headSize * Math.cos(angle - Math.PI / 6),
+        y2 - headSize * Math.sin(angle - Math.PI / 6)
       );
       ctx.lineTo(
-        x2 - size * Math.cos(angle + Math.PI / 6),
-        y2 - size * Math.sin(angle + Math.PI / 6)
+        x2 - headSize * Math.cos(angle + Math.PI / 6),
+        y2 - headSize * Math.sin(angle + Math.PI / 6)
       );
       ctx.closePath();
       ctx.fill();
     }
 
-    function drawMagnet(width, height, settings) {
-      const x = magnetX * width;
-      const y = magnetY * height;
-      const length = 128;
-      const thickness = 35;
+    function drawFieldArrows(width, height, s) {
+      const gap = 44;
 
-      ctx.save();
-      ctx.translate(x, y);
-      ctx.rotate(settings.angle);
+      for (let x = gap / 2; x < width; x += gap) {
+        for (let y = gap / 2; y < height; y += gap) {
+          const field = fieldAt(x, y, width, height, s);
 
-      ctx.fillStyle = "#ff7b8e";
-      ctx.fillRect(-length / 2, -thickness / 2, length / 2, thickness);
+          if (field.magnitude < 0.000001) continue;
 
-      ctx.fillStyle = "#61b4ff";
-      ctx.fillRect(0, -thickness / 2, length / 2, thickness);
+          const length = 14;
 
-      ctx.strokeStyle = "#06101d";
-      ctx.lineWidth = 2;
-      ctx.strokeRect(-length / 2, -thickness / 2, length, thickness);
+          drawArrow(
+            x,
+            y,
+            x + field.bx / field.magnitude * length,
+            y + field.by / field.magnitude * length,
+            "rgba(97, 180, 255, 0.58)",
+            1,
+            4
+          );
+        }
+      }
+    }
 
-      ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 16px system-ui";
-      ctx.fillText("N", -length / 4 - 6, 6);
-      ctx.fillText("S", length / 4 - 5, 6);
+    function traceFieldLine(startX, startY, width, height, s) {
+      const points = [];
+      let x = startX;
+      let y = startY;
 
-      ctx.restore();
+      for (let step = 0; step < 350; step++) {
+        const field = fieldAt(x, y, width, height, s);
+
+        if (field.magnitude < 0.0000005) break;
+
+        const stepSize = 3.3;
+
+        x += field.bx / field.magnitude * stepSize;
+        y += field.by / field.magnitude * stepSize;
+
+        if (x < -30 || x > width + 30 || y < -30 || y > height + 30) {
+          break;
+        }
+
+        points.push({ x, y });
+
+        const poles = polePositions(width, height, s);
+
+        if (
+          step > 10 &&
+          Math.hypot(x - poles.southX, y - poles.southY) < 16
+        ) {
+          break;
+        }
+      }
+
+      return points;
+    }
+
+    function drawFieldLines(width, height, s) {
+      const poles = polePositions(width, height, s);
+      const totalLines = 20;
+
+      /*
+        Start each field line immediately outside the north pole,
+        spread in all directions around it.
+      */
+      for (let i = 0; i < totalLines; i++) {
+        const spread =
+          -Math.PI * 0.82 +
+          i * (Math.PI * 1.64 / (totalLines - 1));
+
+        const startX = poles.northX + Math.cos(s.angle + spread) * 13;
+        const startY = poles.northY + Math.sin(s.angle + spread) * 13;
+
+        const points = traceFieldLine(
+          startX,
+          startY,
+          width,
+          height,
+          s
+        );
+
+        if (points.length < 4) continue;
+
+        ctx.strokeStyle = "rgba(97, 231, 182, 0.48)";
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(startX, startY);
+
+        points.forEach(point => {
+          ctx.lineTo(point.x, point.y);
+        });
+
+        ctx.stroke();
+
+        /*
+          Add arrowheads in the correct tracing direction:
+          away from N and toward S.
+        */
+        const arrowIndex = Math.floor(points.length * 0.5);
+
+        if (arrowIndex < points.length - 2) {
+          const from = points[arrowIndex];
+          const to = points[arrowIndex + 2];
+
+          drawArrow(
+            from.x,
+            from.y,
+            to.x,
+            to.y,
+            "rgba(97, 231, 182, 0.92)",
+            1.4,
+            6
+          );
+        }
+      }
     }
 
     function drawCompass(x, y, field) {
-      if (field.magnitude < 0.001) return;
+      if (field.magnitude < 0.000001) return;
 
-      const angle = Math.atan2(field.by, field.bx);
+      const direction = Math.atan2(field.by, field.bx);
       const radius = 10;
 
       ctx.fillStyle = "rgba(18, 26, 46, 0.92)";
@@ -406,13 +556,14 @@
       ctx.fill();
       ctx.stroke();
 
-      const redX = x + Math.cos(angle) * 8;
-      const redY = y + Math.sin(angle) * 8;
-      const blueX = x - Math.cos(angle) * 8;
-      const blueY = y - Math.sin(angle) * 8;
+      const redX = x + Math.cos(direction) * 8;
+      const redY = y + Math.sin(direction) * 8;
+
+      const blueX = x - Math.cos(direction) * 8;
+      const blueY = y - Math.sin(direction) * 8;
 
       ctx.strokeStyle = "#ff7b8e";
-      ctx.lineWidth = 2.5;
+      ctx.lineWidth = 2.4;
       ctx.beginPath();
       ctx.moveTo(x, y);
       ctx.lineTo(redX, redY);
@@ -425,68 +576,43 @@
       ctx.stroke();
     }
 
-    function drawFieldArrows(width, height, settings) {
-      const spacing = 47;
+    function drawMagnet(width, height, s) {
+      const poles = polePositions(width, height, s);
+      const length = 128;
+      const thickness = 35;
 
-      for (let x = spacing / 2; x < width; x += spacing) {
-        for (let y = spacing / 2; y < height; y += spacing) {
-          const field = fieldAt(x, y, width, height, settings);
+      ctx.save();
+      ctx.translate(poles.centreX, poles.centreY);
+      ctx.rotate(s.angle);
 
-          if (field.magnitude < 0.002) continue;
+      /*
+        Base orientation: right side is north.
+        Flip poles swaps the labels and colours.
+      */
+      const rightIsNorth = !flipped;
 
-          const arrowLength = Math.min(
-            16,
-            4 + Math.log(field.magnitude + 1) * 3.5
-          );
+      ctx.fillStyle = rightIsNorth ? "#61b4ff" : "#ff7b8e";
+      ctx.fillRect(-length / 2, -thickness / 2, length / 2, thickness);
 
-          arrow(
-            x,
-            y,
-            x + field.bx / field.magnitude * arrowLength,
-            y + field.by / field.magnitude * arrowLength,
-            "rgba(97, 180, 255, 0.50)",
-            1,
-            4
-          );
-        }
-      }
-    }
+      ctx.fillStyle = rightIsNorth ? "#ff7b8e" : "#61b4ff";
+      ctx.fillRect(0, -thickness / 2, length / 2, thickness);
 
-    function drawFieldLines(width, height, settings) {
-      const magnetCentreX = magnetX * width;
-      const magnetCentreY = magnetY * height;
-      const angle = settings.angle;
-      const length = 64;
+      ctx.strokeStyle = "#06101d";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(-length / 2, -thickness / 2, length, thickness);
 
-      for (let a = 0; a < Math.PI * 2; a += Math.PI / 10) {
-        let x = magnetCentreX + Math.cos(angle) * length + Math.cos(a) * 18;
-        let y = magnetCentreY + Math.sin(angle) * length + Math.sin(a) * 18;
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 16px system-ui";
 
-        ctx.strokeStyle = "rgba(97, 231, 182, 0.22)";
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(x, y);
+      ctx.fillText(rightIsNorth ? "S" : "N", -length / 4 - 6, 6);
+      ctx.fillText(rightIsNorth ? "N" : "S", length / 4 - 5, 6);
 
-        for (let step = 0; step < 160; step++) {
-          const field = fieldAt(x, y, width, height, settings);
-
-          if (field.magnitude < 0.002) break;
-
-          x += field.bx / field.magnitude * 4;
-          y += field.by / field.magnitude * 4;
-
-          if (x < 0 || x > width || y < 0 || y > height) break;
-
-          ctx.lineTo(x, y);
-        }
-
-        ctx.stroke();
-      }
+      ctx.restore();
     }
 
     function draw() {
       const { width, height } = resizeCanvas();
-      const settings = getSettings();
+      const s = settings();
 
       ctx.clearRect(0, 0, width, height);
       ctx.fillStyle = "#0c1425";
@@ -510,52 +636,58 @@
       }
 
       if (linesInput.checked) {
-        drawFieldLines(width, height, settings);
+        drawFieldLines(width, height, s);
       }
 
       if (arrowsInput.checked) {
-        drawFieldArrows(width, height, settings);
+        drawFieldArrows(width, height, s);
       }
 
       if (compassesInput.checked) {
-        const spacing = 80;
+        const gap = 80;
 
-        for (let x = spacing / 2; x < width; x += spacing) {
-          for (let y = spacing / 2; y < height; y += spacing) {
-            const field = fieldAt(x, y, width, height, settings);
+        for (let x = gap / 2; x < width; x += gap) {
+          for (let y = gap / 2; y < height; y += gap) {
+            const field = fieldAt(x, y, width, height, s);
             drawCompass(x, y, field);
           }
         }
       }
 
-      drawMagnet(width, height, settings);
+      drawMagnet(width, height, s);
 
-      const centreField = fieldAt(
+      const fieldAtCentre = fieldAt(
         width / 2,
         height / 2,
         width,
         height,
-        settings
+        s
       );
 
-      const direction = Math.atan2(
-        centreField.by,
-        centreField.bx
-      ) * 180 / Math.PI;
+      const direction =
+        Math.atan2(fieldAtCentre.by, fieldAtCentre.bx) *
+        180 / Math.PI;
 
       strengthOut.textContent =
-        Math.abs(Number(strengthInput.value)).toFixed(1);
+        s.strength.toFixed(1);
 
       angleOut.textContent =
         `${Number(angleInput.value).toFixed(0)}°`;
 
-      bxOut.textContent = centreField.bx.toFixed(2);
-      byOut.textContent = centreField.by.toFixed(2);
-      bOut.textContent = centreField.magnitude.toFixed(2);
-      directionOut.textContent = `${direction.toFixed(0)}°`;
+      bxOut.textContent =
+        fieldAtCentre.bx.toExponential(2);
+
+      byOut.textContent =
+        fieldAtCentre.by.toExponential(2);
+
+      bOut.textContent =
+        fieldAtCentre.magnitude.toExponential(2);
+
+      directionOut.textContent =
+        `${direction.toFixed(0)}°`;
     }
 
-    function pointFromEvent(event) {
+    function canvasPoint(event) {
       const rect = canvas.getBoundingClientRect();
 
       return {
@@ -567,11 +699,11 @@
     }
 
     canvas.addEventListener("pointerdown", event => {
-      const point = pointFromEvent(event);
-      const mx = magnetX * point.width;
-      const my = magnetY * point.height;
+      const point = canvasPoint(event);
+      const magnetPixelX = magnetX * point.width;
+      const magnetPixelY = magnetY * point.height;
 
-      if (Math.hypot(point.x - mx, point.y - my) < 90) {
+      if (Math.hypot(point.x - magnetPixelX, point.y - magnetPixelY) < 95) {
         dragging = true;
         canvas.setPointerCapture(event.pointerId);
       }
@@ -580,7 +712,7 @@
     canvas.addEventListener("pointermove", event => {
       if (!dragging) return;
 
-      const point = pointFromEvent(event);
+      const point = canvasPoint(event);
 
       magnetX = Math.max(0.14, Math.min(0.86, point.x / point.width));
       magnetY = Math.max(0.14, Math.min(0.86, point.y / point.height));
@@ -588,12 +720,12 @@
       draw();
     });
 
-    function stopDrag() {
+    function stopDragging() {
       dragging = false;
     }
 
-    canvas.addEventListener("pointerup", stopDrag);
-    canvas.addEventListener("pointercancel", stopDrag);
+    canvas.addEventListener("pointerup", stopDragging);
+    canvas.addEventListener("pointercancel", stopDragging);
 
     resetButton.addEventListener("click", () => {
       magnetX = 0.5;
@@ -614,7 +746,9 @@
       compassesInput,
       arrowsInput,
       linesInput
-    ].forEach(input => input.addEventListener("input", draw));
+    ].forEach(input => {
+      input.addEventListener("input", draw);
+    });
 
     window.addEventListener("resize", draw);
 
