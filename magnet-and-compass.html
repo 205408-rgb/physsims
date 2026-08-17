@@ -1,585 +1,799 @@
-<script>
-  const magnetCanvas = document.getElementById("magnetCanvas");
-  const magnetContext = magnetCanvas.getContext("2d");
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Magnet & Compass | Physics Simulations</title>
 
-  const magnetStrengthInput = document.getElementById("magnetStrength");
-  const magnetRotationInput = document.getElementById("magnetRotation");
-
-  const showLoopsInput = document.getElementById("displayLoops");
-  const showCompassesInput = document.getElementById("displayCompasses");
-  const showArrowsInput = document.getElementById("displayArrows");
-
-  const strengthDisplay = document.getElementById("magnetStrengthOutput");
-  const rotationDisplay = document.getElementById("magnetRotationOutput");
-
-  const directionDisplay = document.getElementById("fieldDirectionOutput");
-  const magnitudeDisplay = document.getElementById("fieldMagnitudeOutput");
-  const northPoleDisplay = document.getElementById("northPoleOutput");
-
-  let magnetPositionX = 0.5;
-  let magnetPositionY = 0.5;
-  let magnetIsFlipped = false;
-  let draggingMagnet = false;
-
-  function resizeMagnetCanvas() {
-    const pixelRatio = window.devicePixelRatio || 1;
-    const bounds = magnetCanvas.getBoundingClientRect();
-
-    magnetCanvas.width = Math.round(bounds.width * pixelRatio);
-    magnetCanvas.height = Math.round(bounds.height * pixelRatio);
-
-    magnetContext.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
-
-    return {
-      width: bounds.width,
-      height: bounds.height
-    };
-  }
-
-  function getMagnetSettings() {
-    return {
-      strength: Number(magnetStrengthInput.value),
-      angle: Number(magnetRotationInput.value) * Math.PI / 180
-    };
-  }
-
-  function getMagnetPoles(width, height, settings) {
-    const centreX = magnetPositionX * width;
-    const centreY = magnetPositionY * height;
-    const halfLength = 62;
-
-    const axisX = Math.cos(settings.angle);
-    const axisY = Math.sin(settings.angle);
-
-    let northPole = {
-      x: centreX + axisX * halfLength,
-      y: centreY + axisY * halfLength
-    };
-
-    let southPole = {
-      x: centreX - axisX * halfLength,
-      y: centreY - axisY * halfLength
-    };
-
-    if (magnetIsFlipped) {
-      const oldNorth = northPole;
-      northPole = southPole;
-      southPole = oldNorth;
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121a2e;
+      --canvas: #0c1425;
+      --border: #263658;
+      --text: #f2f7ff;
+      --muted: #aebbd3;
+      --blue: #4ea8ff;
+      --green: #56e4a5;
+      --red: #ff5b6f;
+      --yellow: #ffd66b;
     }
 
-    return {
-      centreX,
-      centreY,
-      northPole,
-      southPole,
-      axisX,
-      axisY
-    };
-  }
+    * {
+      box-sizing: border-box;
+    }
 
-  /*
-    A stable teaching-model field.
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 20% 0%, #193563 0%, transparent 32rem),
+        var(--bg);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
 
-    North behaves as the source of the outside field.
-    South behaves as the sink of the outside field.
+    .page {
+      width: min(1120px, calc(100% - 32px));
+      margin: auto;
+    }
 
-    This gives the correct N → S direction outside the magnet,
-    and it reverses automatically with Flip poles.
-  */
-  function magneticFieldAt(x, y, width, height, settings) {
-    const poles = getMagnetPoles(width, height, settings);
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 28px 0 20px;
+      border-bottom: 1px solid var(--border);
+    }
 
-    const northDx = x - poles.northPole.x;
-    const northDy = y - poles.northPole.y;
+    h1 {
+      margin: 0;
+      font-size: clamp(1.9rem, 4vw, 2.6rem);
+    }
 
-    const southDx = x - poles.southPole.x;
-    const southDy = y - poles.southPole.y;
+    h2 {
+      margin: 0 0 17px;
+      font-size: 1.1rem;
+    }
 
-    const northDistanceSquared =
-      northDx * northDx + northDy * northDy + 700;
+    .subtitle {
+      margin: 8px 0 0;
+      color: var(--muted);
+    }
 
-    const southDistanceSquared =
-      southDx * southDx + southDy * southDy + 700;
+    .back {
+      padding-top: 7px;
+      color: var(--blue);
+      text-decoration: none;
+      white-space: nowrap;
+    }
 
-    const northDistance = Math.sqrt(northDistanceSquared);
-    const southDistance = Math.sqrt(southDistanceSquared);
+    .back:hover {
+      text-decoration: underline;
+    }
 
-    const fieldX =
-      settings.strength * northDx / (northDistanceSquared * northDistance) -
-      settings.strength * southDx / (southDistanceSquared * southDistance);
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.75fr);
+      gap: 18px;
+      padding: 22px 0 42px;
+    }
 
-    const fieldY =
-      settings.strength * northDy / (northDistanceSquared * northDistance) -
-      settings.strength * southDy / (southDistanceSquared * southDistance);
+    .panel {
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: rgba(18, 26, 46, 0.93);
+    }
 
-    return {
-      x: fieldX,
-      y: fieldY,
-      magnitude: Math.hypot(fieldX, fieldY)
-    };
-  }
+    #magnetCanvas {
+      display: block;
+      width: 100%;
+      height: 460px;
+      background: var(--canvas);
+      cursor: grab;
+      touch-action: none;
+    }
 
-  function drawArrow(x1, y1, x2, y2, colour, lineWidth = 1.5, arrowSize = 5) {
-    const arrowAngle = Math.atan2(y2 - y1, x2 - x1);
+    #magnetCanvas:active {
+      cursor: grabbing;
+    }
 
-    magnetContext.strokeStyle = colour;
-    magnetContext.lineWidth = lineWidth;
-    magnetContext.beginPath();
-    magnetContext.moveTo(x1, y1);
-    magnetContext.lineTo(x2, y2);
-    magnetContext.stroke();
+    .controls {
+      padding: 20px;
+    }
 
-    magnetContext.fillStyle = colour;
-    magnetContext.beginPath();
-    magnetContext.moveTo(x2, y2);
-    magnetContext.lineTo(
-      x2 - arrowSize * Math.cos(arrowAngle - Math.PI / 6),
-      y2 - arrowSize * Math.sin(arrowAngle - Math.PI / 6)
-    );
-    magnetContext.lineTo(
-      x2 - arrowSize * Math.cos(arrowAngle + Math.PI / 6),
-      y2 - arrowSize * Math.sin(arrowAngle + Math.PI / 6)
-    );
-    magnetContext.closePath();
-    magnetContext.fill();
-  }
+    .control {
+      margin-bottom: 20px;
+    }
 
-  function bezierPoint(start, controlOne, controlTwo, end, t) {
-    const inverseT = 1 - t;
+    label {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
 
-    return {
-      x:
-        inverseT * inverseT * inverseT * start.x +
-        3 * inverseT * inverseT * t * controlOne.x +
-        3 * inverseT * t * t * controlTwo.x +
-        t * t * t * end.x,
+    output {
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
 
-      y:
-        inverseT * inverseT * inverseT * start.y +
-        3 * inverseT * inverseT * t * controlOne.y +
-        3 * inverseT * t * t * controlTwo.y +
-        t * t * t * end.y
-    };
-  }
+    input[type="range"] {
+      width: 100%;
+      cursor: pointer;
+      accent-color: var(--blue);
+    }
 
-  function bezierTangent(start, controlOne, controlTwo, end, t) {
-    const inverseT = 1 - t;
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 8px 0 20px;
+    }
 
-    return {
-      x:
-        3 * inverseT * inverseT * (controlOne.x - start.x) +
-        6 * inverseT * t * (controlTwo.x - controlOne.x) +
-        3 * t * t * (end.x - controlTwo.x),
+    button {
+      cursor: pointer;
+      border: 0;
+      border-radius: 9px;
+      padding: 10px 14px;
+      color: #07101e;
+      background: linear-gradient(135deg, var(--blue), var(--green));
+      font: inherit;
+      font-weight: 750;
+    }
 
-      y:
-        3 * inverseT * inverseT * (controlOne.y - start.y) +
-        6 * inverseT * t * (controlTwo.y - controlOne.y) +
-        3 * t * t * (end.y - controlTwo.y)
-    };
-  }
+    button.secondary {
+      color: var(--text);
+      border: 1px solid var(--border);
+      background: transparent;
+    }
 
-  /*
-    Draw one full closed magnetic-field loop.
+    .toggle {
+      justify-content: flex-start;
+      align-items: center;
+      margin: 10px 0;
+      cursor: pointer;
+    }
 
-    Green outside section: N → S.
-    Blue inside section: S → N.
+    .toggle input {
+      accent-color: var(--blue);
+    }
 
-    The outer loop is a smooth Bézier arc between the poles.
-    The inside segment completes the loop through the magnet.
-  */
-  function drawCompleteFieldLoop(northPole, southPole, bend, settings) {
-    const lineX = southPole.x - northPole.x;
-    const lineY = southPole.y - northPole.y;
-    const lineLength = Math.hypot(lineX, lineY) || 1;
+    .readout {
+      margin-top: 22px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--canvas);
+    }
 
-    const perpendicularX = -lineY / lineLength;
-    const perpendicularY = lineX / lineLength;
+    .readout h3 {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
 
-    const controlOne = {
-      x: northPole.x + lineX * 0.24 + perpendicularX * bend,
-      y: northPole.y + lineY * 0.24 + perpendicularY * bend
-    };
+    .readout p {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 7px 0;
+      font-size: 0.9rem;
+    }
 
-    const controlTwo = {
-      x: northPole.x + lineX * 0.76 + perpendicularX * bend,
-      y: northPole.y + lineY * 0.76 + perpendicularY * bend
-    };
+    .help {
+      margin: 17px 0 0;
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 820px) {
+      header {
+        display: block;
+      }
+
+      .back {
+        display: inline-block;
+        margin-top: 12px;
+      }
+
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      #magnetCanvas {
+        height: 360px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <header>
+      <div>
+        <h1>Magnet & Compass</h1>
+        <p class="subtitle">
+          Drag the bar magnet and observe closed magnetic-field loops.
+        </p>
+      </div>
+
+      <a class="back" href="index.html">← All simulations</a>
+    </header>
+
+    <main class="layout">
+      <section class="panel">
+        <canvas id="magnetCanvas"></canvas>
+      </section>
+
+      <aside class="panel controls">
+        <h2>Controls</h2>
+
+        <div class="control">
+          <label for="strengthSlider">
+            <span>Magnet strength</span>
+            <output id="strengthValue">1.0</output>
+          </label>
+          <input id="strengthSlider" type="range" min="0.2" max="3" value="1" step="0.1">
+        </div>
+
+        <div class="control">
+          <label for="rotationSlider">
+            <span>Magnet rotation</span>
+            <output id="rotationValue">0°</output>
+          </label>
+          <input id="rotationSlider" type="range" min="0" max="360" value="0" step="1">
+        </div>
+
+        <div class="buttons">
+          <button id="centreButton" type="button">Centre magnet</button>
+          <button id="flipButton" class="secondary" type="button">Flip poles</button>
+        </div>
+
+        <label class="toggle">
+          <input id="loopsToggle" type="checkbox" checked>
+          Show field loops
+        </label>
+
+        <label class="toggle">
+          <input id="compassToggle" type="checkbox" checked>
+          Show compasses
+        </label>
+
+        <label class="toggle">
+          <input id="arrowToggle" type="checkbox" checked>
+          Show field arrows
+        </label>
+
+        <section class="readout">
+          <h3>Field at centre</h3>
+          <p><span>Direction</span><strong id="directionValue">0°</strong></p>
+          <p><span>Magnitude</span><strong id="magnitudeValue">0.00</strong></p>
+          <p><span>North pole</span><strong id="northValue">Left</strong></p>
+        </section>
+
+        <p class="help">
+          Outside the magnet, arrows travel N → S. Inside the magnet, the return direction is S → N, so the magnetic field forms closed loops.
+        </p>
+      </aside>
+    </main>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("magnetCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const strengthSlider = document.getElementById("strengthSlider");
+    const rotationSlider = document.getElementById("rotationSlider");
+
+    const loopsToggle = document.getElementById("loopsToggle");
+    const compassToggle = document.getElementById("compassToggle");
+    const arrowToggle = document.getElementById("arrowToggle");
+
+    const strengthValue = document.getElementById("strengthValue");
+    const rotationValue = document.getElementById("rotationValue");
+    const directionValue = document.getElementById("directionValue");
+    const magnitudeValue = document.getElementById("magnitudeValue");
+    const northValue = document.getElementById("northValue");
+
+    let magnetX = 0.50;
+    let magnetY = 0.50;
+    let flipped = false;
+    let dragging = false;
+
+    function resizeCanvas() {
+      const ratio = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+
+      canvas.width = Math.round(rect.width * ratio);
+      canvas.height = Math.round(rect.height * ratio);
+
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+
+      return {
+        width: rect.width,
+        height: rect.height
+      };
+    }
+
+    function getSettings() {
+      return {
+        strength: Number(strengthSlider.value),
+        angle: Number(rotationSlider.value) * Math.PI / 180
+      };
+    }
 
     /*
-      Outside magnetic field: N → S.
+      Default orientation:
+      N is left and S is right.
+
+      Flipping reverses the physical poles while preserving the
+      visible magnet rotation.
     */
-    magnetContext.strokeStyle = "rgba(97, 231, 182, 0.78)";
-    magnetContext.lineWidth = 1.55;
-    magnetContext.beginPath();
-    magnetContext.moveTo(northPole.x, northPole.y);
-    magnetContext.bezierCurveTo(
-      controlOne.x,
-      controlOne.y,
-      controlTwo.x,
-      controlTwo.y,
-      southPole.x,
-      southPole.y
-    );
-    magnetContext.stroke();
+    function getPoles(width, height, settings) {
+      const centreX = magnetX * width;
+      const centreY = magnetY * height;
+      const halfLength = 64;
+
+      const axisX = Math.cos(settings.angle);
+      const axisY = Math.sin(settings.angle);
+
+      let north = {
+        x: centreX - axisX * halfLength,
+        y: centreY - axisY * halfLength
+      };
+
+      let south = {
+        x: centreX + axisX * halfLength,
+        y: centreY + axisY * halfLength
+      };
+
+      if (flipped) {
+        const savedNorth = north;
+        north = south;
+        south = savedNorth;
+      }
+
+      return {
+        centreX,
+        centreY,
+        axisX,
+        axisY,
+        north,
+        south
+      };
+    }
 
     /*
-      Arrow on the exterior curve, always pointing N → S.
+      Simplified magnetic dipole field:
+      north is treated as an outward source,
+      south is treated as an inward sink.
+
+      It gives a stable N → S direction outside the magnet,
+      suitable for arrows and compass needles.
     */
-    const outsideMidpoint = bezierPoint(
-      northPole,
-      controlOne,
-      controlTwo,
-      southPole,
-      0.50
-    );
+    function fieldAt(x, y, width, height, settings) {
+      const poles = getPoles(width, height, settings);
 
-    const outsideTangent = bezierTangent(
-      northPole,
-      controlOne,
-      controlTwo,
-      southPole,
-      0.50
-    );
+      const nx = x - poles.north.x;
+      const ny = y - poles.north.y;
 
-    const outsideLength =
-      Math.hypot(outsideTangent.x, outsideTangent.y) || 1;
+      const sx = x - poles.south.x;
+      const sy = y - poles.south.y;
 
-    drawArrow(
-      outsideMidpoint.x - outsideTangent.x / outsideLength * 8,
-      outsideMidpoint.y - outsideTangent.y / outsideLength * 8,
-      outsideMidpoint.x + outsideTangent.x / outsideLength * 8,
-      outsideMidpoint.y + outsideTangent.y / outsideLength * 8,
-      "#61e7b6",
-      1.7,
-      6
-    );
+      const northR2 = nx * nx + ny * ny + 700;
+      const southR2 = sx * sx + sy * sy + 700;
+
+      const northR = Math.sqrt(northR2);
+      const southR = Math.sqrt(southR2);
+
+      const bx =
+        settings.strength * nx / (northR2 * northR) -
+        settings.strength * sx / (southR2 * southR);
+
+      const by =
+        settings.strength * ny / (northR2 * northR) -
+        settings.strength * sy / (southR2 * southR);
+
+      return {
+        x: bx,
+        y: by,
+        magnitude: Math.hypot(bx, by)
+      };
+    }
+
+    function drawArrow(x1, y1, x2, y2, color, width = 1.5, head = 5) {
+      const angle = Math.atan2(y2 - y1, x2 - x1);
+
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(
+        x2 - head * Math.cos(angle - Math.PI / 6),
+        y2 - head * Math.sin(angle - Math.PI / 6)
+      );
+      ctx.lineTo(
+        x2 - head * Math.cos(angle + Math.PI / 6),
+        y2 - head * Math.sin(angle + Math.PI / 6)
+      );
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function cubicPoint(a, b, c, d, t) {
+      const u = 1 - t;
+
+      return {
+        x:
+          u * u * u * a.x +
+          3 * u * u * t * b.x +
+          3 * u * t * t * c.x +
+          t * t * t * d.x,
+
+        y:
+          u * u * u * a.y +
+          3 * u * u * t * b.y +
+          3 * u * t * t * c.y +
+          t * t * t * d.y
+      };
+    }
+
+    function cubicTangent(a, b, c, d, t) {
+      const u = 1 - t;
+
+      return {
+        x:
+          3 * u * u * (b.x - a.x) +
+          6 * u * t * (c.x - b.x) +
+          3 * t * t * (d.x - c.x),
+
+        y:
+          3 * u * u * (b.y - a.y) +
+          6 * u * t * (c.y - b.y) +
+          3 * t * t * (d.y - c.y)
+      };
+    }
 
     /*
-      Draw the return path INSIDE the magnet: S → N.
+      Each field line is a complete visual loop:
 
-      This is a subtle blue line. It completes the real closed-loop idea
-      without covering the bar magnet.
+      1. Green exterior curve: North → South.
+      2. Blue interior dashed return: South → North.
+
+      This matches a bar-magnet textbook diagram.
     */
-    const insideOffset = bend === 0 ? 0 : Math.sign(bend) * 4;
+    function drawFieldLoop(north, south, bend) {
+      const dx = south.x - north.x;
+      const dy = south.y - north.y;
+      const distance = Math.hypot(dx, dy) || 1;
 
-    magnetContext.strokeStyle = "rgba(97, 180, 255, 0.48)";
-    magnetContext.lineWidth = 1.1;
-    magnetContext.setLineDash([4, 4]);
+      const perpendicularX = -dy / distance;
+      const perpendicularY = dx / distance;
 
-    magnetContext.beginPath();
-    magnetContext.moveTo(
-      southPole.x,
-      southPole.y + insideOffset
-    );
+      const controlOne = {
+        x: north.x + dx * 0.25 + perpendicularX * bend,
+        y: north.y + dy * 0.25 + perpendicularY * bend
+      };
 
-    magnetContext.lineTo(
-      northPole.x,
-      northPole.y + insideOffset
-    );
+      const controlTwo = {
+        x: north.x + dx * 0.75 + perpendicularX * bend,
+        y: north.y + dy * 0.75 + perpendicularY * bend
+      };
 
-    magnetContext.stroke();
-    magnetContext.setLineDash([]);
-  }
+      /* Exterior field: N → S */
+      ctx.strokeStyle = "rgba(86, 228, 165, 0.82)";
+      ctx.lineWidth = 1.55;
+      ctx.beginPath();
+      ctx.moveTo(north.x, north.y);
+      ctx.bezierCurveTo(
+        controlOne.x,
+        controlOne.y,
+        controlTwo.x,
+        controlTwo.y,
+        south.x,
+        south.y
+      );
+      ctx.stroke();
 
-  function drawFieldCurves(width, height, settings) {
-    const poles = getMagnetPoles(width, height, settings);
-    const baseBend = Math.min(width, height) * 0.085;
+      /* Arrow in the exterior direction: N → S */
+      const midpoint = cubicPoint(
+        north,
+        controlOne,
+        controlTwo,
+        south,
+        0.5
+      );
 
-    /*
-      Small loops are close to the magnet; larger loops wrap around it,
-      like the textbook bar-magnet diagram.
-    */
-    const bends = [
-      -baseBend * 0.7,
-      -baseBend * 1.25,
-      -baseBend * 1.9,
-      -baseBend * 2.7,
-      -baseBend * 3.55,
-      baseBend * 0.7,
-      baseBend * 1.25,
-      baseBend * 1.9,
-      baseBend * 2.7,
-      baseBend * 3.55
-    ];
+      const tangent = cubicTangent(
+        north,
+        controlOne,
+        controlTwo,
+        south,
+        0.5
+      );
 
-    bends.forEach(bend => {
-      drawCompleteFieldLoop(
-        poles.northPole,
-        poles.southPole,
-        bend,
+      const tangentLength = Math.hypot(tangent.x, tangent.y) || 1;
+
+      drawArrow(
+        midpoint.x - tangent.x / tangentLength * 8,
+        midpoint.y - tangent.y / tangentLength * 8,
+        midpoint.x + tangent.x / tangentLength * 8,
+        midpoint.y + tangent.y / tangentLength * 8,
+        "#56e4a5",
+        1.7,
+        6
+      );
+
+      /*
+        Interior return path: S → N.
+        It is subtle so the magnet remains clear.
+      */
+      ctx.strokeStyle = "rgba(78, 168, 255, 0.38)";
+      ctx.lineWidth = 1.1;
+      ctx.setLineDash([4, 5]);
+      ctx.beginPath();
+      ctx.moveTo(south.x, south.y);
+      ctx.lineTo(north.x, north.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    function drawFieldLoops(width, height, settings) {
+      const poles = getPoles(width, height, settings);
+      const base = Math.min(width, height) * 0.085;
+
+      const bends = [
+        -base * 0.70,
+        -base * 1.20,
+        -base * 1.85,
+        -base * 2.55,
+        -base * 3.25,
+        base * 0.70,
+        base * 1.20,
+        base * 1.85,
+        base * 2.55,
+        base * 3.25
+      ];
+
+      bends.forEach(bend => {
+        drawFieldLoop(poles.north, poles.south, bend);
+      });
+    }
+
+    function drawFieldArrows(width, height, settings) {
+      const spacing = 50;
+
+      for (let x = spacing / 2; x < width; x += spacing) {
+        for (let y = spacing / 2; y < height; y += spacing) {
+          const field = fieldAt(x, y, width, height, settings);
+
+          if (field.magnitude < 0.000001) continue;
+
+          const length = 13;
+
+          drawArrow(
+            x,
+            y,
+            x + field.x / field.magnitude * length,
+            y + field.y / field.magnitude * length,
+            "rgba(78, 168, 255, 0.56)",
+            1,
+            4
+          );
+        }
+      }
+    }
+
+    function drawCompass(x, y, field) {
+      if (field.magnitude < 0.000001) return;
+
+      const angle = Math.atan2(field.y, field.x);
+
+      ctx.fillStyle = "rgba(18, 26, 46, 0.95)";
+      ctx.strokeStyle = "rgba(174, 187, 211, 0.70)";
+      ctx.lineWidth = 1;
+
+      ctx.beginPath();
+      ctx.arc(x, y, 10, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      /*
+        The red end is the north-seeking end and points along B.
+      */
+      drawArrow(
+        x - Math.cos(angle) * 7,
+        y - Math.sin(angle) * 7,
+        x + Math.cos(angle) * 7,
+        y + Math.sin(angle) * 7,
+        "#ff5b6f",
+        2,
+        4
+      );
+    }
+
+    function drawCompasses(width, height, settings) {
+      const spacing = 84;
+
+      for (let x = spacing / 2; x < width; x += spacing) {
+        for (let y = spacing / 2; y < height; y += spacing) {
+          drawCompass(
+            x,
+            y,
+            fieldAt(x, y, width, height, settings)
+          );
+        }
+      }
+    }
+
+    function drawMagnet(width, height, settings) {
+      const poles = getPoles(width, height, settings);
+      const length = 128;
+      const thickness = 35;
+
+      ctx.save();
+      ctx.translate(poles.centreX, poles.centreY);
+      ctx.rotate(settings.angle);
+
+      const leftIsNorth = !flipped;
+
+      ctx.fillStyle = leftIsNorth ? "#ff3131" : "#3b82f6";
+      ctx.fillRect(-length / 2, -thickness / 2, length / 2, thickness);
+
+      ctx.fillStyle = leftIsNorth ? "#3b82f6" : "#ff3131";
+      ctx.fillRect(0, -thickness / 2, length / 2, thickness);
+
+      ctx.strokeStyle = "#06101d";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(-length / 2, -thickness / 2, length, thickness);
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 16px system-ui";
+
+      ctx.fillText(leftIsNorth ? "N" : "S", -37, 6);
+      ctx.fillText(leftIsNorth ? "S" : "N", 27, 6);
+
+      ctx.restore();
+    }
+
+    function render() {
+      const canvasSize = resizeCanvas();
+      const width = canvasSize.width;
+      const height = canvasSize.height;
+      const settings = getSettings();
+
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = "#0c1425";
+      ctx.fillRect(0, 0, width, height);
+
+      /* Background grid */
+      ctx.strokeStyle = "rgba(174,187,211,0.10)";
+      ctx.lineWidth = 1;
+
+      for (let x = 0; x < width; x += 50) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, height);
+        ctx.stroke();
+      }
+
+      for (let y = 0; y < height; y += 50) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+        ctx.stroke();
+      }
+
+      if (loopsToggle.checked) {
+        drawFieldLoops(width, height, settings);
+      }
+
+      if (arrowToggle.checked) {
+        drawFieldArrows(width, height, settings);
+      }
+
+      if (compassToggle.checked) {
+        drawCompasses(width, height, settings);
+      }
+
+      drawMagnet(width, height, settings);
+
+      const centreField = fieldAt(
+        width / 2,
+        height / 2,
+        width,
+        height,
         settings
       );
+
+      strengthValue.textContent = settings.strength.toFixed(1);
+      rotationValue.textContent = `${Number(rotationSlider.value).toFixed(0)}°`;
+
+      directionValue.textContent =
+        `${(Math.atan2(centreField.y, centreField.x) * 180 / Math.PI).toFixed(0)}°`;
+
+      magnitudeValue.textContent = centreField.magnitude.toExponential(2);
+      northValue.textContent = flipped ? "Right" : "Left";
+    }
+
+    function pointerPosition(event) {
+      const rect = canvas.getBoundingClientRect();
+
+      return {
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top,
+        width: rect.width,
+        height: rect.height
+      };
+    }
+
+    canvas.addEventListener("pointerdown", event => {
+      const pointer = pointerPosition(event);
+      const currentX = magnetX * pointer.width;
+      const currentY = magnetY * pointer.height;
+
+      if (Math.hypot(pointer.x - currentX, pointer.y - currentY) < 95) {
+        dragging = true;
+        canvas.setPointerCapture(event.pointerId);
+      }
     });
-  }
 
-  function drawFieldArrows(width, height, settings) {
-    const spacing = 48;
+    canvas.addEventListener("pointermove", event => {
+      if (!dragging) return;
 
-    for (let x = spacing / 2; x < width; x += spacing) {
-      for (let y = spacing / 2; y < height; y += spacing) {
-        const field = magneticFieldAt(x, y, width, height, settings);
+      const pointer = pointerPosition(event);
 
-        if (field.magnitude < 0.000001) continue;
+      magnetX = Math.max(0.16, Math.min(0.84, pointer.x / pointer.width));
+      magnetY = Math.max(0.16, Math.min(0.84, pointer.y / pointer.height));
 
-        const arrowLength = 13;
+      render();
+    });
 
-        drawArrow(
-          x,
-          y,
-          x + field.x / field.magnitude * arrowLength,
-          y + field.y / field.magnitude * arrowLength,
-          "rgba(97, 180, 255, 0.52)",
-          1,
-          4
-        );
-      }
-    }
-  }
+    canvas.addEventListener("pointerup", () => {
+      dragging = false;
+    });
 
-  function drawCompass(x, y, field) {
-    if (field.magnitude < 0.000001) return;
+    canvas.addEventListener("pointercancel", () => {
+      dragging = false;
+    });
 
-    const compassAngle = Math.atan2(field.y, field.x);
+    centreButton.addEventListener("click", () => {
+      magnetX = 0.5;
+      magnetY = 0.5;
+      rotationSlider.value = 0;
+      flipped = false;
+      render();
+    });
 
-    magnetContext.fillStyle = "rgba(18, 26, 46, 0.95)";
-    magnetContext.strokeStyle = "rgba(174, 187, 211, 0.72)";
-    magnetContext.lineWidth = 1.2;
+    flipButton.addEventListener("click", () => {
+      flipped = !flipped;
+      render();
+    });
 
-    magnetContext.beginPath();
-    magnetContext.arc(x, y, 10, 0, Math.PI * 2);
-    magnetContext.fill();
-    magnetContext.stroke();
+    [
+      strengthSlider,
+      rotationSlider,
+      loopsToggle,
+      compassToggle,
+      arrowToggle
+    ].forEach(input => {
+      input.addEventListener("input", render);
+    });
 
-    /*
-      Red half points along magnetic-field direction.
-    */
-    drawArrow(
-      x - Math.cos(compassAngle) * 7,
-      y - Math.sin(compassAngle) * 7,
-      x + Math.cos(compassAngle) * 7,
-      y + Math.sin(compassAngle) * 7,
-      "#ff7b8e",
-      2,
-      4
-    );
-  }
+    window.addEventListener("resize", render);
 
-  function drawCompasses(width, height, settings) {
-    const spacing = 82;
-
-    for (let x = spacing / 2; x < width; x += spacing) {
-      for (let y = spacing / 2; y < height; y += spacing) {
-        const field = magneticFieldAt(x, y, width, height, settings);
-        drawCompass(x, y, field);
-      }
-    }
-  }
-
-  function drawBarMagnet(width, height, settings) {
-    const poles = getMagnetPoles(width, height, settings);
-    const length = 128;
-    const thickness = 35;
-
-    magnetContext.save();
-    magnetContext.translate(poles.centreX, poles.centreY);
-    magnetContext.rotate(settings.angle);
-
-    /*
-      Default orientation is N left, S right — matching your textbook image.
-      Flip poles reverses both labels and colours.
-    */
-    const leftSideIsNorth = !magnetIsFlipped;
-
-    magnetContext.fillStyle =
-      leftSideIsNorth ? "#ff3131" : "#3b82f6";
-
-    magnetContext.fillRect(
-      -length / 2,
-      -thickness / 2,
-      length / 2,
-      thickness
-    );
-
-    magnetContext.fillStyle =
-      leftSideIsNorth ? "#3b82f6" : "#ff3131";
-
-    magnetContext.fillRect(
-      0,
-      -thickness / 2,
-      length / 2,
-      thickness
-    );
-
-    magnetContext.strokeStyle = "#06101d";
-    magnetContext.lineWidth = 2;
-    magnetContext.strokeRect(
-      -length / 2,
-      -thickness / 2,
-      length,
-      thickness
-    );
-
-    magnetContext.fillStyle = "#ffffff";
-    magnetContext.font = "bold 16px system-ui";
-
-    magnetContext.fillText(
-      leftSideIsNorth ? "N" : "S",
-      -37,
-      6
-    );
-
-    magnetContext.fillText(
-      leftSideIsNorth ? "S" : "N",
-      27,
-      6
-    );
-
-    magnetContext.restore();
-  }
-
-  function renderMagnetSimulation() {
-    const canvasSize = resizeMagnetCanvas();
-    const width = canvasSize.width;
-    const height = canvasSize.height;
-    const settings = getMagnetSettings();
-
-    magnetContext.clearRect(0, 0, width, height);
-
-    magnetContext.fillStyle = "#0c1425";
-    magnetContext.fillRect(0, 0, width, height);
-
-    magnetContext.strokeStyle = "rgba(174,187,211,0.10)";
-    magnetContext.lineWidth = 1;
-
-    for (let x = 0; x < width; x += 50) {
-      magnetContext.beginPath();
-      magnetContext.moveTo(x, 0);
-      magnetContext.lineTo(x, height);
-      magnetContext.stroke();
-    }
-
-    for (let y = 0; y < height; y += 50) {
-      magnetContext.beginPath();
-      magnetContext.moveTo(0, y);
-      magnetContext.lineTo(width, y);
-      magnetContext.stroke();
-    }
-
-    if (showLoopsInput.checked) {
-      drawFieldCurves(width, height, settings);
-    }
-
-    if (showArrowsInput.checked) {
-      drawFieldArrows(width, height, settings);
-    }
-
-    if (showCompassesInput.checked) {
-      drawCompasses(width, height, settings);
-    }
-
-    drawBarMagnet(width, height, settings);
-
-    const centreField = magneticFieldAt(
-      width / 2,
-      height / 2,
-      width,
-      height,
-      settings
-    );
-
-    strengthDisplay.textContent =
-      settings.strength.toFixed(1);
-
-    rotationDisplay.textContent =
-      `${Number(magnetRotationInput.value).toFixed(0)}°`;
-
-    magnitudeDisplay.textContent =
-      centreField.magnitude.toExponential(2);
-
-    directionDisplay.textContent =
-      `${(Math.atan2(centreField.y, centreField.x) * 180 / Math.PI).toFixed(0)}°`;
-
-    northPoleDisplay.textContent =
-      magnetIsFlipped ? "Right" : "Left";
-  }
-
-  function getPointerPosition(event) {
-    const rect = magnetCanvas.getBoundingClientRect();
-
-    return {
-      x: event.clientX - rect.left,
-      y: event.clientY - rect.top,
-      width: rect.width,
-      height: rect.height
-    };
-  }
-
-  magnetCanvas.addEventListener("pointerdown", event => {
-    const pointer = getPointerPosition(event);
-    const magnetPixelX = magnetPositionX * pointer.width;
-    const magnetPixelY = magnetPositionY * pointer.height;
-
-    if (
-      Math.hypot(
-        pointer.x - magnetPixelX,
-        pointer.y - magnetPixelY
-      ) < 95
-    ) {
-      draggingMagnet = true;
-      magnetCanvas.setPointerCapture(event.pointerId);
-    }
-  });
-
-  magnetCanvas.addEventListener("pointermove", event => {
-    if (!draggingMagnet) return;
-
-    const pointer = getPointerPosition(event);
-
-    magnetPositionX = Math.max(
-      0.16,
-      Math.min(0.84, pointer.x / pointer.width)
-    );
-
-    magnetPositionY = Math.max(
-      0.16,
-      Math.min(0.84, pointer.y / pointer.height)
-    );
-
-    renderMagnetSimulation();
-  });
-
-  magnetCanvas.addEventListener("pointerup", () => {
-    draggingMagnet = false;
-  });
-
-  magnetCanvas.addEventListener("pointercancel", () => {
-    draggingMagnet = false;
-  });
-
-  document.getElementById("centreMagnet").addEventListener("click", () => {
-    magnetPositionX = 0.5;
-    magnetPositionY = 0.5;
-    magnetRotationInput.value = 0;
-    magnetIsFlipped = false;
-    renderMagnetSimulation();
-  });
-
-  document.getElementById("flipMagnet").addEventListener("click", () => {
-    magnetIsFlipped = !magnetIsFlipped;
-    renderMagnetSimulation();
-  });
-
-  [
-    magnetStrengthInput,
-    magnetRotationInput,
-    showLoopsInput,
-    showCompassesInput,
-    showArrowsInput
-  ].forEach(input => {
-    input.addEventListener("input", renderMagnetSimulation);
-  });
-
-  window.addEventListener("resize", renderMagnetSimulation);
-
-  renderMagnetSimulation();
-</script>
+    render();
+  </script>
+</body>
+</html>
