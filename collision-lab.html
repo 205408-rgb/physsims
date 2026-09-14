@@ -626,13 +626,17 @@
       cartB.x += cartB.velocity * delta;
       time += delta;
 
-      const cartWidthWorld = 1.7;
+      const canvasWidth = simCanvas.getBoundingClientRect().width || 600;
+      const scale = canvasWidth / 30; 
+      const cartWidthPx = 68;
+      const cartWidthWorld = cartWidthPx / scale;
+
       const approaching = cartA.velocity > cartB.velocity;
 
       if (
         !collided &&
         approaching &&
-        cartA.x + cartWidthWorld / 2 >= cartB.x - cartWidthWorld / 2
+        (cartA.x + cartWidthWorld / 2) >= (cartB.x - cartWidthWorld / 2)
       ) {
         const midpoint = (cartA.x + cartB.x) / 2;
         cartA.x = midpoint - cartWidthWorld / 2;
@@ -640,7 +644,7 @@
         collide(p);
       }
 
-      if (cartA.x < -13 || cartB.x > 13 || cartA.x > 13 || cartB.x < -13) {
+      if (cartA.x < -14 || cartB.x > 14 || cartA.x > 14 || cartB.x < -14) {
         running = false;
       }
 
