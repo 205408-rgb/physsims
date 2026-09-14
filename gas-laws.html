@@ -15,6 +15,7 @@
       --blue: #61b4ff;
       --green: #61e7b6;
       --yellow: #ffd56a;
+      --red: #ff6b6b;
     }
 
     * { box-sizing: border-box; }
@@ -139,6 +140,12 @@
       background: linear-gradient(135deg, var(--blue), var(--green));
       font: inherit;
       font-weight: 750;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    button.running {
+      background: linear-gradient(135deg, var(--red), #ff8e8e);
+      color: #ffffff;
     }
 
     button.secondary {
@@ -242,11 +249,12 @@
         </div>
 
         <div class="actions">
-          <button id="pauseButton" type="button">Pause</button>
+          <button id="toggleButton" type="button">Start</button>
           <button id="resetButton" class="secondary" type="button">Reset gas</button>
         </div>
 
         <div class="checks">
+          <label><input id="vectors" type="checkbox" checked> Show velocity vectors</label>
           <label><input id="trails" type="checkbox"> Show trails</label>
           <label><input id="meter" type="checkbox" checked> Show pressure meter</label>
         </div>
@@ -273,6 +281,7 @@
     const temperatureInput = document.getElementById("temperature");
     const volumeInput = document.getElementById("volume");
     const particleCountInput = document.getElementById("particleCount");
+    const vectorsInput = document.getElementById("vectors");
     const trailsInput = document.getElementById("trails");
     const meterInput = document.getElementById("meter");
 
@@ -285,11 +294,11 @@
     const countOut = document.getElementById("countOut");
     const ratioOut = document.getElementById("ratioOut");
 
-    const pauseButton = document.getElementById("pauseButton");
+    const toggleButton = document.getElementById("toggleButton");
     const resetButton = document.getElementById("resetButton");
 
     let particles = [];
-    let paused = false;
+    let isRunning = false; // Starts paused/stopped by default
     let lastTime = null;
 
     function getValues() {
@@ -362,9 +371,6 @@
       for (let i = 0; i < v.particleCount; i++) {
         particles.push(newParticle(box, speed));
       }
-
-      paused = false;
-      pauseButton.textContent = "Pause";
     }
 
     function syncParticles(v, box) {
@@ -386,7 +392,7 @@
     }
 
     function updateParticles(delta, v, box) {
-      if (paused) return;
+      if (!isRunning) return;
 
       const speedGoal = targetSpeed(v.temperature);
 
@@ -435,14 +441,40 @@
       });
     }
 
-    function draw(v, box, width, height) {
-      const pressure = 0.004 * v.particleCount * v.temperature / v.volume;
+    function drawArrow(ctx, fromX, fromY, toX, toY, color) {
+      const headLength = 6;
+      const dx = toX - fromX;
+      const dy = toY - fromY;
+      const angle = Math.atan2(dy, dx);
+      
+      if (Math.hypot(dx, dy) < 2) return;
 
-      const averageSpeed =
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = 1.5;
+
+      ctx.beginPath();
+      ctx.moveTo(fromX, fromY);
+      ctx.lineTo(toX, toY);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(toX, toY);
+      ctx.lineTo(toX - headLength * Math.cos(angle - Math.PI / 6), toY - headLength * Math.sin(angle - Math.PI / 6));
+      ctx.lineTo(toX - headLength * Math.cos(angle + Math.PI / 6), toY - headLength * Math.sin(angle + Math.PI / 6));
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function draw(v, box, width, height) {
+      const pressure = isRunning ? (0.004 * v.particleCount * v.temperature / v.volume) : 0;
+
+      const averageSpeed = isRunning ? (
         particles.reduce(
           (total, particle) => total + Math.hypot(particle.vx, particle.vy),
           0
-        ) / Math.max(particles.length, 1);
+        ) / Math.max(particles.length, 1)
+      ) : 0;
 
       temperatureOut.textContent = `${v.temperature.toFixed(0)} K`;
       volumeOut.textContent = `${v.volume.toFixed(1)} L`;
@@ -474,7 +506,7 @@
       ctx.lineWidth = 3;
       ctx.strokeRect(box.x, box.y, box.width, box.height);
 
-      if (trailsInput.checked) {
+      if (trailsInput.checked && isRunning) {
         particles.forEach(particle => {
           if (particle.trail.length < 2) return;
 
@@ -501,6 +533,14 @@
         ctx.beginPath();
         ctx.arc(particle.x, particle.y, 4.2, 0, Math.PI * 2);
         ctx.fill();
+
+        // Draw dynamic velocity vectors scaling with speed when running
+        if (vectorsInput.checked && isRunning) {
+          const vectorScale = 0.12; // Dynamic vector length scaling
+          const endX = particle.x + particle.vx * vectorScale;
+          const endY = particle.y + particle.vy * vectorScale;
+          drawArrow(ctx, particle.x, particle.y, endX, endY, `hsl(${hue}, 100%, 75%)`);
+        }
       });
 
       if (meterInput.checked) {
@@ -553,12 +593,23 @@
       requestAnimationFrame(animate);
     }
 
-    pauseButton.addEventListener("click", () => {
-      paused = !paused;
-      pauseButton.textContent = paused ? "Resume" : "Pause";
+    toggleButton.addEventListener("click", () => {
+      isRunning = !isRunning;
+      if (isRunning) {
+        toggleButton.textContent = "Stop";
+        toggleButton.classList.add("running");
+      } else {
+        toggleButton.textContent = "Start";
+        toggleButton.classList.remove("running");
+      }
     });
 
-    resetButton.addEventListener("click", resetParticles);
+    resetButton.addEventListener("click", () => {
+      isRunning = false;
+      toggleButton.textContent = "Start";
+      toggleButton.classList.remove("running");
+      resetParticles();
+    });
 
     [temperatureInput, volumeInput, particleCountInput].forEach(input => {
       input.addEventListener("input", resetParticles);
