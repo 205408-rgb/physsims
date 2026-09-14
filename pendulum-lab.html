@@ -6,152 +6,216 @@
   <title>Pendulum Lab | Physics Simulations</title>
   <style>
     :root {
-      --bg: #0b1020;
-      --panel: #121a2e;
-      --canvas: #0c1425;
-      --border: #263658;
-      --text: #f2f7ff;
-      --muted: #aebbd3;
-      --blue: #61b4ff;
-      --green: #61e7b6;
-      --red: #ff7b8e;
-      --yellow: #ffd56a;
+      --bg: #fcfcf9;
+      --panel: #ffffff;
+      --canvas: #f7f7f4;
+      --border: #e8e8e3;
+      --border-subtle: #eee;
+      --text: #1a1a1a;
+      --muted: #707070;
+      --accent: #2b5c8f;
+      --bob-color: #2b5c8f;
+      --velocity-color: #2e7d32;
+      --gravity-color: #d97706;
+      --kinetic-color: #c93b2b;
+      --potential-color: #2b5c8f;
+      --total-color: #d97706;
     }
 
     * { box-sizing: border-box; }
 
     body {
       margin: 0;
+      min-height: 100vh;
       color: var(--text);
-      background:
-        radial-gradient(circle at 20% 0%, #193563 0%, transparent 32rem),
-        var(--bg);
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
     }
 
     .page {
-      width: min(1180px, calc(100% - 32px));
+      width: min(1180px, calc(100% - 48px));
       margin: auto;
+      padding-bottom: 40px;
     }
 
     header {
       display: flex;
       justify-content: space-between;
-      gap: 18px;
-      padding: 28px 0 20px;
+      align-items: flex-start;
+      padding: 36px 0 24px;
       border-bottom: 1px solid var(--border);
     }
 
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: #f4f4f0;
+    }
+
     h1 {
-      margin: 0;
-      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      margin: 8px 0 0;
+      font-family: "Georgia", "Times New Roman", serif;
+      font-weight: 400;
+      font-size: clamp(2rem, 4vw, 2.75rem);
+      color: var(--text);
+      letter-spacing: -0.01em;
     }
 
     h2 {
       margin: 0 0 16px;
-      font-size: 1.1rem;
+      font-family: "Georgia", "Times New Roman", serif;
+      font-weight: 400;
+      font-size: 1.25rem;
+      color: var(--text);
     }
 
     .subtitle {
-      margin: 7px 0 0;
+      margin: 8px 0 0;
       color: var(--muted);
+      font-size: 0.95rem;
     }
 
     .back {
-      color: var(--blue);
+      color: var(--text);
+      background: #f0f0eb;
+      border: 1px solid var(--border);
       text-decoration: none;
       white-space: nowrap;
-      padding-top: 6px;
+      padding: 6px 14px;
+      border-radius: 4px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      transition: background 0.15s;
     }
 
-    .back:hover { text-decoration: underline; }
+    .back:hover { background: #e5e5df; }
 
     .layout {
       display: grid;
-      grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.75fr);
-      gap: 18px;
-      padding: 22px 0 18px;
+      grid-template-columns: minmax(0, 1.6fr) minmax(300px, 0.9fr);
+      gap: 24px;
+      padding-top: 28px;
     }
 
     .panel {
-      overflow: hidden;
       border: 1px solid var(--border);
-      border-radius: 16px;
-      background: rgba(18, 26, 46, 0.9);
+      background: var(--panel);
+      border-radius: 2px;
+      overflow: hidden;
     }
 
     .simulation {
       position: relative;
-      min-height: 440px;
+      min-height: 480px;
     }
 
     #simCanvas {
       display: block;
       width: 100%;
-      height: 440px;
+      height: 480px;
       background: var(--canvas);
     }
 
     .canvas-label {
       position: absolute;
-      top: 12px;
-      left: 14px;
+      top: 14px;
+      left: 16px;
       color: var(--muted);
-      font-size: 0.84rem;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
       pointer-events: none;
     }
 
-    .controls { padding: 20px; }
+    .controls {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+    }
 
-    .control { margin-bottom: 19px; }
+    .control { margin-bottom: 20px; }
 
     label {
       display: flex;
       justify-content: space-between;
       gap: 10px;
       margin-bottom: 8px;
-      color: var(--muted);
-      font-size: 0.9rem;
+      color: var(--text);
+      font-size: 0.88rem;
     }
 
     output {
       color: var(--text);
+      font-weight: 600;
       font-variant-numeric: tabular-nums;
     }
 
     input[type="range"] {
       width: 100%;
+      height: 4px;
       cursor: pointer;
-      accent-color: var(--blue);
+      accent-color: #1a1a1a;
+      background: #e2e2dc;
+      border-radius: 2px;
     }
+
+    select {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      background: var(--canvas);
+      color: var(--text);
+      font: inherit;
+      font-size: 0.88rem;
+      cursor: pointer;
+    }
+
+    select:focus { outline: 1px solid #1a1a1a; }
 
     .actions {
       display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin: 5px 0 20px;
+      gap: 8px;
+      margin: 8px 0 20px;
     }
 
     button {
+      flex: 1;
       cursor: pointer;
-      border: 0;
-      border-radius: 9px;
-      padding: 10px 14px;
-      color: #08101c;
-      background: linear-gradient(135deg, var(--blue), var(--green));
+      border: 1px solid #1a1a1a;
+      border-radius: 2px;
+      padding: 10px 10px;
+      color: #ffffff;
+      background: #1a1a1a;
       font: inherit;
-      font-weight: 750;
+      font-size: 0.82rem;
+      font-weight: 600;
+      transition: opacity 0.15s;
     }
+
+    button:hover { opacity: 0.88; }
 
     button.secondary {
       color: var(--text);
       border: 1px solid var(--border);
-      background: transparent;
+      background: #f7f7f4;
     }
+
+    button.secondary:hover { background: #ecece6; }
 
     .checks {
       display: grid;
       gap: 10px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border-subtle);
     }
 
     .checks label {
@@ -159,73 +223,78 @@
       align-items: center;
       margin: 0;
       cursor: pointer;
+      font-size: 0.85rem;
+      color: var(--muted);
     }
 
-    .checks input { accent-color: var(--blue); }
+    .checks input {
+      accent-color: #1a1a1a;
+      margin-right: 8px;
+    }
 
     .readouts {
-      margin-top: 22px;
-      padding: 14px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: var(--canvas);
+      margin-top: 20px;
+      padding-top: 16px;
     }
 
     .readouts h3 {
-      margin: 0 0 8px;
-      color: var(--muted);
-      font-size: 0.92rem;
+      margin: 0 0 12px;
+      font-family: "Georgia", "Times New Roman", serif;
+      font-weight: 400;
+      font-size: 1.05rem;
+      color: var(--text);
     }
 
     .readouts p {
       display: flex;
       justify-content: space-between;
-      margin: 6px 0;
-      font-size: 0.92rem;
+      margin: 8px 0;
+      font-size: 0.86rem;
+      color: var(--muted);
     }
 
     .readouts strong {
+      color: var(--text);
       font-variant-numeric: tabular-nums;
     }
 
     .graphs {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 18px;
-      padding-bottom: 40px;
+      gap: 24px;
+      margin-top: 24px;
     }
 
-    .graph { padding: 14px; }
+    .graph { padding: 20px; }
 
     .graph h2 {
-      margin-bottom: 10px;
-      color: var(--muted);
-      font-size: 0.95rem;
+      margin-bottom: 12px;
+      font-size: 1.05rem;
+      color: var(--text);
     }
 
     .graph canvas {
       display: block;
       width: 100%;
-      height: 205px;
+      height: 180px;
       border: 1px solid var(--border);
-      border-radius: 10px;
       background: var(--canvas);
     }
 
     .legend {
       display: flex;
       gap: 14px;
-      margin-top: 9px;
+      margin-top: 10px;
       color: var(--muted);
-      font-size: 0.82rem;
+      font-size: 0.8rem;
     }
 
-    .blue { color: var(--blue); }
-    .red { color: var(--red); }
-    .yellow { color: var(--yellow); }
+    .blue { color: var(--potential-color); }
+    .red { color: var(--kinetic-color); }
+    .yellow { color: var(--total-color); }
 
     @media (max-width: 850px) {
-      header { flex-direction: column; }
+      header { flex-direction: column; gap: 16px; }
       .layout, .graphs { grid-template-columns: 1fr; }
       #simCanvas { height: 360px; }
     }
@@ -235,6 +304,7 @@
   <div class="page">
     <header>
       <div>
+        <span class="badge">Physics Interactive</span>
         <h1>Pendulum Lab</h1>
         <p class="subtitle">Change length, gravity, release angle, and damping to investigate periodic motion and energy.</p>
       </div>
@@ -244,7 +314,7 @@
     <main class="layout">
       <section class="panel simulation">
         <canvas id="simCanvas"></canvas>
-        <div class="canvas-label">Blue: velocity vector · Yellow: gravitational force</div>
+        <div class="canvas-label">Green: velocity vector · Orange: gravitational force</div>
       </section>
 
       <aside class="panel controls">
@@ -302,7 +372,7 @@
         </div>
 
         <section class="readouts">
-          <h3>Live readouts</h3>
+          <h3>Live Readouts</h3>
           <p><span>Time</span><strong id="timeOut">0.00 s</strong></p>
           <p><span>Angle</span><strong id="angleLiveOut">0.0°</strong></p>
           <p><span>Angular velocity</span><strong id="omegaOut">0.000 rad/s</strong></p>
@@ -314,13 +384,13 @@
 
     <section class="graphs">
       <section class="panel graph">
-        <h2>Angle vs. time</h2>
+        <h2>Angle vs. Time</h2>
         <canvas id="angleGraph"></canvas>
         <div class="legend"><span class="blue">● angle θ</span></div>
       </section>
 
       <section class="panel graph">
-        <h2>Energy vs. time</h2>
+        <h2>Energy vs. Time</h2>
         <canvas id="energyGraph"></canvas>
         <div class="legend">
           <span class="red">● kinetic</span>
@@ -397,8 +467,13 @@
     function resizeCanvas(canvas) {
       const ratio = window.devicePixelRatio || 1;
       const rect = canvas.getBoundingClientRect();
-      canvas.width = Math.round(rect.width * ratio);
-      canvas.height = Math.round(rect.height * ratio);
+      const targetWidth = Math.round(rect.width * ratio);
+      const targetHeight = Math.round(rect.height * ratio);
+
+      if (canvas.width !== targetWidth || canvas.height !== targetHeight) {
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+      }
 
       const ctx = canvas.getContext("2d");
       ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
@@ -416,10 +491,10 @@
     }
 
     function arrow(ctx, x1, y1, x2, y2, color) {
-      const headLength = 8;
+      const headLength = 7;
       const direction = Math.atan2(y2 - y1, x2 - x1);
 
-      line(ctx, x1, y1, x2, y2, color, 2);
+      line(ctx, x1, y1, x2, y2, color, 1.5);
 
       ctx.fillStyle = color;
       ctx.beginPath();
@@ -439,7 +514,7 @@
     function updatePhysics(delta, p) {
       if (!released || paused) return;
 
-      const steps = Math.max(1, Math.ceil(delta / 0.01));
+      const steps = Math.max(1, Math.ceil(delta / 0.005));
       const dt = delta / steps;
 
       for (let i = 0; i < steps; i++) {
@@ -496,28 +571,35 @@
       const bobRadius = 10 + Math.sqrt(p.mass) * 4;
 
       simCtx.clearRect(0, 0, width, height);
-      simCtx.fillStyle = "#0c1425";
-      simCtx.fillRect(0, 0, width, height);
 
-      simCtx.strokeStyle = "rgba(174,187,211,0.12)";
+      // Grid pattern
+      simCtx.strokeStyle = "#ebebe5";
       simCtx.lineWidth = 1;
+      const gridSize = 24;
 
-      for (let x = 30; x < width; x += 48) {
+      for (let x = 0; x < width; x += gridSize) {
         simCtx.beginPath();
         simCtx.moveTo(x, 0);
         simCtx.lineTo(x, height);
         simCtx.stroke();
       }
+      for (let y = 0; y < height; y += gridSize) {
+        simCtx.beginPath();
+        simCtx.moveTo(0, y);
+        simCtx.lineTo(width, y);
+        simCtx.stroke();
+      }
 
-      simCtx.fillStyle = "#263658";
-      simCtx.fillRect(pivotX - 88, pivotY - 20, 176, 12);
+      // Stand/Mount
+      simCtx.fillStyle = "#e8e8e3";
+      simCtx.fillRect(pivotX - 60, pivotY - 12, 120, 8);
 
       if (trailInput.checked) {
         trail.push({ x: bobX, y: bobY });
         if (trail.length > 220) trail.shift();
 
         if (trail.length > 1) {
-          simCtx.strokeStyle = "rgba(97, 180, 255, 0.45)";
+          simCtx.strokeStyle = "rgba(43, 92, 143, 0.35)";
           simCtx.lineWidth = 1.5;
           simCtx.beginPath();
 
@@ -530,20 +612,23 @@
         }
       }
 
-      line(simCtx, pivotX, pivotY, bobX, bobY, "#aebbd3", 3);
+      // Pendulum string
+      line(simCtx, pivotX, pivotY, bobX, bobY, "#707070", 2);
 
-      simCtx.fillStyle = "#f2f7ff";
+      // Pivot point
+      simCtx.fillStyle = "#1a1a1a";
       simCtx.beginPath();
-      simCtx.arc(pivotX, pivotY, 6, 0, Math.PI * 2);
+      simCtx.arc(pivotX, pivotY, 4, 0, Math.PI * 2);
       simCtx.fill();
 
-      simCtx.fillStyle = "#61b4ff";
+      // Bob
+      simCtx.fillStyle = "#2b5c8f";
       simCtx.beginPath();
       simCtx.arc(bobX, bobY, bobRadius, 0, Math.PI * 2);
       simCtx.fill();
 
-      simCtx.strokeStyle = "#06101d";
-      simCtx.lineWidth = 2;
+      simCtx.strokeStyle = "#ffffff";
+      simCtx.lineWidth = 1.5;
       simCtx.stroke();
 
       if (vectorsInput.checked) {
@@ -552,29 +637,31 @@
         const velocityScale = 38;
         const gravityScale = 3.5;
 
+        // Velocity Vector (Green)
         arrow(
           simCtx,
           bobX,
           bobY,
           bobX + tangentialX * omega * velocityScale,
           bobY + tangentialY * omega * velocityScale,
-          "#61b4ff"
+          "#2e7d32"
         );
 
+        // Gravity Vector (Orange)
         arrow(
           simCtx,
           bobX,
           bobY,
           bobX,
           bobY + p.mass * p.gravity * gravityScale,
-          "#ffd56a"
+          "#d97706"
         );
       }
 
-      simCtx.fillStyle = "#aebbd3";
-      simCtx.font = "12px system-ui";
+      simCtx.fillStyle = "#707070";
+      simCtx.font = "11px -apple-system, BlinkMacSystemFont, sans-serif";
       simCtx.fillText("pivot", pivotX + 10, pivotY - 10);
-      simCtx.fillText(`${p.mass.toFixed(1)} kg`, bobX + bobRadius + 8, bobY + 5);
+      simCtx.fillText(`${p.mass.toFixed(1)} kg`, bobX + bobRadius + 8, bobY + 4);
     }
 
     function graphBase(ctx, canvas, label) {
@@ -585,10 +672,8 @@
       const bottom = 27;
 
       ctx.clearRect(0, 0, width, height);
-      ctx.fillStyle = "#0c1425";
-      ctx.fillRect(0, 0, width, height);
 
-      ctx.strokeStyle = "rgba(174,187,211,0.15)";
+      ctx.strokeStyle = "#ebebe5";
       ctx.lineWidth = 1;
 
       for (let i = 0; i <= 4; i++) {
@@ -599,12 +684,12 @@
         ctx.stroke();
       }
 
-      line(ctx, left, top, left, height - bottom, "rgba(174,187,211,0.55)", 1);
-      line(ctx, left, height - bottom, width - right, height - bottom, "rgba(174,187,211,0.55)", 1);
+      line(ctx, left, top, left, height - bottom, "#d0d0c8", 1);
+      line(ctx, left, height - bottom, width - right, height - bottom, "#d0d0c8", 1);
 
-      ctx.fillStyle = "#aebbd3";
-      ctx.font = "11px system-ui";
-      ctx.fillText(label, 7, 16);
+      ctx.fillStyle = "#707070";
+      ctx.font = "11px -apple-system, BlinkMacSystemFont, sans-serif";
+      ctx.fillText(label, 6, 14);
 
       return { width, height, left, right, top, bottom };
     }
@@ -613,7 +698,7 @@
       if (points.length < 2) return;
 
       ctx.strokeStyle = color;
-      ctx.lineWidth = 2.2;
+      ctx.lineWidth = 1.8;
       ctx.beginPath();
 
       points.forEach((point, index) => {
@@ -652,20 +737,20 @@
         middle,
         area.width - area.right,
         middle,
-        "rgba(174,187,211,0.35)"
+        "#d0d0c8"
       );
 
       drawSeries(
         angleCtx,
         history.map(point => ({ t: point.t, value: point.theta })),
-        "#61b4ff",
+        "#2b5c8f",
         mapX,
         mapY
       );
 
-      angleCtx.fillStyle = "#aebbd3";
-      angleCtx.font = "11px system-ui";
-      angleCtx.fillText("time", area.width - 33, area.height - 8);
+      angleCtx.fillStyle = "#707070";
+      angleCtx.font = "11px -apple-system, BlinkMacSystemFont, sans-serif";
+      angleCtx.fillText("time", area.width - 32, area.height - 8);
     }
 
     function drawEnergyGraph() {
@@ -686,7 +771,7 @@
       drawSeries(
         energyCtx,
         history.map(point => ({ t: point.t, value: point.kinetic })),
-        "#ff7b8e",
+        "#c93b2b",
         mapX,
         mapY
       );
@@ -694,7 +779,7 @@
       drawSeries(
         energyCtx,
         history.map(point => ({ t: point.t, value: point.potential })),
-        "#61b4ff",
+        "#2b5c8f",
         mapX,
         mapY
       );
@@ -702,14 +787,14 @@
       drawSeries(
         energyCtx,
         history.map(point => ({ t: point.t, value: point.total })),
-        "#ffd56a",
+        "#d97706",
         mapX,
         mapY
       );
 
-      energyCtx.fillStyle = "#aebbd3";
-      energyCtx.font = "11px system-ui";
-      energyCtx.fillText("time", area.width - 33, area.height - 8);
+      energyCtx.fillStyle = "#707070";
+      energyCtx.font = "11px -apple-system, BlinkMacSystemFont, sans-serif";
+      energyCtx.fillText("time", area.width - 32, area.height - 8);
     }
 
     function animate(timestamp) {
