@@ -6,195 +6,393 @@
   <title>Physics Simulations</title>
   <style>
     :root {
-      --bg: #0b1020;
-      --panel: #121a2e;
-      --border: #263658;
-      --text: #f2f7ff;
-      --muted: #aebbd3;
-      --accent: #61b4ff;
-      --accent2: #61e7b6;
+      --bg: #0e1322;
+      --panel: #141b2f;
+      --panel-2: #1a2340;
+      --border: #2a3759;
+      --text: #eef4ff;
+      --muted: #b6c2db;
+      --accent: #5aa3ff;
+      --accent-2: #5ce3b8;
+      --warm: #ffc86b;
+      --shadow: rgba(10, 14, 26, 0.55);
     }
 
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+    }
 
     body {
       margin: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       color: var(--text);
       background:
-        radial-gradient(circle at 20% 0%, #193563 0%, transparent 32rem),
+        radial-gradient(1200px 600px at 10% -10%, #1b2a55 0%, transparent 60%),
+        radial-gradient(900px 500px at 90% 10%, #1f2a4a 0%, transparent 60%),
         var(--bg);
       line-height: 1.5;
     }
 
-    header, main {
-      width: min(1080px, calc(100% - 32px));
+    .page {
+      width: min(1100px, calc(100% - 32px));
       margin: auto;
     }
 
+    /* HEADER */
+
     header {
-      padding: 48px 0 25px;
+      padding: 56px 0 28px;
     }
 
-    h1 { margin: 0; font-size: clamp(2rem, 5vw, 3.6rem); }
-    h2 { margin: 0 0 10px; font-size: 1.3rem; }
+    .title-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
 
-    .subtitle, .intro p, .card p {
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      letter-spacing: 0.2px;
+      line-height: 1.05;
+    }
+
+    .subtitle {
+      margin: 10px 0 0;
       color: var(--muted);
+      font-size: 1.05rem;
+      max-width: 52ch;
     }
-
-    .subtitle { font-size: 1.08rem; margin-top: 10px; }
 
     .credit {
-  margin: 8px 0 0;
-  color: var(--muted);
-  font-size: 0.9rem;
-}
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, var(--panel), var(--panel-2));
+      color: var(--muted);
+      font-size: 0.82rem;
+      white-space: nowrap;
+    }
+
+    .badge .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent-2);
+      box-shadow: 0 0 10px rgba(92, 227, 184, 0.5);
+    }
+
+    /* INTRO */
+
+    .intro {
+      margin: 22px 0 26px;
+      padding: 16px 18px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: linear-gradient(180deg, rgba(20, 27, 47, 0.9), rgba(20, 27, 47, 0.6));
+    }
+
+    .intro h2 {
+      margin: 0 0 6px;
+      font-size: 1.15rem;
+      color: var(--accent);
+    }
+
+    .intro p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    /* GRID */
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(235px, 1fr));
-      gap: 16px;
-      padding: 20px 0 56px;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 14px;
+      padding: 10px 0 56px;
     }
 
     .card {
+      position: relative;
       display: block;
       min-height: 150px;
-      padding: 20px;
+      padding: 18px 18px 16px;
       border: 1px solid var(--border);
-      border-radius: 16px;
+      border-radius: 14px;
       color: inherit;
       text-decoration: none;
-      background: rgba(18, 26, 46, 0.88);
-      transition: transform 160ms ease, border-color 160ms ease;
+      background:
+        linear-gradient(180deg, rgba(20, 27, 47, 0.95), rgba(20, 27, 47, 0.75));
+      box-shadow: 0 8px 24px var(--shadow);
+      transition:
+        transform 160ms ease,
+        border-color 160ms ease,
+        box-shadow 160ms ease;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: -2px;
+      border-radius: 16px;
+      padding: 2px;
+      background: linear-gradient(135deg, rgba(90, 163, 255, 0.35), transparent 60%);
+      -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+      opacity: 0.7;
     }
 
     .card:hover {
-      transform: translateY(-4px);
-      border-color: var(--accent);
+      transform: translateY(-3px);
+      border-color: rgba(90, 163, 255, 0.6);
+      box-shadow: 0 14px 34px rgba(10, 14, 26, 0.7);
     }
 
     .card h3 {
-      margin: 0 0 8px;
+      margin: 0 0 6px;
+      font-size: 1.05rem;
       color: var(--accent);
+      letter-spacing: 0.2px;
     }
 
     .card p {
       margin: 0;
-      font-size: 0.94rem;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.45;
+    }
+
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 12px;
     }
 
     .tag {
-      display: inline-block;
-      margin-top: 14px;
-      color: var(--accent2);
-      font-size: 0.85rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      border-radius: 8px;
+      background: rgba(90, 163, 255, 0.12);
+      color: var(--accent);
+      font-size: 0.8rem;
       font-weight: 700;
+      letter-spacing: 0.3px;
     }
+
+    .tag .arrow {
+      transition: transform 160ms ease;
+    }
+
+    .card:hover .tag .arrow {
+      transform: translateX(3px);
+    }
+
+    .topic {
+      color: var(--warm);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+    }
+
+    /* FOOTER */
 
     footer {
       border-top: 1px solid var(--border);
       color: var(--muted);
-      padding: 22px 0 40px;
-      font-size: 0.9rem;
+      padding: 22px 0 44px;
+      font-size: 0.88rem;
+    }
+
+    @media (max-width: 720px) {
+      .title-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .badge {
+        margin-top: 8px;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Physics Simulations</h1>
-    <p class="subtitle">Interactive browser-based labs for exploring physics.</p>
-    <p class="credit">Made by a student at German Swiss International School Hong Kong.</p>
-  </header>
+  <div class="page">
+    <header>
+      <div class="title-row">
+        <div>
+          <h1>Physics Simulations</h1>
+          <p class="subtitle">
+            Interactive, browser-based labs for exploring physics concepts.
+          </p>
+          <p class="credit">
+            Made by a student at German Swiss International School Hong Kong.
+          </p>
+        </div>
 
-  <main>
-    <section class="intro">
-      <h2>Choose a simulation</h2>
-      <p>Feel free to use any sim, more coming soon!</p>
-    </section>
+        <div class="badge">
+          <span class="dot"></span>
+          Student project
+        </div>
+      </div>
+    </header>
 
-    <section class="grid">
-      <a class="card" href="wave-on-a-string.html">
-        <h3>Wave on a String</h3>
-        <p>Change frequency, amplitude, tension, damping, and the end boundary. Watch the wave evolve in real time.</p>
-        <span class="tag">Open simulation →</span>
-      </a>
+    <main>
+      <section class="intro">
+        <h2>Choose a simulation</h2>
+        <p>Open any sim below and play with the controls. More coming soon.</p>
+      </section>
 
-      <a class="card" href="projectile-motion.html">
-        <h3>Projectile Motion</h3>
-        <p>Launch objects and investigate trajectories, gravity, and air resistance.</p>
-        <span class="tag">Open simulation →</span>
-      </a>
+      <section class="grid">
+        <a class="card" href="wave-on-a-string.html">
+          <div class="topic">Waves</div>
+          <h3>Wave on a String</h3>
+          <p>Change frequency, amplitude, tension, damping, and the end boundary. Watch the wave evolve in real time.</p>
+          <div class="card-footer">
+            <span class="tag">Open <span class="arrow">→</span></span>
+          </div>
+        </a>
 
-      <a class="card" href="springs-and-masses.html">
-        <h3>Springs & Masses</h3>
-        <p>Explore Hooke’s law, resonance, damping, and mechanical energy.</p>
-        <span class="tag">Open simulation →</span>
-      </a>
+        <a class="card" href="projectile-motion.html">
+          <div class="topic">Mechanics</div>
+          <h3>Projectile Motion</h3>
+          <p>Launch objects and investigate trajectories, gravity, and air resistance.</p>
+          <div class="card-footer">
+            <span class="tag">Open <span class="arrow">→</span></span>
+          </div>
+        </a>
 
-      <a class="card" href="simple-circuits.html">
-        <h3>Simple Circuits</h3>
-        <p>Experiment with voltage, resistance, capacitance, and current.</p>
-        <span class="tag">Open simulation →</span>
-      </a>
+        <a class="card" href="springs-and-masses.html">
+          <div class="topic">Oscillations</div>
+          <h3>Springs & Masses</h3>
+          <p>Explore Hooke’s law, resonance, damping, and mechanical energy.</p>
+          <div class="card-footer">
+            <span class="tag">Open <span class="arrow">→</span></span>
+          </div>
+        </a>
 
-      <a class="card" href="orbital-motion.html">
-        <h3>Orbital Motion</h3>
-        <p>Explore gravity, orbital speed, and paths around a central body.</p>
-        <span class="tag">Open simulation →</span>
-      </a>
+        <a class="card" href="simple-circuits.html">
+          <div class="topic">Electricity</div>
+          <h3>Simple Circuits</h3>
+          <p>Experiment with voltage, resistance, capacitance, and current.</p>
+          <div class="card-footer">
+            <span class="tag">Open <span class="arrow">→</span></span>
+          </div>
+        </a>
 
-      <a class="card" href="pendulum-lab.html">
-        <h3>Pendulum Lab</h3>
-        <p>Explore periodic motion by changing pendulum length, gravity, release angle, and damping.</p>
-        <span class="tag">Open simulation →</span>
-      </a>
+        <a class="card" href="orbital-motion.html">
+          <div class="topic">Gravity</div>
+          <h3>Orbital Motion</h3>
+          <p>Explore gravity, orbital speed, and paths around a central body.</p>
+          <div class="card-footer">
+            <span class="tag">Open <span class="arrow">→</span></span>
+          </div>
+        </a>
 
-      <a class="card" href="forces-and-friction.html">
-        <h3>Forces & Friction</h3>
-        <p>Push a block and explore applied force, friction, net force, and acceleration.</p>
-        <span class="tag">Open simulation →</span>
-      </a>
+        <a class="card" href="pendulum-lab.html">
+          <div class="topic">Oscillations</div>
+          <h3>Pendulum Lab</h3>
+          <p>Explore periodic motion by changing pendulum length, gravity, release angle, and damping.</p>
+          <div class="card-footer">
+            <span class="tag">Open <span class="arrow">→</span></span>
+          </div>
+        </a>
 
-      <a class="card" href="collision-lab.html">
-        <h3>Collision Lab</h3>
-        <p>Investigate elastic and inelastic collisions, momentum conservation, and kinetic energy.</p>
-        <span class="tag">Open simulation →</span>
-      </a>
+        <a class="card" href="forces-and-friction.html">
+          <div class="topic">Mechanics</div>
+          <h3>Forces & Friction</h3>
+          <p>Push a block and explore applied force, friction, net force, and acceleration.</p>
+          <div class="card-footer">
+            <span class="tag">Open <span class="arrow">→</span></span>
+          </div>
+        </a>
 
-      <a class="card" href="electric-fields.html">
-        <h3>Electric Fields & Charges</h3>
-        <p>Place positive and negative charges, visualize the electric field, and measure force on a test charge.</p>
-        <span class="tag">Open simulation →</span>
-      </a>
+        <a class="card" href="collision-lab.html">
+          <div class="topic">Mechanics</div>
+          <h3>Collision Lab</h3>
+          <p>Investigate elastic and inelastic collisions, momentum conservation, and kinetic energy.</p>
+          <div class="card-footer">
+            <span class="tag">Open <span class="arrow">→</span></span>
+          </div>
+        </a>
 
-      <a class="card" href="ray-optics.html">
-        <h3>Ray Optics</h3>
-        <p>Explore converging and diverging lenses, principal rays, focal length, and real or virtual images.</p>
-        <span class="tag">Open simulation →</span>
-      </a>
+        <a class="card" href="electric-fields.html">
+          <div class="topic">Electricity</div>
+          <h3>Electric Fields & Charges</h3>
+          <p>Place positive and negative charges, visualize the electric field, and measure force on a test charge.</p>
+          <div class="card-footer">
+            <span class="tag">Open <span class="arrow">→</span></span>
+          </div>
+        </a>
 
-      <a class="card" href="buoyancy-lab.html">
-        <h3>Buoyancy Lab</h3>
-        <p>Explore floating and sinking by changing object density, volume, fluid density, and gravity.</p>
-        <span class="tag">Open simulation →</span>
-      </a>
+        <a class="card" href="ray-optics.html">
+          <div class="topic">Optics</div>
+          <h3>Ray Optics</h3>
+          <p>Explore converging and diverging lenses, principal rays, focal length, and real or virtual images.</p>
+          <div class="card-footer">
+            <span class="tag">Open <span class="arrow">→</span></span>
+          </div>
+        </a>
 
-      <a class="card" href="gas-laws.html">
-        <h3>Gas Laws Lab</h3>
-        <p>Change temperature, volume, and particle count to explore gas pressure and particle motion.</p>
-        <span class="tag">Open simulation →</span>
-      </a>
+        <a class="card" href="buoyancy-lab.html">
+          <div class="topic">Fluids</div>
+          <h3>Buoyancy Lab</h3>
+          <p>Explore floating and sinking by changing object density, volume, fluid density, and gravity.</p>
+          <div class="card-footer">
+            <span class="tag">Open <span class="arrow">→</span></span>
+          </div>
+        </a>
 
-      <a class="card" href="magnet-and-compass.html">
-        <h3>Magnet & Compass</h3>
-        <p>Move a bar magnet, change its strength, and observe compass needles align with the magnetic field.</p>
-        <span class="tag">Open simulation →</span>
-      </a>
-    </section>
+        <a class="card" href="gas-laws.html">
+          <div class="topic">Thermal</div>
+          <h3>Gas Laws Lab</h3>
+          <p>Change temperature, volume, and particle count to explore gas pressure and particle motion.</p>
+          <div class="card-footer">
+            <span class="tag">Open <span class="arrow">→</span></span>
+          </div>
+        </a>
 
-    <footer>Built with HTML, CSS, and JavaScript.</footer>
-  </main>
+        <a class="card" href="magnet-and-compass.html">
+          <div class="topic">Magnetism</div>
+          <h3>Magnet & Compass</h3>
+          <p>Move a bar magnet, change its strength, and observe compass needles align with the magnetic field.</p>
+          <div class="card-footer">
+            <span class="tag">Open <span class="arrow">→</span></span>
+          </div>
+        </a>
+      </section>
+
+      <footer>Built with HTML, CSS, and JavaScript.</footer>
+    </main>
+  </div>
 </body>
 </html>
