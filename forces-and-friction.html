@@ -220,7 +220,7 @@
 
     .actions {
       display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-columns: 1fr 1fr;
       gap: 8px;
       margin: 12px 0 20px;
     }
@@ -440,8 +440,7 @@
         </div>
 
         <div class="actions">
-          <button id="startPauseButton" type="button">Pause</button>
-          <button id="stopButton" class="secondary" type="button">Stop</button>
+          <button id="toggleButton" type="button">Start</button>
           <button id="resetButton" class="secondary" type="button">Reset</button>
         </div>
 
@@ -514,8 +513,7 @@
     const frictionForceOut = document.getElementById("frictionForceOut");
     const netForceOut = document.getElementById("netForceOut");
 
-    const startPauseButton = document.getElementById("startPauseButton");
-    const stopButton = document.getElementById("stopButton");
+    const toggleButton = document.getElementById("toggleButton");
     const resetButton = document.getElementById("resetButton");
 
     // Simulation State Variables
@@ -523,7 +521,7 @@
     let velocity = 0;
     let acceleration = 0;
     let time = 0;
-    let isRunning = true;
+    let isRunning = false; // Starts paused/stopped by default
     let history = [];
     let trail = [];
     let previousTimestamp = null;
@@ -538,18 +536,20 @@
       };
     }
 
-    // Handles button toggles cleanly
-    function toggleStartPause() {
+    // Dynamic Start/Stop button logic
+    function toggleStartStop() {
       isRunning = !isRunning;
-      startPauseButton.textContent = isRunning ? "Pause" : "Start";
-    }
-
-    function stop() {
-      velocity = 0;
-      acceleration = 0;
-      forceInput.value = 0;
-      isRunning = false;
-      startPauseButton.textContent = "Start";
+      if (isRunning) {
+        toggleButton.textContent = "Stop";
+        toggleButton.style.background = "#a63a3a";
+        toggleButton.style.borderColor = "#a63a3a";
+      } else {
+        velocity = 0;
+        acceleration = 0;
+        toggleButton.textContent = "Start";
+        toggleButton.style.background = "var(--ink)";
+        toggleButton.style.borderColor = "var(--ink)";
+      }
     }
 
     function reset() {
@@ -559,11 +559,13 @@
       time = 0;
       history = [];
       trail = [];
-      isRunning = true;
-      startPauseButton.textContent = "Pause";
+      isRunning = false;
+      toggleButton.textContent = "Start";
+      toggleButton.style.background = "var(--ink)";
+      toggleButton.style.borderColor = "var(--ink)";
     }
 
-    // Canvas DPR resize handling preventing canvas clear glitches
+    // Canvas DPR resize handling
     function setupCanvasDPR(canvas) {
       const ratio = window.devicePixelRatio || 1;
       const rect = canvas.getBoundingClientRect();
@@ -644,7 +646,7 @@
         const previousVel = velocity;
         velocity += acceleration * dt;
 
-        // Zero crossing check to simulate stopping accurately under friction
+        // Zero crossing check to handle stopping smoothly
         if (previousVel * velocity < 0 || (Math.abs(velocity) < 1e-3 && Math.abs(p.appliedForce) <= p.frictionCoefficient * p.mass * p.gravity)) {
           if (Math.abs(p.appliedForce) <= p.frictionCoefficient * p.mass * p.gravity) {
             velocity = 0;
@@ -666,14 +668,16 @@
           });
         }
 
-        // Limit graph history size (last 10 seconds)
+        // Limit graph history size
         while (history.length > 0 && history[0].t < time - 10) {
           history.shift();
         }
+      } else {
+        acceleration = 0;
       }
 
-      updateUI(p, frictionForce, netForce);
-      renderScene(p, frictionForce, netForce);
+      updateUI(p, isRunning ? frictionForce : 0, isRunning ? netForce : 0);
+      renderScene(p, isRunning ? frictionForce : 0, isRunning ? netForce : 0);
       renderMotionGraph();
       renderForceGraph();
     }
@@ -697,7 +701,6 @@
       const blockWidth = 90;
       const blockHeight = 60;
 
-      // Position modulo to keep view bounded naturally while scrolling grid
       const viewScale = 25; // pixels per meter
       const screenX = (width / 2 - blockWidth / 2) + ((position * viewScale) % width);
       const wrappedX = (screenX % width + width) % width;
@@ -753,7 +756,7 @@
       simCtx.fillText(`${p.mass.toFixed(0)} kg`, wrappedX + blockWidth / 2, blockY + 35);
       simCtx.textAlign = "start";
 
-      // Vectors
+      // Dynamic Vectors scaling dynamically as velocity/forces reduce
       if (vectorsInput.checked) {
         const cX = wrappedX + blockWidth / 2;
         const cY = blockY + blockHeight / 2;
@@ -868,15 +871,14 @@
     }
 
     // Event Listeners
-    startPauseButton.addEventListener("click", toggleStartPause);
-    stopButton.addEventListener("click", stop);
+    toggleButton.addEventListener("click", toggleStartStop);
     resetButton.addEventListener("click", reset);
 
     window.addEventListener("resize", () => {
       previousTimestamp = null;
     });
 
-    // Start Simulation
+    // Initial Setup
     reset();
     requestAnimationFrame(loop);
   </script>
