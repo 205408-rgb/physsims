@@ -6,152 +6,201 @@
   <title>Simple Circuits | Physics Simulations</title>
   <style>
     :root {
-      --bg: #0b1020;
-      --panel: #121a2e;
-      --canvas: #0c1425;
-      --border: #263658;
-      --text: #f2f7ff;
-      --muted: #aebbd3;
-      --blue: #61b4ff;
-      --green: #61e7b6;
-      --red: #ff7b8e;
-      --yellow: #ffd56a;
+      --bg: #fcfcf9;
+      --panel: #ffffff;
+      --canvas: #f7f7f4;
+      --border: #e8e8e3;
+      --border-subtle: #eee;
+      --text: #1a1a1a;
+      --muted: #707070;
+      --accent: #2b5c8f;
+      --blue: #2b5c8f;
+      --green: #2e7d32;
+      --red: #c93b2b;
+      --yellow: #d97706;
     }
 
     * { box-sizing: border-box; }
 
     body {
       margin: 0;
+      min-height: 100vh;
       color: var(--text);
-      background:
-        radial-gradient(circle at 20% 0%, #193563 0%, transparent 32rem),
-        var(--bg);
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
     }
 
     .page {
-      width: min(1180px, calc(100% - 32px));
+      width: min(1180px, calc(100% - 48px));
       margin: auto;
+      padding-bottom: 40px;
     }
 
     header {
       display: flex;
       justify-content: space-between;
-      gap: 18px;
-      padding: 28px 0 20px;
+      align-items: flex-start;
+      padding: 36px 0 24px;
       border-bottom: 1px solid var(--border);
     }
 
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: #f4f4f0;
+    }
+
     h1 {
-      margin: 0;
-      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      margin: 8px 0 0;
+      font-family: "Georgia", "Times New Roman", serif;
+      font-weight: 400;
+      font-size: clamp(2rem, 4vw, 2.75rem);
+      color: var(--text);
+      letter-spacing: -0.01em;
     }
 
     h2 {
       margin: 0 0 16px;
-      font-size: 1.1rem;
+      font-family: "Georgia", "Times New Roman", serif;
+      font-weight: 400;
+      font-size: 1.25rem;
+      color: var(--text);
     }
 
     .subtitle {
-      margin: 7px 0 0;
+      margin: 8px 0 0;
       color: var(--muted);
+      font-size: 0.95rem;
     }
 
     .back {
-      color: var(--blue);
+      color: var(--text);
+      background: #f0f0eb;
+      border: 1px solid var(--border);
       text-decoration: none;
       white-space: nowrap;
-      padding-top: 6px;
+      padding: 6px 14px;
+      border-radius: 4px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      transition: background 0.15s;
     }
 
-    .back:hover { text-decoration: underline; }
+    .back:hover { background: #e5e5df; }
 
     .layout {
       display: grid;
-      grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.75fr);
-      gap: 18px;
-      padding: 22px 0 18px;
+      grid-template-columns: minmax(0, 1.6fr) minmax(300px, 0.9fr);
+      gap: 24px;
+      padding-top: 28px;
     }
 
     .panel {
-      overflow: hidden;
       border: 1px solid var(--border);
-      border-radius: 16px;
-      background: rgba(18, 26, 46, 0.9);
+      background: var(--panel);
+      border-radius: 2px;
+      overflow: hidden;
     }
 
     .simulation {
       position: relative;
-      min-height: 440px;
+      min-height: 480px;
     }
 
     #simCanvas {
       display: block;
       width: 100%;
-      height: 440px;
+      height: 480px;
       background: var(--canvas);
     }
 
     .canvas-label {
       position: absolute;
-      top: 12px;
-      left: 14px;
+      top: 14px;
+      left: 16px;
       color: var(--muted);
-      font-size: 0.84rem;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
       pointer-events: none;
     }
 
-    .controls { padding: 20px; }
+    .controls {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+    }
 
-    .control { margin-bottom: 19px; }
+    .control { margin-bottom: 20px; }
 
     label {
       display: flex;
       justify-content: space-between;
       gap: 10px;
       margin-bottom: 8px;
-      color: var(--muted);
-      font-size: 0.9rem;
+      color: var(--text);
+      font-size: 0.88rem;
     }
 
     output {
       color: var(--text);
+      font-weight: 600;
       font-variant-numeric: tabular-nums;
     }
 
     input[type="range"] {
       width: 100%;
+      height: 4px;
       cursor: pointer;
-      accent-color: var(--blue);
+      accent-color: #1a1a1a;
+      background: #e2e2dc;
+      border-radius: 2px;
     }
 
     .actions {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
-      margin: 5px 0 20px;
+      margin: 8px 0 20px;
     }
 
     button {
       cursor: pointer;
-      border: 0;
-      border-radius: 9px;
-      padding: 10px 14px;
-      color: #08101c;
-      background: linear-gradient(135deg, var(--blue), var(--green));
+      border: 1px solid #1a1a1a;
+      border-radius: 2px;
+      padding: 8px 16px;
+      color: #ffffff;
+      background: #1a1a1a;
       font: inherit;
-      font-weight: 750;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: background 0.15s;
     }
+
+    button:hover { background: #333333; }
 
     button.secondary {
       color: var(--text);
       border: 1px solid var(--border);
-      background: transparent;
+      background: #f7f7f4;
     }
+
+    button.secondary:hover { background: #ebebe5; }
 
     .checks {
       display: grid;
       gap: 10px;
+      padding-top: 10px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border-subtle);
     }
 
     .checks label {
@@ -159,63 +208,70 @@
       align-items: center;
       margin: 0;
       cursor: pointer;
+      font-size: 0.85rem;
+      color: var(--muted);
     }
 
-    .checks input { accent-color: var(--blue); }
+    .checks input {
+      accent-color: #1a1a1a;
+      margin-right: 8px;
+    }
 
     .readouts {
-      margin-top: 22px;
-      padding: 14px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: var(--canvas);
+      margin-top: 20px;
+      padding-top: 16px;
     }
 
     .readouts h3 {
-      margin: 0 0 8px;
-      color: var(--muted);
-      font-size: 0.92rem;
+      margin: 0 0 12px;
+      font-family: "Georgia", "Times New Roman", serif;
+      font-weight: 400;
+      font-size: 1.05rem;
+      color: var(--text);
     }
 
     .readouts p {
       display: flex;
       justify-content: space-between;
-      margin: 6px 0;
-      font-size: 0.92rem;
+      margin: 8px 0;
+      font-size: 0.86rem;
+      color: var(--muted);
     }
 
-    .readouts strong { font-variant-numeric: tabular-nums; }
+    .readouts strong {
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
 
     .graphs {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 18px;
-      padding-bottom: 40px;
+      gap: 24px;
+      padding-top: 24px;
     }
 
-    .graph { padding: 14px; }
+    .graph { padding: 20px; }
 
     .graph h2 {
-      margin-bottom: 10px;
-      color: var(--muted);
-      font-size: 0.95rem;
+      margin-bottom: 12px;
+      font-size: 1.05rem;
     }
 
     .graph canvas {
       display: block;
       width: 100%;
-      height: 205px;
-      border: 1px solid var(--border);
-      border-radius: 10px;
+      height: 200px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 2px;
       background: var(--canvas);
     }
 
     .legend {
       display: flex;
-      gap: 14px;
-      margin-top: 9px;
+      gap: 16px;
+      margin-top: 12px;
       color: var(--muted);
-      font-size: 0.82rem;
+      font-size: 0.8rem;
     }
 
     .blue { color: var(--blue); }
@@ -223,7 +279,7 @@
     .red { color: var(--red); }
 
     @media (max-width: 850px) {
-      header { flex-direction: column; }
+      header { flex-direction: column; gap: 16px; }
       .layout, .graphs { grid-template-columns: 1fr; }
       #simCanvas { height: 360px; }
     }
@@ -233,6 +289,7 @@
   <div class="page">
     <header>
       <div>
+        <span class="badge">Physics Interactive</span>
         <h1>Simple Circuits</h1>
         <p class="subtitle">Explore charging and discharging in a resistor-capacitor circuit.</p>
       </div>
@@ -283,7 +340,7 @@
         </div>
 
         <section class="readouts">
-          <h3>Live readouts</h3>
+          <h3>Live Readouts</h3>
           <p><span>Switch</span><strong id="switchOut">Open</strong></p>
           <p><span>Time</span><strong id="timeOut">0.00 s</strong></p>
           <p><span>Capacitor voltage</span><strong id="capacitorOut">0.00 V</strong></p>
@@ -296,7 +353,7 @@
 
     <section class="graphs">
       <section class="panel graph">
-        <h2>Voltage vs. time</h2>
+        <h2>Voltage vs. Time</h2>
         <canvas id="voltageGraph"></canvas>
         <div class="legend">
           <span class="blue">● capacitor voltage</span>
@@ -305,7 +362,7 @@
       </section>
 
       <section class="panel graph">
-        <h2>Current vs. time</h2>
+        <h2>Current vs. Time</h2>
         <canvas id="currentGraph"></canvas>
         <div class="legend">
           <span class="green">● current</span>
@@ -360,14 +417,20 @@
     function resizeCanvas(canvas) {
       const ratio = window.devicePixelRatio || 1;
       const rect = canvas.getBoundingClientRect();
-      canvas.width = Math.round(rect.width * ratio);
-      canvas.height = Math.round(rect.height * ratio);
+      const targetWidth = Math.round(rect.width * ratio);
+      const targetHeight = Math.round(rect.height * ratio);
+
+      if (canvas.width !== targetWidth || canvas.height !== targetHeight) {
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+      }
+
       const context = canvas.getContext("2d");
       context.setTransform(ratio, 0, 0, ratio, 0, 0);
       return { width: rect.width, height: rect.height };
     }
 
-    function line(ctx, x1, y1, x2, y2, color, width = 2) {
+    function line(ctx, x1, y1, x2, y2, color, width = 1.5) {
       ctx.strokeStyle = color;
       ctx.lineWidth = width;
       ctx.beginPath();
@@ -415,25 +478,25 @@
     }
 
     function drawBattery(ctx, x, y, height) {
-      line(ctx, x, y - height / 2, x, y + height / 2, "#aebbd3", 3);
-      line(ctx, x + 15, y - height / 3, x + 15, y + height / 3, "#aebbd3", 3);
+      line(ctx, x, y - height / 2, x, y + height / 2, "#1a1a1a", 2);
+      line(ctx, x + 12, y - height / 3, x + 12, y + height / 3, "#1a1a1a", 2);
 
-      ctx.fillStyle = "#f2f7ff";
-      ctx.font = "14px system-ui";
-      ctx.fillText("+", x + 8, y - height / 2 - 8);
-      ctx.fillText("−", x - 7, y + height / 2 + 18);
+      ctx.fillStyle = "#1a1a1a";
+      ctx.font = "12px -apple-system, BlinkMacSystemFont, sans-serif";
+      ctx.fillText("+", x + 6, y - height / 2 - 6);
+      ctx.fillText("−", x - 6, y + height / 2 + 16);
     }
 
     function drawResistor(ctx, x1, y, width) {
       const turns = 8;
       const step = width / turns;
-      ctx.strokeStyle = "#ffd56a";
-      ctx.lineWidth = 3;
+      ctx.strokeStyle = "#d97706";
+      ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.moveTo(x1, y);
 
       for (let i = 1; i < turns; i++) {
-        ctx.lineTo(x1 + i * step, y + (i % 2 === 0 ? -12 : 12));
+        ctx.lineTo(x1 + i * step, y + (i % 2 === 0 ? -10 : 10));
       }
 
       ctx.lineTo(x1 + width, y);
@@ -441,8 +504,8 @@
     }
 
     function drawCapacitor(ctx, x, y) {
-      line(ctx, x - 14, y - 35, x - 14, y + 35, "#61b4ff", 4);
-      line(ctx, x + 14, y - 35, x + 14, y + 35, "#61b4ff", 4);
+      line(ctx, x - 10, y - 30, x - 10, y + 30, "#2b5c8f", 3);
+      line(ctx, x + 10, y - 30, x + 10, y + 30, "#2b5c8f", 3);
     }
 
     function drawCircuit(v) {
@@ -457,38 +520,43 @@
       const switchX = width * 0.48;
 
       simCtx.clearRect(0, 0, width, height);
-      simCtx.fillStyle = "#0c1425";
-      simCtx.fillRect(0, 0, width, height);
 
-      simCtx.strokeStyle = "rgba(174,187,211,0.12)";
+      simCtx.strokeStyle = "#ebebe5";
       simCtx.lineWidth = 1;
 
-      for (let x = 30; x < width; x += 48) {
+      for (let x = 32; x < width; x += 32) {
         simCtx.beginPath();
         simCtx.moveTo(x, 0);
         simCtx.lineTo(x, height);
         simCtx.stroke();
       }
 
-      line(simCtx, left, top, resistorX - 12, top, "#aebbd3");
+      for (let y = 32; y < height; y += 32) {
+        simCtx.beginPath();
+        simCtx.moveTo(0, y);
+        simCtx.lineTo(width, y);
+        simCtx.stroke();
+      }
+
+      line(simCtx, left, top, resistorX - 12, top, "#707070");
       drawResistor(simCtx, resistorX - 12, top, 95);
-      line(simCtx, resistorX + 83, top, right, top, "#aebbd3");
-      line(simCtx, right, top, right, middle - 35, "#aebbd3");
+      line(simCtx, resistorX + 83, top, right, top, "#707070");
+      line(simCtx, right, top, right, middle - 30, "#707070");
       drawCapacitor(simCtx, capacitorX, middle);
-      line(simCtx, right, middle + 35, right, bottom, "#aebbd3");
-      line(simCtx, right, bottom, switchX + 25, bottom, "#aebbd3");
-      line(simCtx, switchX - 22, bottom, left, bottom, "#aebbd3");
-      line(simCtx, left, top, left, bottom, "#aebbd3");
+      line(simCtx, right, middle + 30, right, bottom, "#707070");
+      line(simCtx, right, bottom, switchX + 25, bottom, "#707070");
+      line(simCtx, switchX - 22, bottom, left, bottom, "#707070");
+      line(simCtx, left, top, left, bottom, "#707070");
 
-      drawBattery(simCtx, left, middle, 100);
+      drawBattery(simCtx, left, middle, 90);
 
-      simCtx.fillStyle = closed ? "#61e7b6" : "#ff7b8e";
+      simCtx.fillStyle = closed ? "#2e7d32" : "#c93b2b";
       simCtx.beginPath();
-      simCtx.arc(switchX - 22, bottom, 5, 0, Math.PI * 2);
+      simCtx.arc(switchX - 22, bottom, 4, 0, Math.PI * 2);
       simCtx.fill();
 
       simCtx.beginPath();
-      simCtx.arc(switchX + 25, bottom, 5, 0, Math.PI * 2);
+      simCtx.arc(switchX + 25, bottom, 4, 0, Math.PI * 2);
       simCtx.fill();
 
       line(
@@ -496,21 +564,21 @@
         switchX - 22,
         bottom,
         closed ? switchX + 25 : switchX + 4,
-        closed ? bottom : bottom - 23,
-        closed ? "#61e7b6" : "#aebbd3",
-        3
+        closed ? bottom : bottom - 20,
+        closed ? "#2e7d32" : "#707070",
+        2
       );
 
       const chargeRatio = Math.max(0, Math.min(1, capacitorVoltage / v.battery));
 
-      simCtx.fillStyle = "#aebbd3";
-      simCtx.font = "13px system-ui";
-      simCtx.fillText(`${v.battery.toFixed(1)} V`, left - 24, middle + 5);
-      simCtx.fillText(`${v.resistance.toFixed(0)} Ω`, resistorX + 17, top - 25);
-      simCtx.fillText(`${(v.capacitance * 1e6).toFixed(0)} μF`, right - 23, middle + 60);
+      simCtx.fillStyle = "#707070";
+      simCtx.font = "12px -apple-system, BlinkMacSystemFont, sans-serif";
+      simCtx.fillText(`${v.battery.toFixed(1)} V`, left - 24, middle + 4);
+      simCtx.fillText(`${v.resistance.toFixed(0)} Ω`, resistorX + 22, top - 18);
+      simCtx.fillText(`${(v.capacitance * 1e6).toFixed(0)} μF`, right - 20, middle + 52);
 
-      simCtx.fillStyle = `rgba(97, 180, 255, ${0.20 + chargeRatio * 0.75})`;
-      simCtx.fillRect(right - 8, middle - 27, 16, 54);
+      simCtx.fillStyle = `rgba(43, 92, 143, ${0.08 + chargeRatio * 0.40})`;
+      simCtx.fillRect(right - 6, middle - 24, 12, 48);
 
       if (dotsInput.checked && Math.abs(current) > 0.00001) {
         const currentSize = Math.min(1, Math.abs(current) * 700);
@@ -524,31 +592,29 @@
           [left, bottom - progress * (bottom - top)]
         ];
 
-        simCtx.fillStyle = "#61e7b6";
+        simCtx.fillStyle = "#2e7d32";
         positions.forEach(([x, y]) => {
           simCtx.beginPath();
-          simCtx.arc(x, y, 4, 0, Math.PI * 2);
+          simCtx.arc(x, y, 3.5, 0, Math.PI * 2);
           simCtx.fill();
         });
       }
 
-      simCtx.fillStyle = closed ? "#61e7b6" : "#ff7b8e";
-      simCtx.font = "12px system-ui";
-      simCtx.fillText(closed ? "Switch closed: charging" : "Switch open: discharging", 20, height - 22);
+      simCtx.fillStyle = closed ? "#2e7d32" : "#c93b2b";
+      simCtx.font = "11px -apple-system, BlinkMacSystemFont, sans-serif";
+      simCtx.fillText(closed ? "Switch closed: charging" : "Switch open: discharging", 20, height - 20);
     }
 
     function graphBase(ctx, canvas, label) {
       const { width, height } = resizeCanvas(canvas);
-      const left = 40;
+      const left = 36;
       const right = 12;
-      const top = 15;
-      const bottom = 27;
+      const top = 16;
+      const bottom = 24;
 
       ctx.clearRect(0, 0, width, height);
-      ctx.fillStyle = "#0c1425";
-      ctx.fillRect(0, 0, width, height);
 
-      ctx.strokeStyle = "rgba(174,187,211,0.15)";
+      ctx.strokeStyle = "#f0f0eb";
       ctx.lineWidth = 1;
 
       for (let i = 0; i <= 4; i++) {
@@ -559,12 +625,12 @@
         ctx.stroke();
       }
 
-      line(ctx, left, top, left, height - bottom, "rgba(174,187,211,0.55)", 1);
-      line(ctx, left, height - bottom, width - right, height - bottom, "rgba(174,187,211,0.55)", 1);
+      line(ctx, left, top, left, height - bottom, "#d0d0c8", 1);
+      line(ctx, left, height - bottom, width - right, height - bottom, "#d0d0c8", 1);
 
-      ctx.fillStyle = "#aebbd3";
-      ctx.font = "11px system-ui";
-      ctx.fillText(label, 7, 16);
+      ctx.fillStyle = "#707070";
+      ctx.font = "10px -apple-system, BlinkMacSystemFont, sans-serif";
+      ctx.fillText(label, 6, 14);
 
       return { width, height, left, right, top, bottom };
     }
@@ -573,7 +639,7 @@
       if (series.length < 2) return;
 
       ctx.strokeStyle = color;
-      ctx.lineWidth = 2.2;
+      ctx.lineWidth = 1.8;
       ctx.beginPath();
 
       series.forEach((point, index) => {
@@ -604,7 +670,7 @@
       drawSeries(
         voltageCtx,
         history.map(point => ({ t: point.t, value: point.capacitorVoltage })),
-        "#61b4ff",
+        "#2b5c8f",
         mapX,
         mapY
       );
@@ -612,14 +678,14 @@
       drawSeries(
         voltageCtx,
         history.map(point => ({ t: point.t, value: point.resistorVoltage })),
-        "#ff7b8e",
+        "#c93b2b",
         mapX,
         mapY
       );
 
-      voltageCtx.fillStyle = "#aebbd3";
-      voltageCtx.font = "11px system-ui";
-      voltageCtx.fillText("time", area.width - 33, area.height - 8);
+      voltageCtx.fillStyle = "#707070";
+      voltageCtx.font = "10px -apple-system, BlinkMacSystemFont, sans-serif";
+      voltageCtx.fillText("time", area.width - 28, area.height - 6);
     }
 
     function drawCurrentGraph() {
@@ -637,14 +703,14 @@
       drawSeries(
         currentCtx,
         history.map(point => ({ t: point.t, value: point.current })),
-        "#61e7b6",
+        "#2e7d32",
         mapX,
         mapY
       );
 
-      currentCtx.fillStyle = "#aebbd3";
-      currentCtx.font = "11px system-ui";
-      currentCtx.fillText("time", area.width - 33, area.height - 8);
+      currentCtx.fillStyle = "#707070";
+      currentCtx.font = "10px -apple-system, BlinkMacSystemFont, sans-serif";
+      currentCtx.fillText("time", area.width - 28, area.height - 6);
     }
 
     function frame(timestamp) {
