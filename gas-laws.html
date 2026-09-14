@@ -6,84 +6,96 @@
   <title>Gas Laws Lab | Physics Simulations</title>
   <style>
     :root {
-      --bg: #0b1020;
-      --panel: #121a2e;
-      --canvas: #0c1425;
-      --border: #263658;
-      --text: #f2f7ff;
-      --muted: #aebbd3;
-      --blue: #61b4ff;
-      --green: #61e7b6;
-      --yellow: #ffd56a;
-      --red: #ff6b6b;
+      --bg: #fcfcf9;
+      --panel: #ffffff;
+      --canvas: #f7f7f4;
+      --border: #e2e2dc;
+      --border-subtle: #eee;
+      --text: #1a1a1a;
+      --muted: #707070;
+      --accent: #2b5c8f;
+      --accent-light: #eaf1f7;
     }
 
     * { box-sizing: border-box; }
 
     body {
       margin: 0;
-      background:
-        radial-gradient(circle at 20% 0%, #193563 0%, transparent 32rem),
-        var(--bg);
+      background: var(--bg);
       color: var(--text);
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
     }
 
     .page {
-      width: min(1180px, calc(100% - 32px));
+      width: min(1180px, calc(100% - 48px));
       margin: auto;
+      padding-bottom: 40px;
     }
 
     header {
       display: flex;
       justify-content: space-between;
-      gap: 18px;
-      padding: 28px 0 20px;
+      align-items: flex-start;
+      padding: 36px 0 24px;
       border-bottom: 1px solid var(--border);
     }
 
     h1 {
       margin: 0;
-      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      font-family: "Georgia", "Times New Roman", serif;
+      font-weight: 400;
+      font-size: clamp(2rem, 4vw, 2.75rem);
+      color: var(--text);
+      letter-spacing: -0.01em;
     }
 
     h2 {
       margin: 0 0 16px;
-      font-size: 1.1rem;
+      font-family: "Georgia", "Times New Roman", serif;
+      font-weight: 400;
+      font-size: 1.25rem;
+      color: var(--text);
     }
 
     .subtitle {
-      margin: 7px 0 0;
+      margin: 8px 0 0;
       color: var(--muted);
+      font-size: 0.95rem;
     }
 
     .back {
-      color: var(--blue);
+      color: var(--text);
+      background: #f0f0eb;
+      border: 1px solid var(--border);
       text-decoration: none;
       white-space: nowrap;
-      padding-top: 6px;
+      padding: 6px 14px;
+      border-radius: 4px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      transition: background 0.15s;
     }
 
-    .back:hover { text-decoration: underline; }
+    .back:hover { background: #e5e5df; }
 
     .layout {
       display: grid;
-      grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.8fr);
-      gap: 18px;
-      padding: 22px 0 38px;
+      grid-template-columns: minmax(0, 1.6fr) minmax(300px, 0.9fr);
+      gap: 24px;
+      padding-top: 28px;
     }
 
     .panel {
-      overflow: hidden;
       border: 1px solid var(--border);
-      border-radius: 16px;
-      background: rgba(18, 26, 46, 0.9);
+      background: var(--panel);
+      border-radius: 2px;
     }
 
     #simCanvas {
       display: block;
       width: 100%;
-      height: 460px;
+      height: 480px;
       background: var(--canvas);
     }
 
@@ -93,70 +105,87 @@
 
     .canvas-label {
       position: absolute;
-      top: 12px;
-      left: 14px;
+      top: 14px;
+      left: 16px;
       color: var(--muted);
-      font-size: 0.84rem;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
       pointer-events: none;
     }
 
-    .controls { padding: 20px; }
+    .controls { 
+      padding: 24px; 
+      display: flex;
+      flex-direction: column;
+    }
 
-    .control { margin-bottom: 20px; }
+    .control { margin-bottom: 22px; }
 
     label {
       display: flex;
       justify-content: space-between;
       gap: 10px;
       margin-bottom: 8px;
-      color: var(--muted);
-      font-size: 0.9rem;
+      color: var(--text);
+      font-size: 0.88rem;
     }
 
     output {
       color: var(--text);
+      font-weight: 600;
       font-variant-numeric: tabular-nums;
     }
 
     input[type="range"] {
       width: 100%;
+      height: 4px;
       cursor: pointer;
-      accent-color: var(--blue);
+      accent-color: #1a1a1a;
+      background: #e2e2dc;
+      border-radius: 2px;
     }
 
     .actions {
       display: flex;
-      flex-wrap: wrap;
       gap: 10px;
-      margin: 8px 0 20px;
+      margin: 8px 0 24px;
     }
 
     button {
+      flex: 1;
       cursor: pointer;
-      border: 0;
-      border-radius: 9px;
-      padding: 10px 14px;
-      color: #08101c;
-      background: linear-gradient(135deg, var(--blue), var(--green));
+      border: 1px solid #1a1a1a;
+      border-radius: 2px;
+      padding: 10px 16px;
+      color: #ffffff;
+      background: #1a1a1a;
       font: inherit;
-      font-weight: 750;
-      transition: background 0.2s, color 0.2s;
+      font-size: 0.88rem;
+      font-weight: 600;
+      transition: opacity 0.15s;
     }
 
+    button:hover { opacity: 0.88; }
+
     button.running {
-      background: linear-gradient(135deg, var(--red), #ff8e8e);
-      color: #ffffff;
+      background: #a82e2e;
+      border-color: #a82e2e;
     }
 
     button.secondary {
       color: var(--text);
       border: 1px solid var(--border);
-      background: transparent;
+      background: #f7f7f4;
     }
+
+    button.secondary:hover { background: #ecece6; }
 
     .checks {
       display: grid;
       gap: 10px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border-subtle);
     }
 
     .checks label {
@@ -164,42 +193,49 @@
       align-items: center;
       margin: 0;
       cursor: pointer;
+      font-size: 0.85rem;
+      color: var(--muted);
     }
 
-    .checks input { accent-color: var(--blue); }
+    .checks input { accent-color: #1a1a1a; margin-right: 8px; }
 
     .readouts {
-      margin-top: 22px;
-      padding: 14px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: var(--canvas);
+      margin-top: 20px;
+      padding-top: 16px;
     }
 
     .readouts h3 {
-      margin: 0 0 8px;
-      color: var(--muted);
-      font-size: 0.92rem;
+      margin: 0 0 12px;
+      font-family: "Georgia", "Times New Roman", serif;
+      font-weight: 400;
+      font-size: 1.05rem;
+      color: var(--text);
     }
 
     .readouts p {
       display: flex;
       justify-content: space-between;
-      margin: 6px 0;
-      font-size: 0.92rem;
+      margin: 8px 0;
+      font-size: 0.86rem;
+      color: var(--muted);
     }
 
-    .readouts strong { font-variant-numeric: tabular-nums; }
+    .readouts strong { 
+      color: var(--text);
+      font-variant-numeric: tabular-nums; 
+    }
 
     .formula {
-      margin: 16px 0 0;
+      margin: 20px 0 0;
+      padding-top: 12px;
+      border-top: 1px dashed var(--border);
       color: var(--muted);
-      font-size: 0.82rem;
+      font-size: 0.8rem;
       line-height: 1.45;
     }
 
     @media (max-width: 850px) {
-      header { flex-direction: column; }
+      header { flex-direction: column; gap: 16px; }
       .layout { grid-template-columns: 1fr; }
       #simCanvas { height: 360px; }
     }
@@ -210,15 +246,15 @@
     <header>
       <div>
         <h1>Gas Laws Lab</h1>
-        <p class="subtitle">Change temperature, volume, and particle count to observe gas pressure and molecular motion.</p>
+        <p class="subtitle">Adjust temperature, volume, and particle count to observe kinetic gas behavior and pressure changes.</p>
       </div>
-      <a class="back" href="index.html">← All simulations</a>
+      <a class="back" href="index.html">← All Simulations</a>
     </header>
 
     <main class="layout">
       <section class="panel simulation">
         <canvas id="simCanvas"></canvas>
-        <div class="canvas-label">Warmer gas particles move faster</div>
+        <div class="canvas-label">Ideal Gas Model</div>
       </section>
 
       <aside class="panel controls">
@@ -234,7 +270,7 @@
 
         <div class="control">
           <label for="volume">
-            <span>Container volume</span>
+            <span>Container Volume</span>
             <output id="volumeOut">5.0 L</output>
           </label>
           <input id="volume" type="range" min="2" max="10" value="5" step="0.5">
@@ -242,7 +278,7 @@
 
         <div class="control">
           <label for="particleCount">
-            <span>Number of particles</span>
+            <span>Number of Particles</span>
             <output id="particleCountOut">40</output>
           </label>
           <input id="particleCount" type="range" min="10" max="100" value="40" step="5">
@@ -250,25 +286,25 @@
 
         <div class="actions">
           <button id="toggleButton" type="button">Start</button>
-          <button id="resetButton" class="secondary" type="button">Reset gas</button>
+          <button id="resetButton" class="secondary" type="button">Reset</button>
         </div>
 
         <div class="checks">
           <label><input id="vectors" type="checkbox" checked> Show velocity vectors</label>
           <label><input id="trails" type="checkbox"> Show trails</label>
-          <label><input id="meter" type="checkbox" checked> Show pressure meter</label>
+          <label><input id="meter" type="checkbox" checked> Show pressure gauge</label>
         </div>
 
         <section class="readouts">
-          <h3>Gas readouts</h3>
+          <h3>Readouts</h3>
           <p><span>Pressure</span><strong id="pressureOut">0.00 kPa</strong></p>
-          <p><span>Average speed</span><strong id="speedOut">0.00 units/s</strong></p>
-          <p><span>Particles</span><strong id="countOut">0</strong></p>
-          <p><span>Relative PV/NT</span><strong id="ratioOut">1.00</strong></p>
+          <p><span>Average Speed</span><strong id="speedOut">0.00 units/s</strong></p>
+          <p><span>Active Particles</span><strong id="countOut">0</strong></p>
+          <p><span>Relative PV / NT</span><strong id="ratioOut">1.00</strong></p>
         </section>
 
         <p class="formula">
-          This is a scaled ideal-gas model: P ∝ NT / V.
+          Ideal Gas Relation: $P \propto \frac{N \cdot T}{V}$
         </p>
       </aside>
     </main>
@@ -297,11 +333,11 @@
     const toggleButton = document.getElementById("toggleButton");
     const resetButton = document.getElementById("resetButton");
 
-    const PARTICLE_RADIUS = 4.2;
-
+    const PARTICLE_RADIUS = 4;
     let particles = [];
     let isRunning = false;
     let lastTime = null;
+    let previousBox = null;
 
     function getValues() {
       return {
@@ -327,12 +363,11 @@
     }
 
     function getContainer(v, width, height) {
-      const left = width * 0.16;
-      const top = height * 0.18;
+      const top = height * 0.16;
       const bottom = height * 0.84;
 
-      const minWidth = width * 0.34;
-      const maxWidth = width * 0.70;
+      const minWidth = width * 0.30;
+      const maxWidth = width * 0.72;
 
       const fraction = (v.volume - 2) / 8;
       const containerWidth = minWidth + fraction * (maxWidth - minWidth);
@@ -346,16 +381,16 @@
     }
 
     function targetSpeed(temperature) {
-      return 55 + Math.sqrt(temperature) * 4.3;
+      return 60 + Math.sqrt(temperature) * 4.5;
     }
 
     function newParticle(box, speed) {
       const direction = Math.random() * Math.PI * 2;
-      const randomSpeed = speed * (0.65 + Math.random() * 0.55);
+      const randomSpeed = speed * (0.7 + Math.random() * 0.6);
 
       return {
-        x: box.x + PARTICLE_RADIUS + 2 + Math.random() * (box.width - 2 * PARTICLE_RADIUS - 4),
-        y: box.y + PARTICLE_RADIUS + 2 + Math.random() * (box.height - 2 * PARTICLE_RADIUS - 4),
+        x: box.x + PARTICLE_RADIUS + 4 + Math.random() * Math.max(1, box.width - 2 * PARTICLE_RADIUS - 8),
+        y: box.y + PARTICLE_RADIUS + 4 + Math.random() * Math.max(1, box.height - 2 * PARTICLE_RADIUS - 8),
         vx: Math.cos(direction) * randomSpeed,
         vy: Math.sin(direction) * randomSpeed,
         trail: []
@@ -369,27 +404,41 @@
       const speed = targetSpeed(v.temperature);
 
       particles = [];
-
       for (let i = 0; i < v.particleCount; i++) {
         particles.push(newParticle(box, speed));
       }
+      previousBox = box;
     }
 
     function syncParticles(v, box) {
       const target = v.particleCount;
       const speed = targetSpeed(v.temperature);
 
+      // Rescale positions proportionally if the container geometry changed
+      if (previousBox && (previousBox.width !== box.width || previousBox.x !== box.x)) {
+        particles.forEach(p => {
+          const relX = (p.x - previousBox.x) / previousBox.width;
+          p.x = box.x + relX * box.width;
+        });
+      }
+      previousBox = box;
+
       while (particles.length < target) {
         particles.push(newParticle(box, speed));
       }
-
       while (particles.length > target) {
         particles.pop();
       }
 
+      // Hard clamp positions within boundary walls
+      const minX = box.x + PARTICLE_RADIUS + 1;
+      const maxX = box.x + box.width - PARTICLE_RADIUS - 1;
+      const minY = box.y + PARTICLE_RADIUS + 1;
+      const maxY = box.y + box.height - PARTICLE_RADIUS - 1;
+
       particles.forEach(particle => {
-        particle.x = Math.max(box.x + PARTICLE_RADIUS + 1, Math.min(box.x + box.width - PARTICLE_RADIUS - 1, particle.x));
-        particle.y = Math.max(box.y + PARTICLE_RADIUS + 1, Math.min(box.y + box.height - PARTICLE_RADIUS - 1, particle.y));
+        particle.x = Math.max(minX, Math.min(maxX, particle.x));
+        particle.y = Math.max(minY, Math.min(maxY, particle.y));
       });
     }
 
@@ -398,47 +447,43 @@
 
       const speedGoal = targetSpeed(v.temperature);
 
+      const minX = box.x + PARTICLE_RADIUS;
+      const maxX = box.x + box.width - PARTICLE_RADIUS;
+      const minY = box.y + PARTICLE_RADIUS;
+      const maxY = box.y + box.height - PARTICLE_RADIUS;
+
       particles.forEach(particle => {
-        const speed = Math.hypot(particle.vx, particle.vy);
+        const currentSpeed = Math.hypot(particle.vx, particle.vy);
 
-        if (speed > 0.001) {
-          const factor = speedGoal / speed;
-
-          particle.vx += (particle.vx * factor - particle.vx) * 0.03;
-          particle.vy += (particle.vy * factor - particle.vy) * 0.03;
+        if (currentSpeed > 0.001) {
+          const factor = speedGoal / currentSpeed;
+          particle.vx += (particle.vx * factor - particle.vx) * 0.04;
+          particle.vy += (particle.vy * factor - particle.vy) * 0.04;
         }
 
         particle.x += particle.vx * delta;
         particle.y += particle.vy * delta;
 
-        // Corrected boundary collision detection and clamping
-        const minX = box.x + PARTICLE_RADIUS;
-        const maxX = box.x + box.width - PARTICLE_RADIUS;
-        const minY = box.y + PARTICLE_RADIUS;
-        const maxY = box.y + box.height - PARTICLE_RADIUS;
-
+        // Bounce logic with direct position displacement to eliminate wall-sticking
         if (particle.x <= minX) {
-          particle.x = minX;
+          particle.x = minX + 0.5;
           particle.vx = Math.abs(particle.vx);
         } else if (particle.x >= maxX) {
-          particle.x = maxX;
+          particle.x = maxX - 0.5;
           particle.vx = -Math.abs(particle.vx);
         }
 
         if (particle.y <= minY) {
-          particle.y = minY;
+          particle.y = minY + 0.5;
           particle.vy = Math.abs(particle.vy);
         } else if (particle.y >= maxY) {
-          particle.y = maxY;
+          particle.y = maxY - 0.5;
           particle.vy = -Math.abs(particle.vy);
         }
 
         if (trailsInput.checked) {
           particle.trail.push({ x: particle.x, y: particle.y });
-
-          if (particle.trail.length > 18) {
-            particle.trail.shift();
-          }
+          if (particle.trail.length > 15) particle.trail.shift();
         } else {
           particle.trail = [];
         }
@@ -446,7 +491,7 @@
     }
 
     function drawArrow(ctx, fromX, fromY, toX, toY, color) {
-      const headLength = 6;
+      const headLength = 5;
       const dx = toX - fromX;
       const dy = toY - fromY;
       const angle = Math.atan2(dy, dx);
@@ -455,7 +500,7 @@
 
       ctx.strokeStyle = color;
       ctx.fillStyle = color;
-      ctx.lineWidth = 1.5;
+      ctx.lineWidth = 1.2;
 
       ctx.beginPath();
       ctx.moveTo(fromX, fromY);
@@ -474,10 +519,7 @@
       const pressure = isRunning ? (0.004 * v.particleCount * v.temperature / v.volume) : 0;
 
       const averageSpeed = isRunning ? (
-        particles.reduce(
-          (total, particle) => total + Math.hypot(particle.vx, particle.vy),
-          0
-        ) / Math.max(particles.length, 1)
+        particles.reduce((total, p) => total + Math.hypot(p.vx, p.vy), 0) / Math.max(particles.length, 1)
       ) : 0;
 
       temperatureOut.textContent = `${v.temperature.toFixed(0)} K`;
@@ -490,97 +532,99 @@
       ratioOut.textContent = "1.00";
 
       ctx.clearRect(0, 0, width, height);
-      ctx.fillStyle = "#0c1425";
-      ctx.fillRect(0, 0, width, height);
 
-      ctx.strokeStyle = "rgba(174,187,211,0.12)";
+      // Light background grid
+      ctx.strokeStyle = "#ebebe5";
       ctx.lineWidth = 1;
+      const gridSize = 24;
 
-      for (let x = 0; x < width; x += 44) {
+      for (let x = 0; x < width; x += gridSize) {
         ctx.beginPath();
         ctx.moveTo(x, 0);
         ctx.lineTo(x, height);
         ctx.stroke();
       }
+      for (let y = 0; y < height; y += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+        ctx.stroke();
+      }
 
-      ctx.fillStyle = "rgba(97, 180, 255, 0.09)";
+      // Container background and outline
+      ctx.fillStyle = "#ffffff";
       ctx.fillRect(box.x, box.y, box.width, box.height);
 
-      ctx.strokeStyle = "#aebbd3";
-      ctx.lineWidth = 3;
+      ctx.strokeStyle = "#1a1a1a";
+      ctx.lineWidth = 2;
       ctx.strokeRect(box.x, box.y, box.width, box.height);
 
+      // Render Trails
       if (trailsInput.checked && isRunning) {
         particles.forEach(particle => {
           if (particle.trail.length < 2) return;
 
-          ctx.strokeStyle = "rgba(97, 180, 255, 0.25)";
+          ctx.strokeStyle = "rgba(43, 92, 143, 0.25)";
           ctx.lineWidth = 1;
           ctx.beginPath();
 
           particle.trail.forEach((point, index) => {
-            if (index === 0) {
-              ctx.moveTo(point.x, point.y);
-            } else {
-              ctx.lineTo(point.x, point.y);
-            }
+            if (index === 0) ctx.moveTo(point.x, point.y);
+            else ctx.lineTo(point.x, point.y);
           });
-
           ctx.stroke();
         });
       }
 
-      const hue = Math.max(5, 215 - (v.temperature - 100) / 700 * 180);
-
+      // Render Particles & Velocity Vectors
       particles.forEach(particle => {
-        ctx.fillStyle = `hsl(${hue}, 90%, 66%)`;
+        ctx.fillStyle = "#1a1a1a";
         ctx.beginPath();
         ctx.arc(particle.x, particle.y, PARTICLE_RADIUS, 0, Math.PI * 2);
         ctx.fill();
 
         if (vectorsInput.checked && isRunning) {
-          const vectorScale = 0.12;
+          const vectorScale = 0.1;
           const endX = particle.x + particle.vx * vectorScale;
           const endY = particle.y + particle.vy * vectorScale;
-          drawArrow(ctx, particle.x, particle.y, endX, endY, `hsl(${hue}, 100%, 75%)`);
+          drawArrow(ctx, particle.x, particle.y, endX, endY, "#2b5c8f");
         }
       });
 
+      // Render Pressure Gauge
       if (meterInput.checked) {
-        const meterX = width * 0.08;
-        const meterY = height * 0.23;
-        const meterWidth = 24;
-        const meterHeight = height * 0.55;
+        const meterX = width * 0.06;
+        const meterY = height * 0.22;
+        const meterWidth = 16;
+        const meterHeight = height * 0.56;
         const maximumPressure = 20;
         const fill = Math.min(1, pressure / maximumPressure);
 
-        ctx.strokeStyle = "#aebbd3";
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = "#1a1a1a";
+        ctx.lineWidth = 1.5;
         ctx.strokeRect(meterX, meterY, meterWidth, meterHeight);
 
-        ctx.fillStyle = "#61e7b6";
+        ctx.fillStyle = "#2b5c8f";
         ctx.fillRect(
-          meterX + 3,
+          meterX + 2,
           meterY + meterHeight * (1 - fill),
-          meterWidth - 6,
+          meterWidth - 4,
           meterHeight * fill
         );
 
-        ctx.fillStyle = "#aebbd3";
-        ctx.font = "12px system-ui";
-        ctx.fillText("P", meterX + 8, meterY - 10);
-        ctx.fillText(`${pressure.toFixed(1)}`, meterX - 8, meterY + meterHeight + 23);
+        ctx.fillStyle = "#707070";
+        ctx.font = "11px system-ui";
+        ctx.fillText("P", meterX + 4, meterY - 8);
+        ctx.fillText(`${pressure.toFixed(1)}`, meterX - 6, meterY + meterHeight + 18);
       }
 
-      ctx.fillStyle = "#aebbd3";
+      ctx.fillStyle = "#707070";
       ctx.font = "12px system-ui";
-      ctx.fillText("Gas container", box.x + 8, box.y - 12);
+      ctx.fillText("GAS CONTAINER", box.x, box.y - 10);
     }
 
     function animate(timestamp) {
-      if (lastTime === null) {
-        lastTime = timestamp;
-      }
+      if (lastTime === null) lastTime = timestamp;
 
       const delta = Math.min((timestamp - lastTime) / 1000, 0.04);
       lastTime = timestamp;
@@ -599,7 +643,7 @@
     toggleButton.addEventListener("click", () => {
       isRunning = !isRunning;
       if (isRunning) {
-        toggleButton.textContent = "Stop";
+        toggleButton.textContent = "Pause";
         toggleButton.classList.add("running");
       } else {
         toggleButton.textContent = "Start";
@@ -614,8 +658,14 @@
       resetParticles();
     });
 
+    // Do not call resetParticles() on input so particle velocities persist smoothly
     [temperatureInput, volumeInput, particleCountInput].forEach(input => {
-      input.addEventListener("input", resetParticles);
+      input.addEventListener("input", () => {
+        const size = getCanvasSize();
+        const v = getValues();
+        const box = getContainer(v, size.width, size.height);
+        syncParticles(v, box);
+      });
     });
 
     window.addEventListener("resize", () => {
