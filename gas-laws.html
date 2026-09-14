@@ -379,7 +379,7 @@
     }
 
     function targetSpeed(temperature) {
-      return 80 + Math.sqrt(temperature) * 5.0;
+      return 100 + Math.sqrt(temperature) * 6.0;
     }
 
     function createParticle(box, speed) {
@@ -387,8 +387,8 @@
       const spd = speed * (0.8 + Math.random() * 0.4);
 
       return {
-        x: box.x + PARTICLE_RADIUS + 6 + Math.random() * Math.max(1, box.width - 2 * PARTICLE_RADIUS - 12),
-        y: box.y + PARTICLE_RADIUS + 6 + Math.random() * Math.max(1, box.height - 2 * PARTICLE_RADIUS - 12),
+        x: box.x + PARTICLE_RADIUS + 5 + Math.random() * Math.max(1, box.width - 2 * PARTICLE_RADIUS - 10),
+        y: box.y + PARTICLE_RADIUS + 5 + Math.random() * Math.max(1, box.height - 2 * PARTICLE_RADIUS - 10),
         vx: Math.cos(angle) * spd,
         vy: Math.sin(angle) * spd,
         trail: []
@@ -417,6 +417,19 @@
       while (particles.length > target) {
         particles.pop();
       }
+
+      // Constrain inside container boundary on resize/volume changes
+      const minX = box.x + PARTICLE_RADIUS + 1;
+      const maxX = box.x + box.width - PARTICLE_RADIUS - 1;
+      const minY = box.y + PARTICLE_RADIUS + 1;
+      const maxY = box.y + box.height - PARTICLE_RADIUS - 1;
+
+      particles.forEach(p => {
+        if (p.x < minX) p.x = minX;
+        if (p.x > maxX) p.x = maxX;
+        if (p.y < minY) p.y = minY;
+        if (p.y > maxY) p.y = maxY;
+      });
     }
 
     function updateParticles(delta, v, box) {
@@ -424,34 +437,33 @@
 
       const baseSpeed = targetSpeed(v.temperature);
 
-      // Boundaries accounting for particle radius
       const minX = box.x + PARTICLE_RADIUS;
       const maxX = box.x + box.width - PARTICLE_RADIUS;
       const minY = box.y + PARTICLE_RADIUS;
       const maxY = box.y + box.height - PARTICLE_RADIUS;
 
-      // Fixed micro sub-stepping loop to prevent wall tunneling/sticking regardless of frame drops
+      // Split physics calculations into 8 sub-steps to eliminate tunneling/sticking
       const SUB_STEPS = 8;
       const subDelta = delta / SUB_STEPS;
 
       for (let step = 0; step < SUB_STEPS; step++) {
         particles.forEach(p => {
-          // Adjust velocity towards temperature-driven target speed
+          // Adjust velocity towards current temperature target speed
           const currentSpeed = Math.hypot(p.vx, p.vy);
           if (currentSpeed > 0.001) {
             const factor = baseSpeed / currentSpeed;
             p.vx += (p.vx * factor - p.vx) * 0.02;
             p.vy += (p.vy * factor - p.vy) * 0.02;
           } else {
-            p.vx = (Math.random() - 0.5) * baseSpeed;
-            p.vy = (Math.random() - 0.5) * baseSpeed;
+            p.vx = (Math.random() > 0.5 ? 1 : -1) * baseSpeed * 0.7;
+            p.vy = (Math.random() > 0.5 ? 1 : -1) * baseSpeed * 0.7;
           }
 
-          // Advance position by sub-step
           p.x += p.vx * subDelta;
           p.y += p.vy * subDelta;
 
-          // Left / Right Walls: Directional velocity check guarantees no stickiness
+          // Absolute Directional Wall Checks
+          // (Sets explicit positive/negative velocity instead of toggling)
           if (p.x <= minX) {
             p.x = minX;
             if (p.vx < 0) p.vx = Math.abs(p.vx);
@@ -460,7 +472,6 @@
             if (p.vx > 0) p.vx = -Math.abs(p.vx);
           }
 
-          // Top / Bottom Walls
           if (p.y <= minY) {
             p.y = minY;
             if (p.vy < 0) p.vy = Math.abs(p.vy);
@@ -471,7 +482,7 @@
         });
       }
 
-      // Record trail once per full animation frame
+      // Record trail points once per full frame update
       particles.forEach(p => {
         if (trailsInput.checked) {
           p.trail.push({ x: p.x, y: p.y });
@@ -525,7 +536,7 @@
 
       ctx.clearRect(0, 0, width, height);
 
-      // Light background grid matching reference styling
+      // Light background grid
       ctx.strokeStyle = "#ebebe5";
       ctx.lineWidth = 1;
       const gridSize = 24;
