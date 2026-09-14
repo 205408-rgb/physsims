@@ -4,201 +4,335 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Electric Fields & Charges | Physics Simulations</title>
+
+  <!-- Clean, structured editorial typography matching index layout -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+
+  <!-- MathJax for rendering physics formulas in editorial type -->
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
   <style>
     :root {
-      --bg: #0b1020;
-      --panel: #121a2e;
-      --canvas: #0c1425;
-      --border: #263658;
-      --text: #f2f7ff;
-      --muted: #aebbd3;
-      --blue: #61b4ff;
-      --green: #61e7b6;
-      --red: #ff7b8e;
-      --yellow: #ffd56a;
+      --bg: #fbfbf9;
+      --paper: #ffffff;
+      --ink: #1a1a1a;
+      --muted: #666666;
+      --border: #e2e2dd;
+      --accent: #2b5c8f;
+      --accent-subtle: #f0f4f8;
+      --stroke: #2b2b2b;
+      --canvas-bg: #fafafa;
     }
 
     * { box-sizing: border-box; }
 
+    html, body { height: 100%; }
+
     body {
       margin: 0;
-      color: var(--text);
-      background:
-        radial-gradient(circle at 20% 0%, #193563 0%, transparent 32rem),
-        var(--bg);
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: "Inter", system-ui, -apple-system, sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
     }
 
     .page {
-      width: min(1180px, calc(100% - 32px));
+      width: min(1100px, calc(100% - 48px));
       margin: auto;
     }
 
+    /* HEADER */
+
     header {
-      display: flex;
-      justify-content: space-between;
-      gap: 18px;
-      padding: 28px 0 20px;
+      padding: 48px 0 28px;
       border-bottom: 1px solid var(--border);
     }
 
-    h1 { margin: 0; font-size: clamp(1.8rem, 4vw, 2.6rem); }
-    h2 { margin: 0 0 16px; font-size: 1.1rem; }
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .title-area {
+      max-width: 640px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-family: "Newsreader", Georgia, serif;
+      font-size: clamp(2.2rem, 4.5vw, 3.2rem);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      color: var(--ink);
+    }
 
     .subtitle {
-      margin: 7px 0 0;
+      margin: 0;
       color: var(--muted);
+      font-size: 1.05rem;
+      font-weight: 400;
     }
 
-    .back {
-      color: var(--blue);
+    .back-nav {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--ink);
       text-decoration: none;
-      white-space: nowrap;
-      padding-top: 6px;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      padding: 8px 16px;
+      border: 1px solid var(--border);
+      background: var(--paper);
+      transition: border-color 150ms ease, background 150ms ease;
     }
 
-    .back:hover { text-decoration: underline; }
+    .back-nav:hover {
+      border-color: var(--ink);
+      background: var(--accent-subtle);
+    }
+
+    /* LAYOUT */
 
     .layout {
       display: grid;
-      grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.75fr);
-      gap: 18px;
-      padding: 22px 0 18px;
+      grid-template-columns: minmax(0, 1.55fr) minmax(310px, 0.85fr);
+      gap: 24px;
+      padding: 32px 0 64px;
     }
 
     .panel {
-      overflow: hidden;
       border: 1px solid var(--border);
-      border-radius: 16px;
-      background: rgba(18, 26, 46, 0.9);
+      background: var(--paper);
     }
 
-    .simulation {
+    .simulation-container {
       position: relative;
-      min-height: 440px;
+      display: flex;
+      flex-direction: column;
     }
 
     #simCanvas {
       display: block;
       width: 100%;
-      height: 440px;
-      background: var(--canvas);
+      height: 480px;
+      background: var(--canvas-bg);
       touch-action: none;
       cursor: crosshair;
     }
 
-    .canvas-label {
-      position: absolute;
-      top: 12px;
-      left: 14px;
+    .canvas-legend {
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+      background: var(--paper);
       color: var(--muted);
-      font-size: 0.84rem;
-      pointer-events: none;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
     }
 
-    .controls { padding: 20px; }
-    .control { margin-bottom: 19px; }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-indicator {
+      width: 8px;
+      height: 8px;
+    }
+
+    /* CONTROLS SIDEBAR */
+
+    .controls {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .controls h2 {
+      margin: 0 0 16px;
+      font-family: "Newsreader", Georgia, serif;
+      font-size: 1.25rem;
+      font-weight: 500;
+      color: var(--ink);
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .control {
+      margin-bottom: 14px;
+    }
 
     label {
       display: flex;
       justify-content: space-between;
       gap: 10px;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
       color: var(--muted);
-      font-size: 0.9rem;
+      font-size: 0.8125rem;
+      font-weight: 500;
     }
 
     output {
-      color: var(--text);
+      color: var(--ink);
       font-variant-numeric: tabular-nums;
+      font-weight: 600;
     }
 
     input[type="range"] {
       width: 100%;
+      height: 4px;
+      background: var(--border);
+      appearance: none;
+      outline: none;
+      margin: 8px 0;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      background: var(--ink);
       cursor: pointer;
-      accent-color: var(--blue);
+      border-radius: 0;
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+      background: var(--ink);
+      cursor: pointer;
+      border: none;
+      border-radius: 0;
     }
 
     select {
       width: 100%;
-      padding: 10px;
-      color: var(--text);
-      background: var(--canvas);
+      padding: 8px;
+      color: var(--ink);
+      background: var(--paper);
       border: 1px solid var(--border);
-      border-radius: 9px;
       font: inherit;
+      font-size: 0.8125rem;
+      outline: none;
     }
 
     .actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin: 5px 0 20px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 12px 0 20px;
     }
 
     button {
       cursor: pointer;
-      border: 0;
-      border-radius: 9px;
-      padding: 10px 14px;
-      color: #08101c;
-      background: linear-gradient(135deg, var(--blue), var(--green));
+      border: 1px solid var(--ink);
+      padding: 10px 8px;
+      color: #ffffff;
+      background: var(--ink);
       font: inherit;
-      font-weight: 750;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
+    }
+
+    button:hover {
+      background: var(--accent);
+      border-color: var(--accent);
     }
 
     button.secondary {
-      color: var(--text);
+      color: var(--ink);
       border: 1px solid var(--border);
-      background: transparent;
+      background: var(--paper);
+    }
+
+    button.secondary:hover {
+      border-color: var(--ink);
+      background: var(--accent-subtle);
     }
 
     .checks {
-      display: grid;
-      gap: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 12px;
     }
 
     .checks label {
       justify-content: flex-start;
       align-items: center;
+      gap: 8px;
       margin: 0;
+      cursor: pointer;
+      font-size: 0.8125rem;
+    }
+
+    .checks input[type="checkbox"] {
+      accent-color: var(--ink);
       cursor: pointer;
     }
 
-    .checks input { accent-color: var(--blue); }
+    /* READOUTS */
 
     .readouts {
-      margin-top: 22px;
-      padding: 14px;
+      margin-top: 12px;
+      padding: 16px;
       border: 1px solid var(--border);
-      border-radius: 12px;
-      background: var(--canvas);
+      background: var(--bg);
     }
 
     .readouts h3 {
-      margin: 0 0 8px;
+      margin: 0 0 12px;
       color: var(--muted);
-      font-size: 0.92rem;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 600;
     }
 
-    .readouts p {
+    .readout-row {
       display: flex;
       justify-content: space-between;
       margin: 6px 0;
-      font-size: 0.92rem;
+      font-size: 0.8125rem;
     }
 
-    .readouts strong { font-variant-numeric: tabular-nums; }
-
-    .help {
-      margin: 18px 0 0;
+    .readout-row span {
       color: var(--muted);
-      font-size: 0.82rem;
-      line-height: 1.45;
+    }
+
+    .readout-row strong {
+      font-variant-numeric: tabular-nums;
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    .formula-box {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.8125rem;
+      line-height: 1.5;
     }
 
     @media (max-width: 850px) {
-      header { flex-direction: column; }
       .layout { grid-template-columns: 1fr; }
       #simCanvas { height: 360px; }
     }
@@ -207,25 +341,44 @@
 <body>
   <div class="page">
     <header>
-      <div>
-        <h1>Electric Fields & Charges</h1>
-        <p class="subtitle">Add charges, drag them on the field map, and observe the electric field and force on a test charge.</p>
+      <div class="header-content">
+        <div class="title-area">
+          <h1>Electric Fields & Charges</h1>
+          <p class="subtitle">
+            Add charges, drag them on the field map, and observe the electric field and force on a test charge.
+          </p>
+        </div>
+        <a class="back-nav" href="index.html">&larr; All Simulations</a>
       </div>
-      <a class="back" href="index.html">← All simulations</a>
     </header>
 
     <main class="layout">
-      <section class="panel simulation">
+      <!-- SIMULATION CANVAS PANEL -->
+      <section class="panel simulation-container">
         <canvas id="simCanvas"></canvas>
-        <div class="canvas-label">Click to add a charge · Drag a charge to move it</div>
+        <div class="canvas-legend">
+          <div class="legend-item">
+            <span class="legend-indicator" style="background: #a63a3a;"></span>
+            <span>Positive Charge (+)</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-indicator" style="background: #2b5c8f;"></span>
+            <span>Negative Charge (−)</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-indicator" style="background: #d97706;"></span>
+            <span>Test Charge</span>
+          </div>
+        </div>
       </section>
 
+      <!-- PARAMETER CONTROLS SIDEBAR -->
       <aside class="panel controls">
-        <h2>Charge controls</h2>
+        <h2>Charge Controls</h2>
 
         <div class="control">
           <label for="newCharge">
-            <span>New charge type</span>
+            <span>New Charge Type</span>
           </label>
           <select id="newCharge">
             <option value="1">Positive (+)</option>
@@ -235,7 +388,7 @@
 
         <div class="control">
           <label for="strength">
-            <span>New charge strength</span>
+            <span>New Charge Strength</span>
             <output id="strengthOut">1.0</output>
           </label>
           <input id="strength" type="range" min="0.5" max="3" value="1" step="0.5">
@@ -243,35 +396,36 @@
 
         <div class="control">
           <label for="testCharge">
-            <span>Test charge</span>
+            <span>Test Charge</span>
             <output id="testChargeOut">+1.0</output>
           </label>
           <input id="testCharge" type="range" min="-2" max="2" value="1" step="0.5">
         </div>
 
         <div class="actions">
-          <button id="presetButton" type="button">Dipole preset</button>
-          <button id="clearButton" class="secondary" type="button">Clear charges</button>
+          <button id="presetButton" type="button">Dipole Preset</button>
+          <button id="clearButton" class="secondary" type="button">Clear Charges</button>
         </div>
 
         <div class="checks">
-          <label><input id="fieldArrows" type="checkbox" checked> Show field arrows</label>
-          <label><input id="fieldLines" type="checkbox"> Show approximate field lines</label>
-          <label><input id="testMarker" type="checkbox" checked> Show test charge at centre</label>
+          <label><input id="fieldArrows" type="checkbox" checked> Show Field Arrows</label>
+          <label><input id="fieldLines" type="checkbox"> Show Field Lines</label>
+          <label><input id="testMarker" type="checkbox" checked> Show Test Charge at Centre</label>
         </div>
 
+        <!-- READOUTS DATA DISPLAY -->
         <section class="readouts">
-          <h3>Centre readout</h3>
-          <p><span>Electric-field x</span><strong id="exOut">0.00</strong></p>
-          <p><span>Electric-field y</span><strong id="eyOut">0.00</strong></p>
-          <p><span>Field magnitude</span><strong id="fieldOut">0.00</strong></p>
-          <p><span>Force on test charge</span><strong id="forceOut">0.00</strong></p>
-          <p><span>Charges placed</span><strong id="countOut">0</strong></p>
+          <h3>Centre Readout</h3>
+          <div class="readout-row"><span>Electric-field x</span><strong id="exOut">0.00</strong></div>
+          <div class="readout-row"><span>Electric-field y</span><strong id="eyOut">0.00</strong></div>
+          <div class="readout-row"><span>Field Magnitude</span><strong id="fieldOut">0.00</strong></div>
+          <div class="readout-row"><span>Force on Test Charge</span><strong id="forceOut">0.00</strong></div>
+          <div class="readout-row"><span>Charges Placed</span><strong id="countOut">0</strong></div>
         </section>
 
-        <p class="help">
-          This uses a scaled version of Coulomb’s law. The field arrows point in the direction a positive test charge would move.
-        </p>
+        <div class="formula-box">
+          $$\mathbf{E} = \frac{1}{4\pi\varepsilon_0} \sum \frac{q_i}{r_i^2} \hat{\mathbf{r}}_i, \quad \mathbf{F} = q_{test}\mathbf{E}$$
+        </div>
       </aside>
     </main>
   </div>
@@ -380,7 +534,7 @@
           const dx = field.ex / field.magnitude * length;
           const dy = field.ey / field.magnitude * length;
 
-          arrow(x, y, x + dx, y + dy, "rgba(97, 180, 255, 0.62)", 1.1);
+          arrow(x, y, x + dx, y + dy, "rgba(43, 92, 143, 0.45)", 1.1);
         }
       }
     }
@@ -396,7 +550,7 @@
             let x = startX + Math.cos(angle) * 18;
             let y = startY + Math.sin(angle) * 18;
 
-            ctx.strokeStyle = "rgba(97, 231, 182, 0.25)";
+            ctx.strokeStyle = "rgba(43, 92, 143, 0.25)";
             ctx.lineWidth = 1;
             ctx.beginPath();
             ctx.moveTo(x, y);
@@ -424,38 +578,26 @@
       const y = charge.y * height;
       const radius = 14 + Math.abs(charge.q) * 4;
       const positive = charge.q > 0;
+      const color = positive ? "#a63a3a" : "#2b5c8f";
 
-      const glow = ctx.createRadialGradient(x, y, 0, x, y, radius * 2.6);
-
-      glow.addColorStop(
-        0,
-        positive ? "rgba(255, 123, 142, 0.9)" : "rgba(97, 180, 255, 0.9)"
-      );
-      glow.addColorStop(1, "rgba(0, 0, 0, 0)");
-
-      ctx.fillStyle = glow;
-      ctx.beginPath();
-      ctx.arc(x, y, radius * 2.6, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.fillStyle = positive ? "#ff7b8e" : "#61b4ff";
+      ctx.fillStyle = "#ffffff";
       ctx.beginPath();
       ctx.arc(x, y, radius, 0, Math.PI * 2);
       ctx.fill();
 
-      ctx.strokeStyle = "#06101d";
+      ctx.strokeStyle = color;
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 18px system-ui";
+      ctx.fillStyle = color;
+      ctx.font = "600 16px Inter";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText(positive ? "+" : "−", x, y - 1);
 
-      ctx.font = "11px system-ui";
-      ctx.fillStyle = "#f2f7ff";
-      ctx.fillText(charge.q.toFixed(1), x, y + radius + 13);
+      ctx.font = "500 11px Inter";
+      ctx.fillStyle = "#666666";
+      ctx.fillText(charge.q.toFixed(1), x, y + radius + 12);
 
       ctx.textAlign = "start";
       ctx.textBaseline = "alphabetic";
@@ -465,20 +607,21 @@
       const { width, height } = resizeCanvas();
 
       ctx.clearRect(0, 0, width, height);
-      ctx.fillStyle = "#0c1425";
+      ctx.fillStyle = "#fafafa";
       ctx.fillRect(0, 0, width, height);
 
-      ctx.strokeStyle = "rgba(174,187,211,0.10)";
+      // Grid
+      ctx.strokeStyle = "#eaeaea";
       ctx.lineWidth = 1;
 
-      for (let x = 0; x < width; x += 50) {
+      for (let x = 0; x < width; x += 30) {
         ctx.beginPath();
         ctx.moveTo(x, 0);
         ctx.lineTo(x, height);
         ctx.stroke();
       }
 
-      for (let y = 0; y < height; y += 50) {
+      for (let y = 0; y < height; y += 30) {
         ctx.beginPath();
         ctx.moveTo(0, y);
         ctx.lineTo(width, y);
@@ -501,10 +644,10 @@
       const testCharge = Number(testChargeInput.value);
 
       if (testMarkerInput.checked) {
-        ctx.strokeStyle = "#ffd56a";
+        ctx.strokeStyle = "#d97706";
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.arc(centerX, centerY, 10, 0, Math.PI * 2);
+        ctx.arc(centerX, centerY, 8, 0, Math.PI * 2);
         ctx.stroke();
 
         const forceScale = Math.min(42, field.magnitude * Math.abs(testCharge) * 3);
@@ -516,15 +659,19 @@
             centerY,
             centerX + field.ex / field.magnitude * forceScale * sign,
             centerY + field.ey / field.magnitude * forceScale * sign,
-            "#ffd56a",
+            "#d97706",
             2
           );
         }
 
-        ctx.fillStyle = "#ffd56a";
-        ctx.font = "11px system-ui";
-        ctx.fillText("test charge", centerX + 13, centerY - 13);
+        ctx.fillStyle = "#d97706";
+        ctx.font = "600 10px Inter";
+        ctx.fillText("TEST CHARGE", centerX + 12, centerY - 10);
       }
+
+      ctx.fillStyle = "#666666";
+      ctx.font = "600 10px Inter";
+      ctx.fillText("CLICK TO ADD · DRAG TO MOVE", 16, height - 16);
 
       strengthOut.textContent = Number(strengthInput.value).toFixed(1);
       testChargeOut.textContent =
