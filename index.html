@@ -5,22 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Physics Simulations</title>
 
-  <!-- Hand-drawn-ish fonts -->
+  <!-- Clean, structured editorial typography -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
 
   <style>
     :root {
-      --bg: #f6f3ec;
+      --bg: #fbfbf9;
       --paper: #ffffff;
-      --ink: #2b2b2b;
-      --muted: #5a5a5a;
-      --border: #dcd6ca;
-      --accent: #e05d5d;
-      --accent-2: #2fb39a;
-      --accent-3: #f4c542;
-      --shadow: rgba(40, 30, 20, 0.10);
+      --ink: #1a1a1a;
+      --muted: #666666;
+      --border: #e2e2dd;
+      --accent: #2b5c8f;
+      --accent-subtle: #f0f4f8;
+      --stroke: #333333;
     }
 
     * {
@@ -33,230 +32,202 @@
 
     body {
       margin: 0;
-      font-family: "Nunito", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: "Inter", system-ui, -apple-system, sans-serif;
       color: var(--ink);
-      background:
-        radial-gradient(1200px 600px at 10% -10%, #fff7e8 0%, transparent 60%),
-        radial-gradient(900px 500px at 90% 10%, #f3f0e8 0%, transparent 60%),
-        var(--bg);
+      background: var(--bg);
       line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
     }
 
     .page {
-      width: min(1060px, calc(100% - 32px));
+      width: min(1100px, calc(100% - 48px));
       margin: auto;
     }
 
     /* HEADER */
 
     header {
-      padding: 52px 0 22px;
+      padding: 64px 0 32px;
+      border-bottom: 1px solid var(--border);
     }
 
-    .title-row {
+    .header-content {
       display: flex;
-      align-items: baseline;
       justify-content: space-between;
-      gap: 16px;
+      align-items: flex-start;
+      gap: 24px;
       flex-wrap: wrap;
     }
 
+    .title-area {
+      max-width: 640px;
+    }
+
     h1 {
-      margin: 0;
-      font-family: "Kalam", cursive;
-      font-size: clamp(2.2rem, 6vw, 3.6rem);
-      letter-spacing: 0.4px;
-      line-height: 1.05;
+      margin: 0 0 12px;
+      font-family: "Newsreader", Georgia, serif;
+      font-size: clamp(2.4rem, 5vw, 3.5rem);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
       color: var(--ink);
     }
 
     .subtitle {
-      margin: 8px 0 0;
+      margin: 0 0 12px;
       color: var(--muted);
-      font-size: 1.05rem;
-      max-width: 52ch;
+      font-size: 1.1rem;
+      font-weight: 400;
     }
 
     .credit {
-      margin: 8px 0 0;
+      margin: 0;
       color: var(--muted);
-      font-size: 0.9rem;
+      font-size: 0.875rem;
     }
 
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      border: 2px solid var(--border);
+    .meta-tag {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 600;
+      color: var(--muted);
+      padding: 6px 12px;
+      border: 1px solid var(--border);
       background: var(--paper);
-      color: var(--muted);
-      font-size: 0.82rem;
-      font-weight: 700;
-      white-space: nowrap;
-      box-shadow: 2px 2px 0 rgba(0,0,0,0.06);
     }
 
-    .badge .dot {
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-      background: var(--accent-2);
-      border: 2px solid var(--ink);
-    }
-
-    /* INTRO */
+    /* INTRO BAR */
 
     .intro {
-      margin: 20px 0 24px;
-      padding: 16px 18px;
-      border: 2px solid var(--border);
-      border-radius: 16px;
-      background: var(--paper);
-      box-shadow: 3px 3px 0 rgba(0,0,0,0.06);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24px 0;
+      border-bottom: 1px solid var(--border);
     }
 
     .intro h2 {
-      margin: 0 0 6px;
-      font-family: "Kalam", cursive;
-      font-size: 1.35rem;
+      margin: 0;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
       color: var(--ink);
-      letter-spacing: 0.3px;
     }
 
     .intro p {
       margin: 0;
       color: var(--muted);
-      font-size: 0.96rem;
+      font-size: 0.875rem;
     }
 
     /* GRID */
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 16px;
-      padding: 10px 0 56px;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 24px;
+      padding: 32px 0 64px;
     }
 
     .card {
-      position: relative;
-      display: block;
-      min-height: 190px;
-      padding: 18px 18px 16px;
-      border: 2px solid var(--border);
-      border-radius: 16px;
-      color: inherit;
-      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 240px;
+      padding: 20px;
+      border: 1px solid var(--border);
       background: var(--paper);
-      box-shadow: 3px 3px 0 var(--shadow);
-      transition:
-        transform 140ms ease,
-        box-shadow 140ms ease,
-        border-color 140ms ease;
-      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 150ms ease, box-shadow 150ms ease;
     }
 
     .card:hover {
-      transform: translateY(-3px) rotate(-0.4deg);
-      border-color: #d3cdbf;
-      box-shadow: 5px 5px 0 rgba(40, 30, 20, 0.12);
+      border-color: var(--ink);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 12px;
     }
 
     .card h3 {
-      margin: 6px 0 4px;
-      font-family: "Kalam", cursive;
-      font-size: 1.2rem;
+      margin: 0;
+      font-family: "Newsreader", Georgia, serif;
+      font-size: 1.35rem;
+      font-weight: 500;
       color: var(--ink);
-      letter-spacing: 0.3px;
+    }
+
+    .topic {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 600;
+      color: var(--muted);
     }
 
     .card p {
-      margin: 0;
+      margin: 0 0 16px;
       color: var(--muted);
-      font-size: 0.92rem;
-      line-height: 1.45;
+      font-size: 0.875rem;
+      line-height: 1.5;
     }
 
     .sample {
-      margin: 10px 0 8px;
-      border: 1.5px dashed var(--border);
-      border-radius: 10px;
-      background: #faf8f3;
-      overflow: hidden;
+      margin: 12px 0 16px;
+      padding: 8px;
+      background: var(--bg);
+      border: 1px solid var(--border);
     }
 
     .sample svg {
       display: block;
       width: 100%;
-      height: 80px;
+      height: 70px;
     }
 
     .card-footer {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      margin-top: 10px;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin-top: auto;
     }
 
-    .tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 8px;
-      border-radius: 999px;
-      background: rgba(224, 93, 93, 0.12);
-      color: #b03636;
-      font-size: 0.78rem;
-      font-weight: 800;
-      letter-spacing: 0.4px;
-      border: 1.5px solid rgba(224, 93, 93, 0.35);
+    .card-footer .arrow {
+      margin-left: 6px;
+      transition: transform 150ms ease;
     }
 
-    .tag .arrow {
-      transition: transform 140ms ease;
-    }
-
-    .card:hover .tag .arrow {
-      transform: translateX(3px);
-    }
-
-    .topic {
-      display: inline-block;
-      padding: 3px 8px;
-      border-radius: 999px;
-      background: rgba(47, 179, 154, 0.15);
-      color: #267a6b;
-      font-size: 0.72rem;
-      font-weight: 800;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      border: 1.5px solid rgba(47, 179, 154, 0.45);
+    .card:hover .card-footer .arrow {
+      transform: translateX(4px);
     }
 
     /* FOOTER */
 
     footer {
-      border-top: 2px dashed var(--border);
+      border-top: 1px solid var(--border);
       color: var(--muted);
-      padding: 22px 0 44px;
-      font-size: 0.88rem;
+      padding: 32px 0 64px;
+      font-size: 0.8125rem;
     }
 
-    @media (max-width: 720px) {
-      .title-row {
+    @media (max-width: 600px) {
+      .page {
+        width: calc(100% - 32px);
+      }
+
+      .intro {
         flex-direction: column;
         align-items: flex-start;
-      }
-
-      .badge {
-        margin-top: 8px;
-      }
-
-      .grid {
-        grid-template-columns: 1fr;
+        gap: 8px;
       }
     }
   </style>
@@ -264,389 +235,363 @@
 <body>
   <div class="page">
     <header>
-      <div class="title-row">
-        <div>
+      <div class="header-content">
+        <div class="title-area">
           <h1>Physics Simulations</h1>
           <p class="subtitle">
             Interactive, browser-based labs for exploring physics concepts.
           </p>
           <p class="credit">
-            Made by a student at German Swiss International School Hong Kong.
+            German Swiss International School Hong Kong &bull; Physics Department
           </p>
         </div>
 
-        <div class="badge">
-          <span class="dot"></span>
-          Student project
+        <div class="meta-tag">
+          Student Project
         </div>
       </div>
     </header>
 
     <main>
       <section class="intro">
-        <h2>Choose a simulation</h2>
-        <p>Open any sim below and play with the controls. More coming soon.</p>
+        <h2>Simulations Index</h2>
+        <p>Select a module to interact with parameters and runtime controls.</p>
       </section>
 
       <section class="grid">
         <!-- WAVE -->
         <a class="card" href="wave-on-a-string.html">
-          <span class="topic">Waves</span>
-          <h3>Wave on a String</h3>
+          <div>
+            <div class="card-header">
+              <h3>Wave on a String</h3>
+              <span class="topic">Waves</span>
+            </div>
 
-          <div class="sample">
-            <svg viewBox="0 0 300 80" preserveAspectRatio="none">
-              <path
-                d="M0 40
-                   C 30 10, 60 10, 90 40
-                   C 120 70, 150 70, 180 40
-                   C 210 10, 240 10, 270 40
-                   L 300 40"
-                fill="none"
-                stroke="#2fb39a"
-                stroke-width="3"
-              />
-              <circle cx="0" cy="40" r="3.5" fill="#2fb39a" />
-              <circle cx="300" cy="40" r="3.5" fill="#2fb39a" />
-            </svg>
+            <div class="sample">
+              <svg viewBox="0 0 300 80" preserveAspectRatio="none">
+                <path
+                  d="M0 40 C 30 10, 60 10, 90 40 C 120 70, 150 70, 180 40 C 210 10, 240 10, 270 40 L 300 40"
+                  fill="none"
+                  stroke="var(--stroke)"
+                  stroke-width="1.5"
+                />
+                <circle cx="0" cy="40" r="3" fill="var(--stroke)" />
+                <circle cx="300" cy="40" r="3" fill="var(--stroke)" />
+              </svg>
+            </div>
+
+            <p>Adjust frequency, amplitude, tension, damping, and end boundary conditions.</p>
           </div>
-
-          <p>Change frequency, amplitude, tension, damping, and the end boundary. Watch the wave evolve in real time.</p>
           <div class="card-footer">
-            <span class="tag">Open <span class="arrow">→</span></span>
+            Launch Simulation <span class="arrow">&rarr;</span>
           </div>
         </a>
 
         <!-- PROJECTILE -->
         <a class="card" href="projectile-motion.html">
-          <span class="topic">Mechanics</span>
-          <h3>Projectile Motion</h3>
+          <div>
+            <div class="card-header">
+              <h3>Projectile Motion</h3>
+              <span class="topic">Mechanics</span>
+            </div>
 
-          <div class="sample">
-            <svg viewBox="0 0 300 80" preserveAspectRatio="none">
-              <!-- ground -->
-              <line x1="0" y1="70" x2="300" y2="70" stroke="#dcd6ca" stroke-width="2" />
-              <!-- trajectory -->
-              <path
-                d="M10 70
-                   C 60 20, 140 20, 190 50
-                   C 230 65, 260 68, 290 70"
-                fill="none"
-                stroke="#e05d5d"
-                stroke-width="3"
-                stroke-linecap="round"
-              />
-              <!-- ball -->
-              <circle cx="60" cy="35" r="4" fill="#e05d5d" />
-            </svg>
+            <div class="sample">
+              <svg viewBox="0 0 300 80" preserveAspectRatio="none">
+                <line x1="0" y1="70" x2="300" y2="70" stroke="var(--border)" stroke-width="1" />
+                <path
+                  d="M10 70 C 60 20, 140 20, 190 50 C 230 65, 260 68, 290 70"
+                  fill="none"
+                  stroke="var(--stroke)"
+                  stroke-width="1.5"
+                  stroke-dasharray="4 3"
+                />
+                <circle cx="60" cy="35" r="3" fill="var(--stroke)" />
+              </svg>
+            </div>
+
+            <p>Investigate trajectories, launch angles, gravity, and drag coefficients.</p>
           </div>
-
-          <p>Launch objects and investigate trajectories, gravity, and air resistance.</p>
           <div class="card-footer">
-            <span class="tag">Open <span class="arrow">→</span></span>
+            Launch Simulation <span class="arrow">&rarr;</span>
           </div>
         </a>
 
         <!-- SPRING -->
         <a class="card" href="springs-and-masses.html">
-          <span class="topic">Oscillations</span>
-          <h3>Springs & Masses</h3>
+          <div>
+            <div class="card-header">
+              <h3>Springs & Masses</h3>
+              <span class="topic">Oscillations</span>
+            </div>
 
-          <div class="sample">
-            <svg viewBox="0 0 300 80" preserveAspectRatio="none">
-              <!-- ceiling -->
-              <line x1="20" y1="10" x2="280" y2="10" stroke="#dcd6ca" stroke-width="2" />
-              <!-- spring -->
-              <path
-                d="M150 10
-                   L 145 20
-                   L 155 25
-                   L 145 30
-                   L 155 35
-                   L 145 40
-                   L 155 45
-                   L 150 55"
-                fill="none"
-                stroke="#f4c542"
-                stroke-width="3"
-                stroke-linejoin="round"
-              />
-              <!-- mass -->
-              <rect x="135" y="55" width="30" height="20" rx="4" fill="#f4c542" />
-            </svg>
+            <div class="sample">
+              <svg viewBox="0 0 300 80" preserveAspectRatio="none">
+                <line x1="20" y1="10" x2="280" y2="10" stroke="var(--border)" stroke-width="1" />
+                <path
+                  d="M150 10 L 145 20 L 155 25 L 145 30 L 155 35 L 145 40 L 155 45 L 150 55"
+                  fill="none"
+                  stroke="var(--stroke)"
+                  stroke-width="1.5"
+                />
+                <rect x="135" y="55" width="30" height="18" fill="none" stroke="var(--stroke)" stroke-width="1.5" />
+              </svg>
+            </div>
+
+            <p>Explore Hooke’s law, mechanical resonance, damping, and energy exchange.</p>
           </div>
-
-          <p>Explore Hooke’s law, resonance, damping, and mechanical energy.</p>
           <div class="card-footer">
-            <span class="tag">Open <span class="arrow">→</span></span>
+            Launch Simulation <span class="arrow">&rarr;</span>
           </div>
         </a>
 
         <!-- CIRCUIT -->
         <a class="card" href="simple-circuits.html">
-          <span class="topic">Electricity</span>
-          <h3>Simple Circuits</h3>
+          <div>
+            <div class="card-header">
+              <h3>Simple Circuits</h3>
+              <span class="topic">Electricity</span>
+            </div>
 
-          <div class="sample">
-            <svg viewBox="0 0 300 80" preserveAspectRatio="none">
-              <!-- wire loop -->
-              <path
-                d="M30 40
-                   L 30 25
-                   L 120 25
-                   L 120 55
-                   L 220 55
-                   L 220 25
-                   L 270 25
-                   L 270 40"
-                fill="none"
-                stroke="#2b2b2b"
-                stroke-width="2.5"
-                stroke-linejoin="round"
-              />
-              <!-- battery -->
-              <rect x="105" y="20" width="30" height="10" fill="#2fb39a" stroke="#2b2b2b" stroke-width="2" />
-              <!-- bulb -->
-              <circle cx="245" cy="40" r="8" fill="#f4c542" stroke="#2b2b2b" stroke-width="2" />
-            </svg>
+            <div class="sample">
+              <svg viewBox="0 0 300 80" preserveAspectRatio="none">
+                <path
+                  d="M30 40 L 30 25 L 120 25 L 120 55 L 220 55 L 220 25 L 270 25 L 270 40"
+                  fill="none"
+                  stroke="var(--stroke)"
+                  stroke-width="1.5"
+                />
+                <rect x="105" y="20" width="30" height="10" fill="none" stroke="var(--stroke)" stroke-width="1.5" />
+                <circle cx="245" cy="40" r="8" fill="none" stroke="var(--stroke)" stroke-width="1.5" />
+              </svg>
+            </div>
+
+            <p>Experiment with potential difference, resistance, capacitance, and current.</p>
           </div>
-
-          <p>Experiment with voltage, resistance, capacitance, and current.</p>
           <div class="card-footer">
-            <span class="tag">Open <span class="arrow">→</span></span>
+            Launch Simulation <span class="arrow">&rarr;</span>
           </div>
         </a>
 
         <!-- ORBIT -->
         <a class="card" href="orbital-motion.html">
-          <span class="topic">Gravity</span>
-          <h3>Orbital Motion</h3>
+          <div>
+            <div class="card-header">
+              <h3>Orbital Motion</h3>
+              <span class="topic">Gravity</span>
+            </div>
 
-          <div class="sample">
-            <svg viewBox="0 0 300 80" preserveAspectRatio="none">
-              <!-- central body -->
-              <circle cx="80" cy="40" r="14" fill="#f4c542" stroke="#2b2b2b" stroke-width="2" />
-              <!-- orbit path -->
-              <ellipse
-                cx="150"
-                cy="40"
-                rx="90"
-                ry="28"
-                fill="none"
-                stroke="#dcd6ca"
-                stroke-width="2"
-                stroke-dasharray="4 4"
-              />
-              <!-- satellite -->
-              <circle cx="230" cy="30" r="4" fill="#2fb39a" />
-            </svg>
+            <div class="sample">
+              <svg viewBox="0 0 300 80" preserveAspectRatio="none">
+                <circle cx="80" cy="40" r="10" fill="none" stroke="var(--stroke)" stroke-width="1.5" />
+                <ellipse cx="150" cy="40" rx="90" ry="28" fill="none" stroke="var(--border)" stroke-width="1" stroke-dasharray="3 3" />
+                <circle cx="230" cy="30" r="3" fill="var(--stroke)" />
+              </svg>
+            </div>
+
+            <p>Analyze gravitational attraction, orbital speed, and Keplerian paths.</p>
           </div>
-
-          <p>Explore gravity, orbital speed, and paths around a central body.</p>
           <div class="card-footer">
-            <span class="tag">Open <span class="arrow">→</span></span>
+            Launch Simulation <span class="arrow">&rarr;</span>
           </div>
         </a>
 
         <!-- PENDULUM -->
         <a class="card" href="pendulum-lab.html">
-          <span class="topic">Oscillations</span>
-          <h3>Pendulum Lab</h3>
+          <div>
+            <div class="card-header">
+              <h3>Pendulum Lab</h3>
+              <span class="topic">Oscillations</span>
+            </div>
 
-          <div class="sample">
-            <svg viewBox="0 0 300 80" preserveAspectRatio="none">
-              <!-- ceiling -->
-              <line x1="20" y1="10" x2="280" y2="10" stroke="#dcd6ca" stroke-width="2" />
-              <!-- string -->
-              <line x1="150" y1="10" x2="190" y2="60" stroke="#2b2b2b" stroke-width="2.5" />
-              <!-- bob -->
-              <circle cx="190" cy="60" r="7" fill="#e05d5d" stroke="#2b2b2b" stroke-width="2" />
-            </svg>
+            <div class="sample">
+              <svg viewBox="0 0 300 80" preserveAspectRatio="none">
+                <line x1="20" y1="10" x2="280" y2="10" stroke="var(--border)" stroke-width="1" />
+                <line x1="150" y1="10" x2="190" y2="60" stroke="var(--stroke)" stroke-width="1.5" />
+                <circle cx="190" cy="60" r="6" fill="none" stroke="var(--stroke)" stroke-width="1.5" />
+              </svg>
+            </div>
+
+            <p>Measure period duration while altering length, gravity, amplitude, and friction.</p>
           </div>
-
-          <p>Explore periodic motion by changing pendulum length, gravity, release angle, and damping.</p>
           <div class="card-footer">
-            <span class="tag">Open <span class="arrow">→</span></span>
+            Launch Simulation <span class="arrow">&rarr;</span>
           </div>
         </a>
 
         <!-- FORCES -->
         <a class="card" href="forces-and-friction.html">
-          <span class="topic">Mechanics</span>
-          <h3>Forces & Friction</h3>
+          <div>
+            <div class="card-header">
+              <h3>Forces & Friction</h3>
+              <span class="topic">Mechanics</span>
+            </div>
 
-          <div class="sample">
-            <svg viewBox="0 0 300 80" preserveAspectRatio="none">
-              <!-- ground -->
-              <line x1="0" y1="60" x2="300" y2="60" stroke="#dcd6ca" stroke-width="2" />
-              <!-- block -->
-              <rect x="90" y="40" width="50" height="20" rx="3" fill="#2fb39a" stroke="#2b2b2b" stroke-width="2" />
-              <!-- force arrow -->
-              <line x1="140" y1="50" x2="210" y2="50" stroke="#e05d5d" stroke-width="3" />
-              <polygon points="210,50 200,45 200,55" fill="#e05d5d" />
-            </svg>
+            <div class="sample">
+              <svg viewBox="0 0 300 80" preserveAspectRatio="none">
+                <line x1="0" y1="60" x2="300" y2="60" stroke="var(--border)" stroke-width="1" />
+                <rect x="90" y="40" width="50" height="20" fill="none" stroke="var(--stroke)" stroke-width="1.5" />
+                <line x1="140" y1="50" x2="200" y2="50" stroke="var(--stroke)" stroke-width="1.5" />
+                <polygon points="205,50 197,46 197,54" fill="var(--stroke)" />
+              </svg>
+            </div>
+
+            <p>Apply horizontal vectors to examine static and kinetic friction thresholds.</p>
           </div>
-
-          <p>Push a block and explore applied force, friction, net force, and acceleration.</p>
           <div class="card-footer">
-            <span class="tag">Open <span class="arrow">→</span></span>
+            Launch Simulation <span class="arrow">&rarr;</span>
           </div>
         </a>
 
         <!-- COLLISION -->
         <a class="card" href="collision-lab.html">
-          <span class="topic">Mechanics</span>
-          <h3>Collision Lab</h3>
+          <div>
+            <div class="card-header">
+              <h3>Collision Lab</h3>
+              <span class="topic">Mechanics</span>
+            </div>
 
-          <div class="sample">
-            <svg viewBox="0 0 300 80" preserveAspectRatio="none">
-              <!-- ground -->
-              <line x1="0" y1="60" x2="300" y2="60" stroke="#dcd6ca" stroke-width="2" />
-              <!-- left mass -->
-              <circle cx="110" cy="50" r="12" fill="#e05d5d" stroke="#2b2b2b" stroke-width="2" />
-              <!-- right mass -->
-              <circle cx="190" cy="50" r="12" fill="#2fb39a" stroke="#2b2b2b" stroke-width="2" />
-              <!-- velocity arrows -->
-              <line x1="80" y1="50" x2="100" y2="50" stroke="#e05d5d" stroke-width="2.5" />
-              <polygon points="100,50 92,46 92,54" fill="#e05d5d" />
-              <line x1="200" y1="50" x2="220" y2="50" stroke="#2fb39a" stroke-width="2.5" />
-              <polygon points="220,50 212,46 212,54" fill="#2fb39a" />
-            </svg>
+            <div class="sample">
+              <svg viewBox="0 0 300 80" preserveAspectRatio="none">
+                <line x1="0" y1="60" x2="300" y2="60" stroke="var(--border)" stroke-width="1" />
+                <circle cx="110" cy="48" r="10" fill="none" stroke="var(--stroke)" stroke-width="1.5" />
+                <circle cx="190" cy="48" r="10" fill="none" stroke="var(--stroke)" stroke-width="1.5" />
+                <line x1="75" y1="48" x2="95" y2="48" stroke="var(--stroke)" stroke-width="1.5" />
+                <polygon points="98,48 92,45 92,51" fill="var(--stroke)" />
+              </svg>
+            </div>
+
+            <p>Model elastic vs. inelastic impacts to verify linear momentum conservation.</p>
           </div>
-
-          <p>Investigate elastic and inelastic collisions, momentum conservation, and kinetic energy.</p>
           <div class="card-footer">
-            <span class="tag">Open <span class="arrow">→</span></span>
+            Launch Simulation <span class="arrow">&rarr;</span>
           </div>
         </a>
 
         <!-- ELECTRIC FIELDS -->
         <a class="card" href="electric-fields.html">
-          <span class="topic">Electricity</span>
-          <h3>Electric Fields & Charges</h3>
+          <div>
+            <div class="card-header">
+              <h3>Electric Fields</h3>
+              <span class="topic">Electricity</span>
+            </div>
 
-          <div class="sample">
-            <svg viewBox="0 0 300 80" preserveAspectRatio="none">
-              <!-- plus charge -->
-              <circle cx="90" cy="40" r="12" fill="#e05d5d" stroke="#2b2b2b" stroke-width="2" />
-              <text x="90" y="44" text-anchor="middle" font-size="16" fill="#fff" font-family="Nunito">+</text>
-              <!-- minus charge -->
-              <circle cx="210" cy="40" r="12" fill="#2fb39a" stroke="#2b2b2b" stroke-width="2" />
-              <text x="210" y="44" text-anchor="middle" font-size="16" fill="#fff" font-family="Nunito">−</text>
-              <!-- field lines -->
-              <path d="M105 40 Q 150 25 195 40" fill="none" stroke="#dcd6ca" stroke-width="2" />
-              <path d="M105 40 Q 150 55 195 40" fill="none" stroke="#dcd6ca" stroke-width="2" />
-            </svg>
+            <div class="sample">
+              <svg viewBox="0 0 300 80" preserveAspectRatio="none">
+                <circle cx="90" cy="40" r="10" fill="none" stroke="var(--stroke)" stroke-width="1.5" />
+                <text x="90" y="44" text-anchor="middle" font-size="12" fill="var(--stroke)" font-family="Inter">+</text>
+                <circle cx="210" cy="40" r="10" fill="none" stroke="var(--stroke)" stroke-width="1.5" />
+                <text x="210" y="43" text-anchor="middle" font-size="12" fill="var(--stroke)" font-family="Inter">−</text>
+                <path d="M100 40 Q 150 25 200 40" fill="none" stroke="var(--border)" stroke-width="1" />
+                <path d="M100 40 Q 150 55 200 40" fill="none" stroke="var(--border)" stroke-width="1" />
+              </svg>
+            </div>
+
+            <p>Position point charges to calculate static field vector distributions.</p>
           </div>
-
-          <p>Place positive and negative charges, visualize the electric field, and measure force on a test charge.</p>
           <div class="card-footer">
-            <span class="tag">Open <span class="arrow">→</span></span>
+            Launch Simulation <span class="arrow">&rarr;</span>
           </div>
         </a>
 
         <!-- RAY OPTICS -->
         <a class="card" href="ray-optics.html">
-          <span class="topic">Optics</span>
-          <h3>Ray Optics</h3>
+          <div>
+            <div class="card-header">
+              <h3>Ray Optics</h3>
+              <span class="topic">Optics</span>
+            </div>
 
-          <div class="sample">
-            <svg viewBox="0 0 300 80" preserveAspectRatio="none">
-              <!-- lens -->
-              <ellipse cx="150" cy="40" rx="12" ry="28" fill="#f4c542" stroke="#2b2b2b" stroke-width="2" />
-              <!-- principal axis -->
-              <line x1="0" y1="40" x2="300" y2="40" stroke="#dcd6ca" stroke-width="2" stroke-dasharray="4 4" />
-              <!-- rays -->
-              <line x1="20" y1="20" x2="138" y2="34" stroke="#e05d5d" stroke-width="2.5" />
-              <line x1="162" y1="46" x2="280" y2="60" stroke="#e05d5d" stroke-width="2.5" />
-            </svg>
+            <div class="sample">
+              <svg viewBox="0 0 300 80" preserveAspectRatio="none">
+                <ellipse cx="150" cy="40" rx="8" ry="26" fill="none" stroke="var(--stroke)" stroke-width="1.5" />
+                <line x1="0" y1="40" x2="300" y2="40" stroke="var(--border)" stroke-width="1" stroke-dasharray="3 3" />
+                <line x1="20" y1="20" x2="144" y2="34" stroke="var(--stroke)" stroke-width="1.5" />
+                <line x1="156" y1="46" x2="280" y2="60" stroke="var(--stroke)" stroke-width="1.5" />
+              </svg>
+            </div>
+
+            <p>Track optical paths through converging lenses and determine focal points.</p>
           </div>
-
-          <p>Explore converging and diverging lenses, principal rays, focal length, and real or virtual images.</p>
           <div class="card-footer">
-            <span class="tag">Open <span class="arrow">→</span></span>
+            Launch Simulation <span class="arrow">&rarr;</span>
           </div>
         </a>
 
         <!-- BUOYANCY -->
         <a class="card" href="buoyancy-lab.html">
-          <span class="topic">Fluids</span>
-          <h3>Buoyancy Lab</h3>
+          <div>
+            <div class="card-header">
+              <h3>Buoyancy Lab</h3>
+              <span class="topic">Fluids</span>
+            </div>
 
-          <div class="sample">
-            <svg viewBox="0 0 300 80" preserveAspectRatio="none">
-              <!-- water surface -->
-              <path d="M0 45 Q 40 40, 80 45 T 160 45 T 240 45 T 300 45" fill="none" stroke="#2fb39a" stroke-width="2" />
-              <!-- submerged object -->
-              <rect x="120" y="35" width="40" height="25" rx="4" fill="#f4c542" stroke="#2b2b2b" stroke-width="2" />
-              <!-- buoyant arrow -->
-              <line x1="140" y1="48" x2="140" y2="28" stroke="#e05d5d" stroke-width="2.5" />
-              <polygon points="140,28 135,36 145,36" fill="#e05d5d" />
-            </svg>
+            <div class="sample">
+              <svg viewBox="0 0 300 80" preserveAspectRatio="none">
+                <line x1="0" y1="45" x2="300" y2="45" stroke="var(--border)" stroke-width="1" />
+                <rect x="130" y="30" width="40" height="25" fill="none" stroke="var(--stroke)" stroke-width="1.5" />
+                <line x1="150" y1="42" x2="150" y2="20" stroke="var(--stroke)" stroke-width="1.5" />
+                <polygon points="150,16 146,23 154,23" fill="var(--stroke)" />
+              </svg>
+            </div>
+
+            <p>Compute Archimedes’ principle across fluid densities and displaced masses.</p>
           </div>
-
-          <p>Explore floating and sinking by changing object density, volume, fluid density, and gravity.</p>
           <div class="card-footer">
-            <span class="tag">Open <span class="arrow">→</span></span>
+            Launch Simulation <span class="arrow">&rarr;</span>
           </div>
         </a>
 
         <!-- GAS LAWS -->
         <a class="card" href="gas-laws.html">
-          <span class="topic">Thermal</span>
-          <h3>Gas Laws Lab</h3>
+          <div>
+            <div class="card-header">
+              <h3>Gas Laws Lab</h3>
+              <span class="topic">Thermal</span>
+            </div>
 
-          <div class="sample">
-            <svg viewBox="0 0 300 80" preserveAspectRatio="none">
-              <!-- container -->
-              <rect x="60" y="15" width="180" height="50" rx="6" fill="none" stroke="#2b2b2b" stroke-width="2.5" />
-              <!-- particles -->
-              <circle cx="110" cy="35" r="4" fill="#2fb39a" />
-              <circle cx="150" cy="45" r="4" fill="#2fb39a" />
-              <circle cx="190" cy="30" r="4" fill="#2fb39a" />
-              <circle cx="210" cy="50" r="4" fill="#2fb39a" />
-            </svg>
+            <div class="sample">
+              <svg viewBox="0 0 300 80" preserveAspectRatio="none">
+                <rect x="60" y="15" width="180" height="50" fill="none" stroke="var(--stroke)" stroke-width="1.5" />
+                <circle cx="110" cy="35" r="3" fill="var(--stroke)" />
+                <circle cx="150" cy="45" r="3" fill="var(--stroke)" />
+                <circle cx="190" cy="30" r="3" fill="var(--stroke)" />
+                <circle cx="210" cy="50" r="3" fill="var(--stroke)" />
+              </svg>
+            </div>
+
+            <p>Manipulate container volume and kinetic temperature to plot pressure.</p>
           </div>
-
-          <p>Change temperature, volume, and particle count to explore gas pressure and particle motion.</p>
           <div class="card-footer">
-            <span class="tag">Open <span class="arrow">→</span></span>
+            Launch Simulation <span class="arrow">&rarr;</span>
           </div>
         </a>
 
         <!-- MAGNET -->
         <a class="card" href="magnet-and-compass.html">
-          <span class="topic">Magnetism</span>
-          <h3>Magnet & Compass</h3>
+          <div>
+            <div class="card-header">
+              <h3>Magnet & Compass</h3>
+              <span class="topic">Magnetism</span>
+            </div>
 
-          <div class="sample">
-            <svg viewBox="0 0 300 80" preserveAspectRatio="none">
-              <!-- bar magnet -->
-              <rect x="90" y="30" width="120" height="20" rx="4" fill="#e05d5d" stroke="#2b2b2b" stroke-width="2" />
-              <rect x="150" y="30" width="60" height="20" rx="4" fill="#2fb39a" stroke="#2b2b2b" stroke-width="2" />
-              <!-- field line -->
-              <path
-                d="M150 25
-                   Q 180 10, 210 25"
-                fill="none"
-                stroke="#dcd6ca"
-                stroke-width="2"
-              />
-              <!-- compass -->
-              <circle cx="240" cy="45" r="8" fill="#fff" stroke="#2b2b2b" stroke-width="2" />
-              <line x1="240" y1="45" x2="250" y2="45" stroke="#e05d5d" stroke-width="2.5" />
-              <line x1="240" y1="45" x2="230" y2="45" stroke="#2fb39a" stroke-width="2.5" />
-            </svg>
+            <div class="sample">
+              <svg viewBox="0 0 300 80" preserveAspectRatio="none">
+                <rect x="90" y="30" width="120" height="20" fill="none" stroke="var(--stroke)" stroke-width="1.5" />
+                <line x1="150" y1="30" x2="150" y2="50" stroke="var(--stroke)" stroke-width="1.5" />
+                <circle cx="240" cy="40" r="8" fill="none" stroke="var(--stroke)" stroke-width="1.5" />
+                <line x1="235" y1="40" x2="245" y2="40" stroke="var(--stroke)" stroke-width="1.5" />
+              </svg>
+            </div>
+
+            <p>Visualize magnetic flux lines around dipoles using movable field indicators.</p>
           </div>
-
-          <p>Move a bar magnet, change its strength, and observe compass needles align with the magnetic field.</p>
           <div class="card-footer">
-            <span class="tag">Open <span class="arrow">→</span></span>
+            Launch Simulation <span class="arrow">&rarr;</span>
           </div>
         </a>
       </section>
 
-      <footer>Built with HTML, CSS, and JavaScript.</footer>
+      <footer>Built with standard HTML, CSS, and SVG graphics.</footer>
     </main>
   </div>
 </body>
