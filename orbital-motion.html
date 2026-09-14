@@ -6,152 +6,213 @@
   <title>Orbital Motion | Physics Simulations</title>
   <style>
     :root {
-      --bg: #0b1020;
-      --panel: #121a2e;
-      --canvas: #080d1a;
-      --border: #263658;
-      --text: #f2f7ff;
-      --muted: #aebbd3;
-      --blue: #61b4ff;
-      --green: #61e7b6;
-      --red: #ff7b8e;
-      --yellow: #ffd56a;
+      --bg: #fcfcf9;
+      --panel: #ffffff;
+      --canvas: #f7f7f4;
+      --border: #e8e8e3;
+      --border-subtle: #eee;
+      --text: #1a1a1a;
+      --muted: #707070;
+      --accent: #2b5c8f;
+      --star-color: #d97706;
+      --body-color: #2b5c8f;
+      --vector-color: #2e7d32;
     }
 
     * { box-sizing: border-box; }
 
     body {
       margin: 0;
+      min-height: 100vh;
       color: var(--text);
-      background:
-        radial-gradient(circle at 20% 0%, #193563 0%, transparent 32rem),
-        var(--bg);
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
     }
 
     .page {
-      width: min(1180px, calc(100% - 32px));
+      width: min(1180px, calc(100% - 48px));
       margin: auto;
+      padding-bottom: 40px;
     }
 
     header {
       display: flex;
       justify-content: space-between;
-      gap: 18px;
-      padding: 28px 0 20px;
+      align-items: flex-start;
+      padding: 36px 0 24px;
       border-bottom: 1px solid var(--border);
     }
 
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: #f4f4f0;
+    }
+
     h1 {
-      margin: 0;
-      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      margin: 8px 0 0;
+      font-family: "Georgia", "Times New Roman", serif;
+      font-weight: 400;
+      font-size: clamp(2rem, 4vw, 2.75rem);
+      color: var(--text);
+      letter-spacing: -0.01em;
     }
 
     h2 {
       margin: 0 0 16px;
-      font-size: 1.1rem;
+      font-family: "Georgia", "Times New Roman", serif;
+      font-weight: 400;
+      font-size: 1.25rem;
+      color: var(--text);
     }
 
     .subtitle {
-      margin: 7px 0 0;
+      margin: 8px 0 0;
       color: var(--muted);
+      font-size: 0.95rem;
     }
 
     .back {
-      color: var(--blue);
+      color: var(--text);
+      background: #f0f0eb;
+      border: 1px solid var(--border);
       text-decoration: none;
       white-space: nowrap;
-      padding-top: 6px;
+      padding: 6px 14px;
+      border-radius: 4px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      transition: background 0.15s;
     }
 
-    .back:hover { text-decoration: underline; }
+    .back:hover { background: #e5e5df; }
 
     .layout {
       display: grid;
-      grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.75fr);
-      gap: 18px;
-      padding: 22px 0 18px;
+      grid-template-columns: minmax(0, 1.6fr) minmax(300px, 0.9fr);
+      gap: 24px;
+      padding-top: 28px;
     }
 
     .panel {
-      overflow: hidden;
       border: 1px solid var(--border);
-      border-radius: 16px;
-      background: rgba(18, 26, 46, 0.9);
+      background: var(--panel);
+      border-radius: 2px;
+      overflow: hidden;
     }
 
     .simulation {
       position: relative;
-      min-height: 440px;
+      min-height: 480px;
     }
 
     #simCanvas {
       display: block;
       width: 100%;
-      height: 440px;
+      height: 480px;
       background: var(--canvas);
     }
 
     .canvas-label {
       position: absolute;
-      top: 12px;
-      left: 14px;
+      top: 14px;
+      left: 16px;
       color: var(--muted);
-      font-size: 0.84rem;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
       pointer-events: none;
     }
 
-    .controls { padding: 20px; }
+    .controls {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+    }
 
-    .control { margin-bottom: 19px; }
+    .control { margin-bottom: 20px; }
 
     label {
       display: flex;
       justify-content: space-between;
       gap: 10px;
       margin-bottom: 8px;
-      color: var(--muted);
-      font-size: 0.9rem;
+      color: var(--text);
+      font-size: 0.88rem;
     }
 
     output {
       color: var(--text);
+      font-weight: 600;
       font-variant-numeric: tabular-nums;
     }
 
     input[type="range"] {
       width: 100%;
+      height: 4px;
       cursor: pointer;
-      accent-color: var(--blue);
+      accent-color: #1a1a1a;
+      background: #e2e2dc;
+      border-radius: 2px;
     }
+
+    select {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      background: var(--canvas);
+      color: var(--text);
+      font: inherit;
+      font-size: 0.88rem;
+      cursor: pointer;
+    }
+
+    select:focus { outline: 1px solid #1a1a1a; }
 
     .actions {
       display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin: 5px 0 20px;
+      gap: 8px;
+      margin: 8px 0 20px;
     }
 
     button {
+      flex: 1;
       cursor: pointer;
-      border: 0;
-      border-radius: 9px;
-      padding: 10px 14px;
-      color: #08101c;
-      background: linear-gradient(135deg, var(--blue), var(--green));
+      border: 1px solid #1a1a1a;
+      border-radius: 2px;
+      padding: 10px 10px;
+      color: #ffffff;
+      background: #1a1a1a;
       font: inherit;
-      font-weight: 750;
+      font-size: 0.82rem;
+      font-weight: 600;
+      transition: opacity 0.15s;
     }
+
+    button:hover { opacity: 0.88; }
 
     button.secondary {
       color: var(--text);
       border: 1px solid var(--border);
-      background: transparent;
+      background: #f7f7f4;
     }
+
+    button.secondary:hover { background: #ecece6; }
 
     .checks {
       display: grid;
       gap: 10px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border-subtle);
     }
 
     .checks label {
@@ -159,71 +220,77 @@
       align-items: center;
       margin: 0;
       cursor: pointer;
+      font-size: 0.85rem;
+      color: var(--muted);
     }
 
-    .checks input { accent-color: var(--blue); }
+    .checks input {
+      accent-color: #1a1a1a;
+      margin-right: 8px;
+    }
 
     .readouts {
-      margin-top: 22px;
-      padding: 14px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: var(--canvas);
+      margin-top: 20px;
+      padding-top: 16px;
     }
 
     .readouts h3 {
-      margin: 0 0 8px;
-      color: var(--muted);
-      font-size: 0.92rem;
+      margin: 0 0 12px;
+      font-family: "Georgia", "Times New Roman", serif;
+      font-weight: 400;
+      font-size: 1.05rem;
+      color: var(--text);
     }
 
     .readouts p {
       display: flex;
       justify-content: space-between;
-      margin: 6px 0;
-      font-size: 0.92rem;
+      margin: 8px 0;
+      font-size: 0.86rem;
+      color: var(--muted);
     }
 
-    .readouts strong { font-variant-numeric: tabular-nums; }
+    .readouts strong {
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
 
     .graphs {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 18px;
-      padding-bottom: 40px;
+      gap: 24px;
+      margin-top: 24px;
     }
 
-    .graph { padding: 14px; }
+    .graph { padding: 20px; }
 
     .graph h2 {
-      margin-bottom: 10px;
-      color: var(--muted);
-      font-size: 0.95rem;
+      margin-bottom: 12px;
+      font-size: 1.05rem;
+      color: var(--text);
     }
 
     .graph canvas {
       display: block;
       width: 100%;
-      height: 205px;
+      height: 180px;
       border: 1px solid var(--border);
-      border-radius: 10px;
       background: var(--canvas);
     }
 
     .legend {
       display: flex;
       gap: 14px;
-      margin-top: 9px;
+      margin-top: 10px;
       color: var(--muted);
-      font-size: 0.82rem;
+      font-size: 0.8rem;
     }
 
-    .blue { color: var(--blue); }
-    .green { color: var(--green); }
-    .yellow { color: var(--yellow); }
+    .blue { color: var(--body-color); }
+    .green { color: var(--vector-color); }
 
     @media (max-width: 850px) {
-      header { flex-direction: column; }
+      header { flex-direction: column; gap: 16px; }
       .layout, .graphs { grid-template-columns: 1fr; }
       #simCanvas { height: 360px; }
     }
@@ -233,10 +300,11 @@
   <div class="page">
     <header>
       <div>
+        <span class="badge">Student Project</span>
         <h1>Orbital Motion</h1>
-        <p class="subtitle">Change the starting conditions and observe circular, elliptical, escape, and collision paths.</p>
+        <p class="subtitle">Change starting conditions and observe circular, elliptical, escape, and collision paths.</p>
       </div>
-      <a class="back" href="index.html">← All simulations</a>
+      <a class="back" href="index.html">← All Simulations</a>
     </header>
 
     <main class="layout">
@@ -280,10 +348,23 @@
           <input id="angle" type="range" min="0" max="180" value="90" step="1">
         </div>
 
+        <div class="control">
+          <label for="speedSelect">
+            <span>Simulation Speed</span>
+          </label>
+          <select id="speedSelect">
+            <option value="1">1x (Normal)</option>
+            <option value="2">2x</option>
+            <option value="4">4x</option>
+            <option value="8">8x</option>
+            <option value="10">10x</option>
+          </select>
+        </div>
+
         <div class="actions">
-          <button id="restartButton" type="button">Restart orbit</button>
+          <button id="restartButton" type="button">Restart</button>
           <button id="pauseButton" class="secondary" type="button">Pause</button>
-          <button id="clearButton" class="secondary" type="button">Clear trail</button>
+          <button id="clearButton" class="secondary" type="button">Clear Trail</button>
         </div>
 
         <div class="checks">
@@ -292,7 +373,7 @@
         </div>
 
         <section class="readouts">
-          <h3>Live readouts</h3>
+          <h3>Live Readouts</h3>
           <p><span>Simulation time</span><strong id="timeOut">0.0 s</strong></p>
           <p><span>Distance from star</span><strong id="distanceLiveOut">0.0</strong></p>
           <p><span>Orbital speed</span><strong id="speedLiveOut">0.00</strong></p>
@@ -304,13 +385,13 @@
 
     <section class="graphs">
       <section class="panel graph">
-        <h2>Distance from central mass</h2>
+        <h2>Distance from Central Mass</h2>
         <canvas id="distanceGraph"></canvas>
         <div class="legend"><span class="blue">● distance r(t)</span></div>
       </section>
 
       <section class="panel graph">
-        <h2>Orbital speed</h2>
+        <h2>Orbital Speed</h2>
         <canvas id="speedGraph"></canvas>
         <div class="legend"><span class="green">● speed v(t)</span></div>
       </section>
@@ -329,6 +410,7 @@
     const distanceInput = document.getElementById("distance");
     const speedInput = document.getElementById("speed");
     const angleInput = document.getElementById("angle");
+    const speedSelect = document.getElementById("speedSelect");
     const trailsInput = document.getElementById("trails");
     const vectorsInput = document.getElementById("vectors");
 
@@ -363,7 +445,8 @@
         mass: Number(centralMassInput.value),
         distance: Number(distanceInput.value),
         speed: Number(speedInput.value),
-        angle: Number(angleInput.value)
+        angle: Number(angleInput.value),
+        multiplier: Number(speedSelect.value)
       };
     }
 
@@ -406,10 +489,10 @@
     }
 
     function arrow(ctx, x1, y1, x2, y2, color) {
-      const head = 8;
+      const head = 7;
       const angle = Math.atan2(y2 - y1, x2 - x1);
 
-      line(ctx, x1, y1, x2, y2, color, 2);
+      line(ctx, x1, y1, x2, y2, color, 1.5);
 
       ctx.fillStyle = color;
       ctx.beginPath();
@@ -429,8 +512,10 @@
     function physics(delta, v) {
       if (paused || status === "Collision" || status === "Escaped") return;
 
-      const steps = Math.max(1, Math.ceil(delta / 0.008));
-      const dt = delta / steps;
+      // Apply speed multiplier to integration step
+      const effectiveDelta = delta * v.multiplier;
+      const steps = Math.max(1, Math.ceil(effectiveDelta / 0.008));
+      const dt = effectiveDelta / steps;
 
       for (let i = 0; i < steps; i++) {
         const rSquared = body.x * body.x + body.y * body.y;
@@ -508,21 +593,28 @@
       const mapY = y => centerY + y * scale;
 
       simCtx.clearRect(0, 0, width, height);
-      simCtx.fillStyle = "#080d1a";
-      simCtx.fillRect(0, 0, width, height);
 
-      for (let i = 0; i < 75; i++) {
-        const x = (i * 97) % width;
-        const y = (i * 173) % height;
-        const size = i % 6 === 0 ? 1.7 : 0.8;
-        simCtx.fillStyle = i % 9 === 0 ? "#61b4ff" : "rgba(242,247,255,0.65)";
+      // Grid pattern
+      simCtx.strokeStyle = "#ebebe5";
+      simCtx.lineWidth = 1;
+      const gridSize = 24;
+
+      for (let x = 0; x < width; x += gridSize) {
         simCtx.beginPath();
-        simCtx.arc(x, y, size, 0, Math.PI * 2);
-        simCtx.fill();
+        simCtx.moveTo(x, 0);
+        simCtx.lineTo(x, height);
+        simCtx.stroke();
+      }
+      for (let y = 0; y < height; y += gridSize) {
+        simCtx.beginPath();
+        simCtx.moveTo(0, y);
+        simCtx.lineTo(width, y);
+        simCtx.stroke();
       }
 
+      // Orbital Trail
       if (trailsInput.checked && trail.length > 1) {
-        simCtx.strokeStyle = "rgba(97, 180, 255, 0.65)";
+        simCtx.strokeStyle = "rgba(43, 92, 143, 0.45)";
         simCtx.lineWidth = 1.5;
         simCtx.beginPath();
 
@@ -537,43 +629,28 @@
         simCtx.stroke();
       }
 
+      // Central Star
       const starRadius = 10 + Math.sqrt(v.mass) * 0.8;
 
-      const glow = simCtx.createRadialGradient(
-        centerX,
-        centerY,
-        0,
-        centerX,
-        centerY,
-        starRadius * 3
-      );
-
-      glow.addColorStop(0, "rgba(255, 213, 106, 0.95)");
-      glow.addColorStop(0.3, "rgba(255, 170, 60, 0.35)");
-      glow.addColorStop(1, "rgba(255, 170, 60, 0)");
-
-      simCtx.fillStyle = glow;
-      simCtx.beginPath();
-      simCtx.arc(centerX, centerY, starRadius * 3, 0, Math.PI * 2);
-      simCtx.fill();
-
-      simCtx.fillStyle = "#ffd56a";
+      simCtx.fillStyle = "#d97706";
       simCtx.beginPath();
       simCtx.arc(centerX, centerY, starRadius, 0, Math.PI * 2);
       simCtx.fill();
 
+      // Orbiting Body
       const bodyX = mapX(body.x);
       const bodyY = mapY(body.y);
 
-      simCtx.fillStyle = "#61b4ff";
+      simCtx.fillStyle = "#2b5c8f";
       simCtx.beginPath();
-      simCtx.arc(bodyX, bodyY, 7, 0, Math.PI * 2);
+      simCtx.arc(bodyX, bodyY, 6, 0, Math.PI * 2);
       simCtx.fill();
 
-      simCtx.strokeStyle = "#06101d";
-      simCtx.lineWidth = 2;
+      simCtx.strokeStyle = "#ffffff";
+      simCtx.lineWidth = 1.5;
       simCtx.stroke();
 
+      // Velocity Vector
       if (vectorsInput.checked) {
         const velocityScale = Math.min(20, scale * 13);
         arrow(
@@ -582,14 +659,13 @@
           bodyY,
           bodyX + body.vx * velocityScale,
           bodyY + body.vy * velocityScale,
-          "#61e7b6"
+          "#2e7d32"
         );
       }
 
-      simCtx.fillStyle = "#aebbd3";
-      simCtx.font = "12px system-ui";
-      simCtx.fillText("central mass", centerX - 34, centerY + starRadius + 20);
-      simCtx.fillText(status, 18, height - 20);
+      simCtx.fillStyle = "#707070";
+      simCtx.font = "11px -apple-system, BlinkMacSystemFont, sans-serif";
+      simCtx.fillText("Central Mass", centerX - 30, centerY + starRadius + 18);
     }
 
     function graphBase(ctx, canvas, label) {
@@ -600,10 +676,8 @@
       const bottom = 27;
 
       ctx.clearRect(0, 0, width, height);
-      ctx.fillStyle = "#080d1a";
-      ctx.fillRect(0, 0, width, height);
 
-      ctx.strokeStyle = "rgba(174,187,211,0.15)";
+      ctx.strokeStyle = "#ebebe5";
       ctx.lineWidth = 1;
 
       for (let i = 0; i <= 4; i++) {
@@ -614,12 +688,12 @@
         ctx.stroke();
       }
 
-      line(ctx, left, top, left, height - bottom, "rgba(174,187,211,0.55)", 1);
-      line(ctx, left, height - bottom, width - right, height - bottom, "rgba(174,187,211,0.55)", 1);
+      line(ctx, left, top, left, height - bottom, "#d0d0c8", 1);
+      line(ctx, left, height - bottom, width - right, height - bottom, "#d0d0c8", 1);
 
-      ctx.fillStyle = "#aebbd3";
-      ctx.font = "11px system-ui";
-      ctx.fillText(label, 7, 16);
+      ctx.fillStyle = "#707070";
+      ctx.font = "11px -apple-system, BlinkMacSystemFont, sans-serif";
+      ctx.fillText(label, 6, 14);
 
       return { width, height, left, right, top, bottom };
     }
@@ -628,7 +702,7 @@
       if (series.length < 2) return;
 
       ctx.strokeStyle = color;
-      ctx.lineWidth = 2.2;
+      ctx.lineWidth = 1.8;
       ctx.beginPath();
 
       series.forEach((point, index) => {
@@ -659,14 +733,14 @@
       drawSeries(
         distanceCtx,
         history.map(point => ({ t: point.t, value: point.r })),
-        "#61b4ff",
+        "#2b5c8f",
         mapX,
         mapY
       );
 
-      distanceCtx.fillStyle = "#aebbd3";
-      distanceCtx.font = "11px system-ui";
-      distanceCtx.fillText("time", area.width - 33, area.height - 8);
+      distanceCtx.fillStyle = "#707070";
+      distanceCtx.font = "11px -apple-system, BlinkMacSystemFont, sans-serif";
+      distanceCtx.fillText("time", area.width - 32, area.height - 8);
     }
 
     function drawSpeedGraph() {
@@ -686,14 +760,14 @@
       drawSeries(
         speedCtx,
         history.map(point => ({ t: point.t, value: point.speed })),
-        "#61e7b6",
+        "#2e7d32",
         mapX,
         mapY
       );
 
-      speedCtx.fillStyle = "#aebbd3";
-      speedCtx.font = "11px system-ui";
-      speedCtx.fillText("time", area.width - 33, area.height - 8);
+      speedCtx.fillStyle = "#707070";
+      speedCtx.font = "11px -apple-system, BlinkMacSystemFont, sans-serif";
+      speedCtx.fillText("time", area.width - 32, area.height - 8);
     }
 
     function frame(timestamp) {
