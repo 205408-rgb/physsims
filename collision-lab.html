@@ -4,213 +4,351 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Collision Lab | Physics Simulations</title>
+
+  <!-- Clean, structured editorial typography matching index layout -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+
+  <!-- MathJax for rendering physics formulas in editorial type -->
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
   <style>
     :root {
-      --bg: #0b1020;
-      --panel: #121a2e;
-      --canvas: #0c1425;
-      --border: #263658;
-      --text: #f2f7ff;
-      --muted: #aebbd3;
-      --blue: #61b4ff;
-      --green: #61e7b6;
-      --red: #ff7b8e;
-      --yellow: #ffd56a;
+      --bg: #fbfbf9;
+      --paper: #ffffff;
+      --ink: #1a1a1a;
+      --muted: #666666;
+      --border: #e2e2dd;
+      --accent: #2b5c8f;
+      --accent-subtle: #f0f4f8;
+      --stroke: #2b2b2b;
+      --canvas-bg: #fafafa;
     }
 
     * { box-sizing: border-box; }
 
+    html, body { height: 100%; }
+
     body {
       margin: 0;
-      color: var(--text);
-      background:
-        radial-gradient(circle at 20% 0%, #193563 0%, transparent 32rem),
-        var(--bg);
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: "Inter", system-ui, -apple-system, sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
     }
 
     .page {
-      width: min(1180px, calc(100% - 32px));
+      width: min(1100px, calc(100% - 48px));
       margin: auto;
     }
 
+    /* HEADER */
+
     header {
-      display: flex;
-      justify-content: space-between;
-      gap: 18px;
-      padding: 28px 0 20px;
+      padding: 48px 0 28px;
       border-bottom: 1px solid var(--border);
     }
 
-    h1 {
-      margin: 0;
-      font-size: clamp(1.8rem, 4vw, 2.6rem);
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 24px;
+      flex-wrap: wrap;
     }
 
-    h2 {
-      margin: 0 0 16px;
-      font-size: 1.1rem;
+    .title-area {
+      max-width: 640px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-family: "Newsreader", Georgia, serif;
+      font-size: clamp(2.2rem, 4.5vw, 3.2rem);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      color: var(--ink);
     }
 
     .subtitle {
-      margin: 7px 0 0;
+      margin: 0;
       color: var(--muted);
+      font-size: 1.05rem;
+      font-weight: 400;
     }
 
-    .back {
-      color: var(--blue);
+    .back-nav {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--ink);
       text-decoration: none;
-      white-space: nowrap;
-      padding-top: 6px;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      padding: 8px 16px;
+      border: 1px solid var(--border);
+      background: var(--paper);
+      transition: border-color 150ms ease, background 150ms ease;
     }
 
-    .back:hover { text-decoration: underline; }
+    .back-nav:hover {
+      border-color: var(--ink);
+      background: var(--accent-subtle);
+    }
+
+    /* LAYOUT */
 
     .layout {
       display: grid;
-      grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.75fr);
-      gap: 18px;
-      padding: 22px 0 18px;
+      grid-template-columns: minmax(0, 1.55fr) minmax(310px, 0.85fr);
+      gap: 24px;
+      padding: 32px 0 24px;
     }
 
     .panel {
-      overflow: hidden;
       border: 1px solid var(--border);
-      border-radius: 16px;
-      background: rgba(18, 26, 46, 0.9);
+      background: var(--paper);
     }
 
-    .simulation {
+    .simulation-container {
       position: relative;
-      min-height: 440px;
+      display: flex;
+      flex-direction: column;
     }
 
     #simCanvas {
       display: block;
       width: 100%;
-      height: 440px;
-      background: var(--canvas);
+      height: 480px;
+      background: var(--canvas-bg);
     }
 
-    .canvas-label {
-      position: absolute;
-      top: 12px;
-      left: 14px;
+    .canvas-legend {
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+      background: var(--paper);
       color: var(--muted);
-      font-size: 0.84rem;
-      pointer-events: none;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
     }
 
-    .controls { padding: 20px; }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
 
-    .control { margin-bottom: 17px; }
+    .legend-indicator {
+      width: 8px;
+      height: 8px;
+    }
+
+    /* CONTROLS SIDEBAR */
+
+    .controls {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .controls h2 {
+      margin: 0 0 16px;
+      font-family: "Newsreader", Georgia, serif;
+      font-size: 1.25rem;
+      font-weight: 500;
+      color: var(--ink);
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .controls h2:not(:first-child) {
+      margin-top: 16px;
+    }
+
+    .control {
+      margin-bottom: 14px;
+    }
 
     label {
       display: flex;
       justify-content: space-between;
       gap: 10px;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
       color: var(--muted);
-      font-size: 0.9rem;
+      font-size: 0.8125rem;
+      font-weight: 500;
     }
 
     output {
-      color: var(--text);
+      color: var(--ink);
       font-variant-numeric: tabular-nums;
+      font-weight: 600;
     }
 
     input[type="range"] {
       width: 100%;
+      height: 4px;
+      background: var(--border);
+      appearance: none;
+      outline: none;
+      margin: 8px 0;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      background: var(--ink);
       cursor: pointer;
-      accent-color: var(--blue);
+      border-radius: 0;
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+      background: var(--ink);
+      cursor: pointer;
+      border: none;
+      border-radius: 0;
     }
 
     .actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin: 5px 0 20px;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin: 12px 0 20px;
     }
 
     button {
       cursor: pointer;
-      border: 0;
-      border-radius: 9px;
-      padding: 10px 14px;
-      color: #08101c;
-      background: linear-gradient(135deg, var(--blue), var(--green));
+      border: 1px solid var(--ink);
+      padding: 10px 8px;
+      color: #ffffff;
+      background: var(--ink);
       font: inherit;
-      font-weight: 750;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
+    }
+
+    button:hover {
+      background: var(--accent);
+      border-color: var(--accent);
     }
 
     button.secondary {
-      color: var(--text);
+      color: var(--ink);
       border: 1px solid var(--border);
-      background: transparent;
+      background: var(--paper);
     }
 
+    button.secondary:hover {
+      border-color: var(--ink);
+      background: var(--accent-subtle);
+    }
+
+    /* READOUTS */
+
     .readouts {
-      margin-top: 22px;
-      padding: 14px;
+      margin-top: 12px;
+      padding: 16px;
       border: 1px solid var(--border);
-      border-radius: 12px;
-      background: var(--canvas);
+      background: var(--bg);
     }
 
     .readouts h3 {
-      margin: 0 0 8px;
+      margin: 0 0 12px;
       color: var(--muted);
-      font-size: 0.92rem;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 600;
     }
 
-    .readouts p {
+    .readout-row {
       display: flex;
       justify-content: space-between;
       margin: 6px 0;
-      font-size: 0.92rem;
+      font-size: 0.8125rem;
     }
 
-    .readouts strong { font-variant-numeric: tabular-nums; }
+    .readout-row span {
+      color: var(--muted);
+    }
+
+    .readout-row strong {
+      font-variant-numeric: tabular-nums;
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    .formula-box {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.8125rem;
+      line-height: 1.5;
+    }
+
+    /* GRAPHS SECTION */
 
     .graphs {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 18px;
-      padding-bottom: 40px;
+      gap: 24px;
+      padding-bottom: 64px;
     }
 
-    .graph { padding: 14px; }
-
-    .graph h2 {
-      margin-bottom: 10px;
-      color: var(--muted);
-      font-size: 0.95rem;
+    .graph-panel {
+      padding: 20px;
     }
 
-    .graph canvas {
+    .graph-panel h2 {
+      margin: 0 0 16px;
+      font-family: "Newsreader", Georgia, serif;
+      font-size: 1.2rem;
+      font-weight: 500;
+      color: var(--ink);
+    }
+
+    .graph-panel canvas {
       display: block;
       width: 100%;
-      height: 205px;
+      height: 200px;
+      background: var(--canvas-bg);
       border: 1px solid var(--border);
-      border-radius: 10px;
-      background: var(--canvas);
     }
 
-    .legend {
+    .graph-legend {
       display: flex;
-      gap: 14px;
-      margin-top: 9px;
+      gap: 16px;
+      margin-top: 12px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
       color: var(--muted);
-      font-size: 0.82rem;
     }
 
-    .blue { color: var(--blue); }
-    .red { color: var(--red); }
-    .green { color: var(--green); }
-    .yellow { color: var(--yellow); }
+    .graph-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
 
     @media (max-width: 850px) {
-      header { flex-direction: column; }
       .layout, .graphs { grid-template-columns: 1fr; }
       #simCanvas { height: 360px; }
     }
@@ -219,19 +357,38 @@
 <body>
   <div class="page">
     <header>
-      <div>
-        <h1>Collision Lab</h1>
-        <p class="subtitle">Adjust two carts and investigate momentum and kinetic energy during a one-dimensional collision.</p>
+      <div class="header-content">
+        <div class="title-area">
+          <h1>Collision Lab</h1>
+          <p class="subtitle">
+            Adjust two carts and investigate momentum and kinetic energy during a one-dimensional collision.
+          </p>
+        </div>
+        <a class="back-nav" href="index.html">&larr; All Simulations</a>
       </div>
-      <a class="back" href="index.html">← All simulations</a>
     </header>
 
     <main class="layout">
-      <section class="panel simulation">
+      <!-- SIMULATION CANVAS PANEL -->
+      <section class="panel simulation-container">
         <canvas id="simCanvas"></canvas>
-        <div class="canvas-label">Blue cart: A · Red cart: B · Green arrows: velocity</div>
+        <div class="canvas-legend">
+          <div class="legend-item">
+            <span class="legend-indicator" style="background: #2b5c8f;"></span>
+            <span>Cart A</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-indicator" style="background: #a63a3a;"></span>
+            <span>Cart B</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-indicator" style="background: #2b2b2b;"></span>
+            <span>Velocity Vector</span>
+          </div>
+        </div>
       </section>
 
+      <!-- PARAMETER CONTROLS SIDEBAR -->
       <aside class="panel controls">
         <h2>Cart A</h2>
 
@@ -269,9 +426,11 @@
           <input id="velocityB" type="range" min="-8" max="8" value="-1" step="0.5">
         </div>
 
+        <h2>Coefficient</h2>
+
         <div class="control">
           <label for="elasticity">
-            <span>Elasticity</span>
+            <span>Elasticity (e)</span>
             <output id="elasticityOut">1.00</output>
           </label>
           <input id="elasticity" type="range" min="0" max="1" value="1" step="0.05">
@@ -283,34 +442,58 @@
           <button id="resetButton" class="secondary" type="button">Reset</button>
         </div>
 
+        <!-- READOUTS DATA DISPLAY -->
         <section class="readouts">
-          <h3>Conservation checks</h3>
-          <p><span>Time</span><strong id="timeOut">0.00 s</strong></p>
-          <p><span>Total momentum</span><strong id="momentumOut">0.00 kg·m/s</strong></p>
-          <p><span>Total kinetic energy</span><strong id="energyOut">0.00 J</strong></p>
-          <p><span>Collision state</span><strong id="stateOut">Ready</strong></p>
+          <h3>Conservation Checks</h3>
+          <div class="readout-row"><span>Time</span><strong id="timeOut">0.00 s</strong></div>
+          <div class="readout-row"><span>Total Momentum</span><strong id="momentumOut">0.00 kg·m/s</strong></div>
+          <div class="readout-row"><span>Total Kinetic Energy</span><strong id="energyOut">0.00 J</strong></div>
+          <div class="readout-row"><span>Collision State</span><strong id="stateOut">Ready</strong></div>
         </section>
+
+        <div class="formula-box">
+          $$v_1' = \frac{m_1 u_1 + m_2 u_2 - m_2 e(u_1 - u_2)}{m_1 + m_2}$$
+        </div>
       </aside>
     </main>
 
+    <!-- GRAPHS SECTION -->
     <section class="graphs">
-      <section class="panel graph">
-        <h2>Momentum vs. time</h2>
+      <section class="panel graph-panel">
+        <h2>Momentum vs. Time</h2>
         <canvas id="momentumGraph"></canvas>
-        <div class="legend">
-          <span class="blue">● cart A</span>
-          <span class="red">● cart B</span>
-          <span class="yellow">● total</span>
+        <div class="graph-legend">
+          <div class="graph-legend-item">
+            <span class="legend-indicator" style="background: #2b5c8f;"></span>
+            <span>Cart A</span>
+          </div>
+          <div class="graph-legend-item">
+            <span class="legend-indicator" style="background: #a63a3a;"></span>
+            <span>Cart B</span>
+          </div>
+          <div class="graph-legend-item">
+            <span class="legend-indicator" style="background: #2b2b2b;"></span>
+            <span>Total</span>
+          </div>
         </div>
       </section>
 
-      <section class="panel graph">
-        <h2>Kinetic energy vs. time</h2>
+      <section class="panel graph-panel">
+        <h2>Kinetic Energy vs. Time</h2>
         <canvas id="energyGraph"></canvas>
-        <div class="legend">
-          <span class="blue">● cart A</span>
-          <span class="red">● cart B</span>
-          <span class="yellow">● total</span>
+        <div class="graph-legend">
+          <div class="graph-legend-item">
+            <span class="legend-indicator" style="background: #2b5c8f;"></span>
+            <span>Cart A</span>
+          </div>
+          <div class="graph-legend-item">
+            <span class="legend-indicator" style="background: #a63a3a;"></span>
+            <span>Cart B</span>
+          </div>
+          <div class="graph-legend-item">
+            <span class="legend-indicator" style="background: #2b2b2b;"></span>
+            <span>Total</span>
+          </div>
         </div>
       </section>
     </section>
@@ -401,10 +584,10 @@
     }
 
     function arrow(ctx, x1, y1, x2, y2, color) {
-      const head = 8;
+      const head = 7;
       const direction = Math.atan2(y2 - y1, x2 - x1);
 
-      line(ctx, x1, y1, x2, y2, color, 2);
+      line(ctx, x1, y1, x2, y2, color, 1.5);
 
       ctx.fillStyle = color;
       ctx.beginPath();
@@ -428,13 +611,8 @@
       const u2 = cartB.velocity;
       const e = p.elasticity;
 
-      const v1 = (
-        m1 * u1 + m2 * u2 - m2 * e * (u1 - u2)
-      ) / (m1 + m2);
-
-      const v2 = (
-        m1 * u1 + m2 * u2 + m1 * e * (u1 - u2)
-      ) / (m1 + m2);
+      const v1 = (m1 * u1 + m2 * u2 - m2 * e * (u1 - u2)) / (m1 + m2);
+      const v2 = (m1 * u1 + m2 * u2 + m1 * e * (u1 - u2)) / (m1 + m2);
 
       cartA.velocity = v1;
       cartB.velocity = v2;
@@ -506,7 +684,7 @@
       energyOut.textContent = `${totalEnergy.toFixed(2)} J`;
 
       if (collided) {
-        stateOut.textContent = `Collided, e = ${p.elasticity.toFixed(2)}`;
+        stateOut.textContent = `Collided (e = ${p.elasticity.toFixed(2)})`;
       } else if (running) {
         stateOut.textContent = "Approaching";
       } else {
@@ -514,24 +692,27 @@
       }
     }
 
-    function drawCart(ctx, x, y, width, height, color, label, mass) {
-      ctx.fillStyle = color;
+    function drawCart(ctx, x, y, width, height, strokeColor, label, mass) {
+      ctx.fillStyle = "#ffffff";
       ctx.fillRect(x, y, width, height);
 
-      ctx.strokeStyle = "#06101d";
+      ctx.strokeStyle = strokeColor;
       ctx.lineWidth = 2;
       ctx.strokeRect(x, y, width, height);
 
-      ctx.fillStyle = "#06101d";
-      ctx.beginPath();
-      ctx.arc(x + width * 0.24, y + height + 8, 7, 0, Math.PI * 2);
-      ctx.arc(x + width * 0.76, y + height + 8, 7, 0, Math.PI * 2);
-      ctx.fill();
+      // Wheels
+      ctx.fillStyle = "#1a1a1a";
+      ctx.fillRect(x + width * 0.15, y + height, 10, 4);
+      ctx.fillRect(x + width * 0.85 - 10, y + height, 10, 4);
 
-      ctx.fillStyle = "#f2f7ff";
-      ctx.font = "13px system-ui";
-      ctx.fillText(label, x + 13, y + 27);
-      ctx.fillText(`${mass.toFixed(1)} kg`, x + 4, y + 47);
+      // Labels
+      ctx.fillStyle = strokeColor;
+      ctx.font = "600 12px Inter";
+      ctx.fillText(label, x + 10, y + 20);
+
+      ctx.fillStyle = "#666666";
+      ctx.font = "500 11px Inter";
+      ctx.fillText(`${mass.toFixed(1)} kg`, x + 10, y + 38);
     }
 
     function drawSimulation() {
@@ -539,73 +720,84 @@
       const trackY = height * 0.70;
       const scale = width / 30;
       const cartWidth = 68;
-      const cartHeight = 54;
+      const cartHeight = 50;
 
       const mapX = x => width / 2 + x * scale;
 
       simCtx.clearRect(0, 0, width, height);
-      simCtx.fillStyle = "#0c1425";
+      simCtx.fillStyle = "#fafafa";
       simCtx.fillRect(0, 0, width, height);
 
-      simCtx.strokeStyle = "rgba(174,187,211,0.13)";
+      // Background Grid
+      simCtx.strokeStyle = "#eaeaea";
       simCtx.lineWidth = 1;
 
-      for (let x = 0; x < width; x += 48) {
+      for (let x = 0; x < width; x += 20) {
         simCtx.beginPath();
         simCtx.moveTo(x, 0);
         simCtx.lineTo(x, trackY);
         simCtx.stroke();
       }
+      for (let yPos = 0; yPos < trackY; yPos += 20) {
+        simCtx.beginPath();
+        simCtx.moveTo(0, yPos);
+        simCtx.lineTo(width, yPos);
+        simCtx.stroke();
+      }
 
-      simCtx.fillStyle = "#263658";
-      simCtx.fillRect(0, trackY, width, height - trackY);
-
-      line(simCtx, 0, trackY, width, trackY, "#aebbd3", 2);
+      // Track Surface
+      simCtx.fillStyle = "#f0f0ed";
+      simCtx.fillRect(0, trackY + 4, width, height - trackY - 4);
+      line(simCtx, 0, trackY + 4, width, trackY + 4, "#1a1a1a", 1.5);
 
       const cartAX = mapX(cartA.x) - cartWidth / 2;
       const cartBX = mapX(cartB.x) - cartWidth / 2;
-      const cartY = trackY - cartHeight - 15;
+      const cartY = trackY - cartHeight;
 
-      drawCart(simCtx, cartAX, cartY, cartWidth, cartHeight, "#61b4ff", "A", cartA.mass);
-      drawCart(simCtx, cartBX, cartY, cartWidth, cartHeight, "#ff7b8e", "B", cartB.mass);
+      drawCart(simCtx, cartAX, cartY, cartWidth, cartHeight, "#2b5c8f", "Cart A", cartA.mass);
+      drawCart(simCtx, cartBX, cartY, cartWidth, cartHeight, "#a63a3a", "Cart B", cartB.mass);
 
-      const velocityScale = 18;
+      const velocityScale = 14;
 
-      arrow(
-        simCtx,
-        cartAX + cartWidth / 2,
-        cartY - 14,
-        cartAX + cartWidth / 2 + cartA.velocity * velocityScale,
-        cartY - 14,
-        "#61e7b6"
-      );
+      if (Math.abs(cartA.velocity) > 0.01) {
+        arrow(
+          simCtx,
+          cartAX + cartWidth / 2,
+          cartY - 14,
+          cartAX + cartWidth / 2 + cartA.velocity * velocityScale,
+          cartY - 14,
+          "#2b2b2b"
+        );
+      }
 
-      arrow(
-        simCtx,
-        cartBX + cartWidth / 2,
-        cartY - 14,
-        cartBX + cartWidth / 2 + cartB.velocity * velocityScale,
-        cartY - 14,
-        "#61e7b6"
-      );
+      if (Math.abs(cartB.velocity) > 0.01) {
+        arrow(
+          simCtx,
+          cartBX + cartWidth / 2,
+          cartY - 14,
+          cartBX + cartWidth / 2 + cartB.velocity * velocityScale,
+          cartY - 14,
+          "#2b2b2b"
+        );
+      }
 
-      simCtx.fillStyle = "#aebbd3";
-      simCtx.font = "12px system-ui";
-      simCtx.fillText("frictionless track", 20, trackY + 27);
+      simCtx.fillStyle = "#666666";
+      simCtx.font = "600 10px Inter";
+      simCtx.fillText("FRICTIONLESS TRACK", 16, trackY + 24);
     }
 
-    function graphBase(ctx, canvas, label) {
+    function graphBase(ctx, canvas) {
       const { width, height } = resizeCanvas(canvas);
-      const left = 40;
+      const left = 35;
       const right = 12;
       const top = 15;
-      const bottom = 27;
+      const bottom = 25;
 
       ctx.clearRect(0, 0, width, height);
-      ctx.fillStyle = "#0c1425";
+      ctx.fillStyle = "#fafafa";
       ctx.fillRect(0, 0, width, height);
 
-      ctx.strokeStyle = "rgba(174,187,211,0.15)";
+      ctx.strokeStyle = "#eaeaea";
       ctx.lineWidth = 1;
 
       for (let i = 0; i <= 4; i++) {
@@ -616,21 +808,18 @@
         ctx.stroke();
       }
 
-      line(ctx, left, top, left, height - bottom, "rgba(174,187,211,0.55)", 1);
-      line(ctx, left, height - bottom, width - right, height - bottom, "rgba(174,187,211,0.55)", 1);
-
-      ctx.fillStyle = "#aebbd3";
-      ctx.font = "11px system-ui";
-      ctx.fillText(label, 7, 16);
+      line(ctx, left, top, left, height - bottom, "#e2e2dd", 1);
+      line(ctx, left, height - bottom, width - right, height - bottom, "#e2e2dd", 1);
 
       return { width, height, left, right, top, bottom };
     }
 
-    function drawSeries(ctx, points, color, mapX, mapY) {
+    function drawSeries(ctx, points, color, mapX, mapY, dash = []) {
       if (points.length < 2) return;
 
       ctx.strokeStyle = color;
-      ctx.lineWidth = 2.2;
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash(dash);
       ctx.beginPath();
 
       points.forEach((point, index) => {
@@ -642,10 +831,11 @@
       });
 
       ctx.stroke();
+      ctx.setLineDash([]);
     }
 
     function drawMomentumGraph() {
-      const area = graphBase(momentumCtx, momentumGraph, "momentum");
+      const area = graphBase(momentumCtx, momentumGraph);
       if (history.length < 2) return;
 
       const start = history[0].t;
@@ -666,21 +856,14 @@
         area.left + (t - start) / duration * (area.width - area.left - area.right);
 
       const mapY = value =>
-        middle - value / maximum * ((area.height - area.top - area.bottom) / 2 - 7);
+        middle - value / maximum * ((area.height - area.top - area.bottom) / 2 - 6);
 
-      line(
-        momentumCtx,
-        area.left,
-        middle,
-        area.width - area.right,
-        middle,
-        "rgba(174,187,211,0.35)"
-      );
+      line(momentumCtx, area.left, middle, area.width - area.right, middle, "#e2e2dd", 1);
 
       drawSeries(
         momentumCtx,
         history.map(point => ({ t: point.t, value: point.momentumA })),
-        "#61b4ff",
+        "#2b5c8f",
         mapX,
         mapY
       );
@@ -688,7 +871,7 @@
       drawSeries(
         momentumCtx,
         history.map(point => ({ t: point.t, value: point.momentumB })),
-        "#ff7b8e",
+        "#a63a3a",
         mapX,
         mapY
       );
@@ -696,14 +879,15 @@
       drawSeries(
         momentumCtx,
         history.map(point => ({ t: point.t, value: point.momentumTotal })),
-        "#ffd56a",
+        "#2b2b2b",
         mapX,
-        mapY
+        mapY,
+        [4, 3]
       );
     }
 
     function drawEnergyGraph() {
-      const area = graphBase(energyCtx, energyGraph, "energy");
+      const area = graphBase(energyCtx, energyGraph);
       if (history.length < 2) return;
 
       const start = history[0].t;
@@ -719,12 +903,12 @@
 
       const mapY = value =>
         area.height - area.bottom -
-        value / maximum * (area.height - area.top - area.bottom);
+        value / maximum * (area.height - area.top - area.bottom - 6);
 
       drawSeries(
         energyCtx,
         history.map(point => ({ t: point.t, value: point.energyA })),
-        "#61b4ff",
+        "#2b5c8f",
         mapX,
         mapY
       );
@@ -732,7 +916,7 @@
       drawSeries(
         energyCtx,
         history.map(point => ({ t: point.t, value: point.energyB })),
-        "#ff7b8e",
+        "#a63a3a",
         mapX,
         mapY
       );
@@ -740,9 +924,10 @@
       drawSeries(
         energyCtx,
         history.map(point => ({ t: point.t, value: point.energyTotal })),
-        "#ffd56a",
+        "#2b2b2b",
         mapX,
-        mapY
+        mapY,
+        [4, 3]
       );
     }
 
