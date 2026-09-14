@@ -264,11 +264,11 @@
           <p><span>Pressure</span><strong id="pressureOut">0.00 kPa</strong></p>
           <p><span>Average speed</span><strong id="speedOut">0.00 units/s</strong></p>
           <p><span>Particles</span><strong id="countOut">0</strong></p>
-          <p><span>Relative \(PV/NT\)</span><strong id="ratioOut">1.00</strong></p>
+          <p><span>Relative PV/NT</span><strong id="ratioOut">1.00</strong></p>
         </section>
 
         <p class="formula">
-          This is a scaled ideal-gas model: \(P \propto \frac{NT}{V}\).
+          This is a scaled ideal-gas model: P ∝ NT / V.
         </p>
       </aside>
     </main>
@@ -298,7 +298,7 @@
     const resetButton = document.getElementById("resetButton");
 
     let particles = [];
-    let isRunning = false; // Starts paused/stopped by default
+    let isRunning = false;
     let lastTime = null;
 
     function getValues() {
@@ -534,9 +534,8 @@
         ctx.arc(particle.x, particle.y, 4.2, 0, Math.PI * 2);
         ctx.fill();
 
-        // Draw dynamic velocity vectors scaling with speed when running
         if (vectorsInput.checked && isRunning) {
-          const vectorScale = 0.12; // Dynamic vector length scaling
+          const vectorScale = 0.12;
           const endX = particle.x + particle.vx * vectorScale;
           const endY = particle.y + particle.vy * vectorScale;
           drawArrow(ctx, particle.x, particle.y, endX, endY, `hsl(${hue}, 100%, 75%)`);
