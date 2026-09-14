@@ -5,147 +5,175 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Buoyancy Lab | Physics Simulations</title>
 
-  <!-- Hand-drawn-ish fonts -->
+  <!-- Clean, structured editorial typography matching index layout -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+
+  <!-- MathJax for rendering physics formulas in editorial type -->
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
   <style>
     :root {
-      --bg: #f6f3ec;
+      --bg: #fbfbf9;
       --paper: #ffffff;
-      --ink: #2b2b2b;
-      --muted: #5a5a5a;
-      --border: #dcd6ca;
-      --accent: #e05d5d;
-      --accent-2: #2fb39a;
-      --accent-3: #f4c542;
-      --shadow: rgba(40, 30, 20, 0.10);
-      --canvas-bg: #faf8f3;
+      --ink: #1a1a1a;
+      --muted: #666666;
+      --border: #e2e2dd;
+      --accent: #2b5c8f;
+      --accent-subtle: #f0f4f8;
+      --stroke: #2b2b2b;
+      --canvas-bg: #fafafa;
     }
 
     * { box-sizing: border-box; }
 
+    html, body { height: 100%; }
+
     body {
       margin: 0;
+      font-family: "Inter", system-ui, -apple-system, sans-serif;
       color: var(--ink);
-      background:
-        radial-gradient(1200px 600px at 10% -10%, #fff7e8 0%, transparent 60%),
-        radial-gradient(900px 500px at 90% 10%, #f3f0e8 0%, transparent 60%),
-        var(--bg);
-      font-family: "Nunito", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
       line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
     }
 
     .page {
-      width: min(1180px, calc(100% - 32px));
+      width: min(1100px, calc(100% - 48px));
       margin: auto;
     }
 
-    header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 18px;
-  padding: 40px 0 16px;
-  border-bottom: 2px solid var(--border);
-}
+    /* HEADER */
 
-    h1 {
-      margin: 0;
-      font-family: "Kalam", cursive;
-      font-size: clamp(1.9rem, 4.5vw, 2.8rem);
-      letter-spacing: 0.3px;
-      line-height: 1.05;
-      color: var(--ink);
+    header {
+      padding: 48px 0 28px;
+      border-bottom: 1px solid var(--border);
     }
 
-    h2 {
-      margin: 0 0 14px;
-      font-family: "Kalam", cursive;
-      font-size: 1.2rem;
-      letter-spacing: 0.3px;
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .title-area {
+      max-width: 640px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-family: "Newsreader", Georgia, serif;
+      font-size: clamp(2.2rem, 4.5vw, 3.2rem);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
       color: var(--ink);
     }
 
     .subtitle {
-      margin: 6px 0 0;
+      margin: 0;
       color: var(--muted);
-      font-size: 1rem;
-      max-width: 60ch;
+      font-size: 1.05rem;
+      font-weight: 400;
     }
 
-    .back {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  align-self: flex-start;
+    .back-nav {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--ink);
+      text-decoration: none;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      padding: 8px 16px;
+      border: 1px solid var(--border);
+      background: var(--paper);
+      transition: border-color 150ms ease, background 150ms ease;
+    }
 
-  min-height: 44px;
-  padding: 8px 18px;
+    .back-nav:hover {
+      border-color: var(--ink);
+      background: var(--accent-subtle);
+    }
 
-  color: var(--ink);
-  text-decoration: none;
-  white-space: nowrap;
-
-  border: 2px solid var(--border);
-  border-radius: 999px;
-  background: var(--paper);
-  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.08);
-
-  font-size: 1rem;
-  font-weight: 800;
-  line-height: 1;
-  transition: transform 120ms ease, box-shadow 120ms ease;
-}
-
-.back:hover {
-  transform: translate(-1px, -1px);
-  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.10);
-}
+    /* LAYOUT */
 
     .layout {
       display: grid;
-      grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.75fr);
-      gap: 18px;
-      padding: 22px 0 18px;
+      grid-template-columns: minmax(0, 1.55fr) minmax(310px, 0.85fr);
+      gap: 24px;
+      padding: 32px 0 64px;
     }
 
     .panel {
-      overflow: hidden;
-      border: 2px solid var(--border);
-      border-radius: 16px;
+      border: 1px solid var(--border);
       background: var(--paper);
-      box-shadow: 3px 3px 0 var(--shadow);
     }
 
-    .simulation {
+    .simulation-container {
       position: relative;
-      min-height: 440px;
+      display: flex;
+      flex-direction: column;
     }
 
     #simCanvas {
       display: block;
       width: 100%;
-      height: 440px;
+      height: 480px;
       background: var(--canvas-bg);
     }
 
-    .canvas-label {
-      position: absolute;
-      top: 10px;
-      left: 12px;
+    .canvas-legend {
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+      background: var(--paper);
       color: var(--muted);
-      font-size: 0.82rem;
-      pointer-events: none;
-      background: rgba(255,255,255,0.7);
-      padding: 3px 6px;
-      border-radius: 6px;
-      border: 1.5px solid var(--border);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
     }
 
-    .controls { padding: 18px; }
-    .control { margin-bottom: 18px; }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-indicator {
+      width: 8px;
+      height: 8px;
+    }
+
+    /* CONTROLS SIDEBAR */
+
+    .controls {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .controls h2 {
+      margin: 0 0 20px;
+      font-family: "Newsreader", Georgia, serif;
+      font-size: 1.4rem;
+      font-weight: 500;
+      color: var(--ink);
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .control {
+      margin-bottom: 16px;
+    }
 
     label {
       display: flex;
@@ -153,108 +181,150 @@
       gap: 10px;
       margin-bottom: 6px;
       color: var(--muted);
-      font-size: 0.9rem;
+      font-size: 0.8125rem;
+      font-weight: 500;
     }
 
     output {
       color: var(--ink);
       font-variant-numeric: tabular-nums;
-      font-weight: 700;
+      font-weight: 600;
     }
 
     input[type="range"] {
       width: 100%;
+      height: 4px;
+      background: var(--border);
+      appearance: none;
+      outline: none;
+      margin: 8px 0;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      background: var(--ink);
       cursor: pointer;
-      accent-color: var(--accent-2);
+      border-radius: 0;
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+      background: var(--ink);
+      cursor: pointer;
+      border: none;
+      border-radius: 0;
     }
 
     .actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin: 4px 0 18px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 8px 0 20px;
     }
 
     button {
       cursor: pointer;
-      border: 0;
-      border-radius: 10px;
+      border: 1px solid var(--ink);
       padding: 10px 14px;
-      color: #fff;
-      background: linear-gradient(135deg, var(--accent), #ff7b7b);
+      color: #ffffff;
+      background: var(--ink);
       font: inherit;
-      font-weight: 800;
-      box-shadow: 2px 2px 0 rgba(0,0,0,0.08);
-      transition: transform 120ms ease, box-shadow 120ms ease;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
     }
 
     button:hover {
-      transform: translateY(-1px);
-      box-shadow: 3px 3px 0 rgba(0,0,0,0.10);
+      background: var(--accent);
+      border-color: var(--accent);
     }
 
     button.secondary {
       color: var(--ink);
-      border: 1.5px solid var(--border);
+      border: 1px solid var(--border);
       background: var(--paper);
-      box-shadow: 2px 2px 0 rgba(0,0,0,0.06);
+    }
+
+    button.secondary:hover {
+      border-color: var(--ink);
+      background: var(--accent-subtle);
     }
 
     .checks {
-      display: grid;
-      gap: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
     }
 
     .checks label {
       justify-content: flex-start;
       align-items: center;
+      gap: 8px;
       margin: 0;
       cursor: pointer;
+      color: var(--ink);
+      font-size: 0.8125rem;
+      font-weight: 500;
+    }
+
+    .checks input[type="checkbox"] {
+      accent-color: var(--ink);
+      width: 14px;
+      height: 14px;
+      margin: 0;
+    }
+
+    /* READOUTS */
+
+    .readouts {
+      margin-top: 20px;
+      padding: 16px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+    }
+
+    .readouts h3 {
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 600;
+    }
+
+    .readout-row {
+      display: flex;
+      justify-content: space-between;
+      margin: 6px 0;
+      font-size: 0.8125rem;
+    }
+
+    .readout-row span {
+      color: var(--muted);
+    }
+
+    .readout-row strong {
+      font-variant-numeric: tabular-nums;
       color: var(--ink);
       font-weight: 600;
     }
 
-    .checks input {
-      accent-color: var(--accent-2);
-    }
-
-    .readouts {
-      margin-top: 18px;
-      padding: 12px;
-      border: 2px dashed var(--border);
-      border-radius: 12px;
-      background: #faf8f3;
-    }
-
-    .readouts h3 {
-      margin: 0 0 6px;
+    .formula-box {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
       color: var(--muted);
-      font-size: 0.9rem;
-      font-weight: 700;
-    }
-
-    .readouts p {
-      display: flex;
-      justify-content: space-between;
-      margin: 5px 0;
-      font-size: 0.9rem;
-    }
-
-    .readouts strong {
-      font-variant-numeric: tabular-nums;
-      color: var(--ink);
-      font-weight: 800;
-    }
-
-    .formula {
-      margin: 16px 0 0;
-      color: var(--muted);
-      font-size: 0.82rem;
+      font-size: 0.8125rem;
       line-height: 1.5;
     }
 
     @media (max-width: 850px) {
-      header { flex-direction: column; }
       .layout { grid-template-columns: 1fr; }
       #simCanvas { height: 360px; }
     }
@@ -263,25 +333,40 @@
 <body>
   <div class="page">
     <header>
-      <div>
-        <h1>Buoyancy Lab</h1>
-        <p class="subtitle">Drop an object into a fluid and investigate floating, sinking, displaced volume, and buoyant force.</p>
+      <div class="header-content">
+        <div class="title-area">
+          <h1>Buoyancy Lab</h1>
+          <p class="subtitle">
+            Drop an object into a fluid to investigate displacement, density differentials, and buoyant equilibrium.
+          </p>
+        </div>
+        <a class="back-nav" href="index.html">&larr; All Simulations</a>
       </div>
-      <a class="back" href="index.html">← All simulations</a>
     </header>
 
     <main class="layout">
-      <section class="panel simulation">
+      <!-- SIMULATION CANVAS PANEL -->
+      <section class="panel simulation-container">
         <canvas id="simCanvas"></canvas>
-        <div class="canvas-label">Blue arrow: buoyant force · Yellow arrow: weight</div>
+        <div class="canvas-legend">
+          <div class="legend-item">
+            <span class="legend-indicator" style="background: #2b5c8f;"></span>
+            <span>Buoyant Force ($F_B$)</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-indicator" style="background: #2b2b2b;"></span>
+            <span>Weight ($F_g$)</span>
+          </div>
+        </div>
       </section>
 
+      <!-- PARAMETER CONTROLS SIDEBAR -->
       <aside class="panel controls">
-        <h2>Object controls</h2>
+        <h2>Parameters</h2>
 
         <div class="control">
           <label for="objectDensity">
-            <span>Object density</span>
+            <span>Object Density</span>
             <output id="objectDensityOut">700 kg/m³</output>
           </label>
           <input id="objectDensity" type="range" min="100" max="3000" value="700" step="50">
@@ -289,7 +374,7 @@
 
         <div class="control">
           <label for="volume">
-            <span>Object volume</span>
+            <span>Object Volume</span>
             <output id="volumeOut">1.0 m³</output>
           </label>
           <input id="volume" type="range" min="0.2" max="3" value="1" step="0.1">
@@ -297,7 +382,7 @@
 
         <div class="control">
           <label for="fluidDensity">
-            <span>Fluid density</span>
+            <span>Fluid Density</span>
             <output id="fluidDensityOut">1000 kg/m³</output>
           </label>
           <input id="fluidDensity" type="range" min="500" max="1800" value="1000" step="50">
@@ -312,28 +397,29 @@
         </div>
 
         <div class="actions">
-          <button id="dropButton" type="button">Drop object</button>
+          <button id="dropButton" type="button">Drop Object</button>
           <button id="resetButton" class="secondary" type="button">Reset</button>
         </div>
 
         <div class="checks">
-          <label><input id="vectors" type="checkbox" checked> Show force vectors</label>
-          <label><input id="waterline" type="checkbox" checked> Show waterline</label>
+          <label><input id="vectors" type="checkbox" checked> Display Force Vectors</label>
+          <label><input id="waterline" type="checkbox" checked> Highlight Surface Line</label>
         </div>
 
+        <!-- READOUTS DATA DISPLAY -->
         <section class="readouts">
-          <h3>Live readouts</h3>
-          <p><span>Object mass</span><strong id="massOut">0.0 kg</strong></p>
-          <p><span>Object weight</span><strong id="weightOut">0.0 N</strong></p>
-          <p><span>Buoyant force</span><strong id="buoyantOut">0.0 N</strong></p>
-          <p><span>Submerged volume</span><strong id="submergedOut">0.00 m³</strong></p>
-          <p><span>Submerged fraction</span><strong id="fractionOut">0%</strong></p>
-          <p><span>Result</span><strong id="resultOut">Ready</strong></p>
+          <h3>Calculated Measurements</h3>
+          <div class="readout-row"><span>Object Mass</span><strong id="massOut">0.0 kg</strong></div>
+          <div class="readout-row"><span>Object Weight</span><strong id="weightOut">0.0 N</strong></div>
+          <div class="readout-row"><span>Buoyant Force</span><strong id="buoyantOut">0.0 N</strong></div>
+          <div class="readout-row"><span>Submerged Volume</span><strong id="submergedOut">0.00 m³</strong></div>
+          <div class="readout-row"><span>Submerged Fraction</span><strong id="fractionOut">0%</strong></div>
+          <div class="readout-row"><span>Current State</span><strong id="resultOut">Ready</strong></div>
         </section>
 
-        <p class="formula">
-          \(F_B = \rho_\text{fluid} g V_\text{submerged}\). An object above the water has zero submerged volume, so it has zero buoyant force.
-        </p>
+        <div class="formula-box">
+          $$F_B = \rho_\text{fluid} \cdot g \cdot V_\text{submerged}$$
+        </div>
       </aside>
     </main>
   </div>
@@ -364,10 +450,6 @@
     const dropButton = document.getElementById("dropButton");
     const resetButton = document.getElementById("resetButton");
 
-    /*
-      y is the vertical centre position of the object as a fraction
-      of canvas height. Larger y means lower on the screen.
-    */
     let y = 0.18;
     let velocity = 0;
     let released = false;
@@ -385,11 +467,10 @@
 
     function objectDimensions(v, canvasHeight) {
       const sizeFactor = Math.cbrt(v.volume);
-
       return {
-        width: 72 + sizeFactor * 30,
-        height: 54 + sizeFactor * 34,
-        normalizedHeight: (54 + sizeFactor * 34) / canvasHeight
+        width: 64 + sizeFactor * 28,
+        height: 50 + sizeFactor * 30,
+        normalizedHeight: (50 + sizeFactor * 30) / canvasHeight
       };
     }
 
@@ -408,7 +489,6 @@
       canvas.height = Math.round(rect.height * ratio);
 
       ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-
       return { width: rect.width, height: rect.height };
     }
 
@@ -416,28 +496,15 @@
       const mass = v.objectDensity * v.volume;
       const weight = mass * v.gravity;
 
-      /*
-        If the bottom of the object has not entered the water,
-        it displaces no water and has NO buoyant force.
-      */
       let submergedHeight = 0;
-
       if (objectBottom > waterLevel) {
-        submergedHeight =
-          Math.min(objectBottom, 1) -
-          Math.max(objectTop, waterLevel);
+        submergedHeight = Math.min(objectBottom, 1) - Math.max(objectTop, waterLevel);
       }
-
       submergedHeight = Math.max(0, submergedHeight);
 
-      const fractionSubmerged = Math.min(
-        1,
-        submergedHeight / objectHeight
-      );
-
+      const fractionSubmerged = Math.min(1, submergedHeight / objectHeight);
       const submergedVolume = v.volume * fractionSubmerged;
-      const buoyantForce =
-        v.fluidDensity * v.gravity * submergedVolume;
+      const buoyantForce = v.fluidDensity * v.gravity * submergedVolume;
 
       return {
         mass,
@@ -448,18 +515,19 @@
       };
     }
 
-    function arrow(x1, y1, x2, y2, colour) {
-      const head = 8;
+    function drawArrow(x1, y1, x2, y2, color) {
+      const head = 7;
       const direction = Math.atan2(y2 - y1, x2 - x1);
 
-      ctx.strokeStyle = colour;
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = 1.5;
+
       ctx.beginPath();
       ctx.moveTo(x1, y1);
       ctx.lineTo(x2, y2);
       ctx.stroke();
 
-      ctx.fillStyle = colour;
       ctx.beginPath();
       ctx.moveTo(x2, y2);
       ctx.lineTo(
@@ -490,20 +558,11 @@
         dimensions.normalizedHeight
       );
 
-      /*
-        Screen y grows downwards:
-        - Weight pulls down (+)
-        - Buoyant force pushes up (-)
-      */
       const netDownwardForce = physics.weight - physics.buoyantForce;
       const acceleration = netDownwardForce / physics.mass;
 
       velocity += acceleration * delta;
 
-      /*
-        Add water drag only after the object enters water.
-        It allows the bobbing motion to fade naturally.
-      */
       if (physics.fractionSubmerged > 0) {
         const dragStrength = 2.5 * physics.fractionSubmerged;
         velocity *= Math.exp(-dragStrength * delta);
@@ -513,9 +572,6 @@
 
       const tankFloor = 0.88 - dimensions.normalizedHeight / 2;
 
-      /*
-        Objects denser than the fluid settle at the tank floor.
-      */
       if (v.objectDensity >= v.fluidDensity && y >= tankFloor) {
         y = tankFloor;
         velocity = 0;
@@ -523,21 +579,11 @@
         return;
       }
 
-      /*
-        A floating object settles at the height where its
-        submerged fraction equals density_object / density_fluid.
-      */
       if (v.objectDensity < v.fluidDensity) {
         const targetFraction = v.objectDensity / v.fluidDensity;
-        const targetY =
-          waterLevel -
-          dimensions.normalizedHeight / 2 +
-          targetFraction * dimensions.normalizedHeight;
+        const targetY = waterLevel - dimensions.normalizedHeight / 2 + targetFraction * dimensions.normalizedHeight;
 
-        if (
-          Math.abs(y - targetY) < 0.002 &&
-          Math.abs(velocity) < 0.02
-        ) {
+        if (Math.abs(y - targetY) < 0.002 && Math.abs(velocity) < 0.02) {
           y = targetY;
           velocity = 0;
           settled = true;
@@ -549,9 +595,9 @@
       const { width, height } = resizeCanvas();
 
       const waterTop = height * 0.50;
-      const tankLeft = width * 0.19;
-      const tankRight = width * 0.81;
-      const tankBottom = height * 0.89;
+      const tankLeft = width * 0.18;
+      const tankRight = width * 0.82;
+      const tankBottom = height * 0.88;
 
       const dimensions = objectDimensions(v, height);
       const objectX = width / 2 - dimensions.width / 2;
@@ -569,169 +615,140 @@
         dimensions.normalizedHeight
       );
 
-      objectDensityOut.textContent =
-        `${v.objectDensity.toFixed(0)} kg/m³`;
+      // Update Text Displays
+      objectDensityOut.textContent = `${v.objectDensity.toFixed(0)} kg/m³`;
+      volumeOut.textContent = `${v.volume.toFixed(1)} m³`;
+      fluidDensityOut.textContent = `${v.fluidDensity.toFixed(0)} kg/m³`;
+      gravityOut.textContent = `${v.gravity.toFixed(2)} m/s²`;
 
-      volumeOut.textContent =
-        `${v.volume.toFixed(1)} m³`;
-
-      fluidDensityOut.textContent =
-        `${v.fluidDensity.toFixed(0)} kg/m³`;
-
-      gravityOut.textContent =
-        `${v.gravity.toFixed(2)} m/s²`;
-
-      massOut.textContent =
-        `${physics.mass.toFixed(1)} kg`;
-
-      weightOut.textContent =
-        `${physics.weight.toFixed(1)} N`;
-
-      buoyantOut.textContent =
-        `${physics.buoyantForce.toFixed(1)} N`;
-
-      submergedOut.textContent =
-        `${physics.submergedVolume.toFixed(2)} m³`;
-
-      fractionOut.textContent =
-        `${(physics.fractionSubmerged * 100).toFixed(0)}%`;
+      massOut.textContent = `${physics.mass.toFixed(1)} kg`;
+      weightOut.textContent = `${physics.weight.toFixed(1)} N`;
+      buoyantOut.textContent = `${physics.buoyantForce.toFixed(1)} N`;
+      submergedOut.textContent = `${physics.submergedVolume.toFixed(2)} m³`;
+      fractionOut.textContent = `${(physics.fractionSubmerged * 100).toFixed(0)}%`;
 
       if (!released) {
-        resultOut.textContent = "Ready above water";
+        resultOut.textContent = "At Rest (Air)";
       } else if (v.objectDensity < v.fluidDensity) {
-        resultOut.textContent = settled ? "Floating" : "Floating / bobbing";
+        resultOut.textContent = settled ? "Equilibrium (Floating)" : "Oscillating";
       } else if (v.objectDensity === v.fluidDensity) {
-        resultOut.textContent = "Neutrally buoyant";
+        resultOut.textContent = "Neutrally Buoyant";
       } else {
-        resultOut.textContent = settled ? "Sunk to bottom" : "Sinking";
+        resultOut.textContent = settled ? "Resting (Tank Floor)" : "Sinking";
       }
 
+      // Background Canvas Grid
       ctx.clearRect(0, 0, width, height);
-      ctx.fillStyle = "#faf8f3";
+      ctx.fillStyle = "#fafafa";
       ctx.fillRect(0, 0, width, height);
 
-      ctx.strokeStyle = "rgba(180,170,150,0.25)";
+      ctx.strokeStyle = "#eaeaea";
       ctx.lineWidth = 1;
 
-      for (let x = 0; x < width; x += 45) {
+      for (let x = 0; x < width; x += 20) {
         ctx.beginPath();
         ctx.moveTo(x, 0);
         ctx.lineTo(x, height);
         ctx.stroke();
       }
+      for (let yPos = 0; yPos < height; yPos += 20) {
+        ctx.beginPath();
+        ctx.moveTo(0, yPos);
+        ctx.lineTo(width, yPos);
+        ctx.stroke();
+      }
 
-      /*
-        Water in the tank.
-      */
-      ctx.fillStyle = "rgba(47, 179, 154, 0.22)";
-      ctx.fillRect(
-        tankLeft,
-        waterTop,
-        tankRight - tankLeft,
-        tankBottom - waterTop
-      );
+      // Fluid Volume Rendering
+      ctx.fillStyle = "rgba(235, 240, 245, 0.75)";
+      ctx.fillRect(tankLeft, waterTop, tankRight - tankLeft, tankBottom - waterTop);
 
       if (waterlineInput.checked) {
-        ctx.strokeStyle = "#2fb39a";
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = "#2b5c8f";
+        ctx.lineWidth = 1.5;
         ctx.beginPath();
         ctx.moveTo(tankLeft, waterTop);
         ctx.lineTo(tankRight, waterTop);
         ctx.stroke();
       }
 
-      /*
-        Tank walls.
-      */
-      ctx.strokeStyle = "#8b8474";
-      ctx.lineWidth = 2;
+      // Tank Outline
+      ctx.strokeStyle = "#2b2b2b";
+      ctx.lineWidth = 1.5;
       ctx.beginPath();
-      ctx.moveTo(tankLeft, height * 0.16);
+      ctx.moveTo(tankLeft, height * 0.18);
       ctx.lineTo(tankLeft, tankBottom);
       ctx.lineTo(tankRight, tankBottom);
-      ctx.lineTo(tankRight, height * 0.16);
+      ctx.lineTo(tankRight, height * 0.18);
       ctx.stroke();
 
-      const objectColour =
-        v.objectDensity < v.fluidDensity ? "#2fb39a" :
-        v.objectDensity > v.fluidDensity ? "#e05d5d" :
-        "#f4c542";
-
-      ctx.fillStyle = objectColour;
-      ctx.fillRect(
-        objectX,
-        objectY,
-        dimensions.width,
-        dimensions.height
-      );
+      // Object Rendering
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(objectX, objectY, dimensions.width, dimensions.height);
 
       ctx.strokeStyle = "#2b2b2b";
-      ctx.lineWidth = 2;
-      ctx.strokeRect(
-        objectX,
-        objectY,
-        dimensions.width,
-        dimensions.height
-      );
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(objectX, objectY, dimensions.width, dimensions.height);
 
-      /*
-        Blue overlay shows exactly the portion underwater.
-      */
+      // Submerged Section Technical Hatching
       const submergedTop = Math.max(objectY, waterTop);
-      const submergedBottom = Math.min(
-        objectY + dimensions.height,
-        tankBottom
-      );
+      const submergedBottom = Math.min(objectY + dimensions.height, tankBottom);
 
       if (submergedBottom > submergedTop) {
-        ctx.fillStyle = "rgba(47, 179, 154, 0.28)";
+        ctx.fillStyle = "rgba(43, 92, 143, 0.12)";
         ctx.fillRect(
           objectX,
           submergedTop,
           dimensions.width,
           submergedBottom - submergedTop
         );
+
+        ctx.strokeStyle = "rgba(43, 92, 143, 0.3)";
+        ctx.lineWidth = 1;
+        for (let strokeX = objectX - dimensions.height; strokeX < objectX + dimensions.width; strokeX += 8) {
+          ctx.beginPath();
+          ctx.moveTo(strokeX, submergedBottom);
+          ctx.lineTo(strokeX + dimensions.height, submergedTop);
+          ctx.stroke();
+        }
       }
 
-      ctx.fillStyle = "#2b2b2b";
-      ctx.font = "13px Nunito";
-      ctx.fillText(
-        "object",
-        objectX + 14,
-        objectY + dimensions.height / 2 + 5
-      );
+      // Object Mass Text Label
+      ctx.fillStyle = "#1a1a1a";
+      ctx.font = "500 12px Inter";
+      ctx.textAlign = "center";
+      ctx.fillText("m", objectX + dimensions.width / 2, objectY + dimensions.height / 2 + 4);
 
+      // Technical Force Vector Rendering
       if (vectorsInput.checked) {
         const centerX = objectX + dimensions.width / 2;
         const centerY = objectY + dimensions.height / 2;
-        const forceScale = 0.018;
+        const forceScale = 0.016;
 
-        /*
-          Draw buoyancy only when there is displaced water.
-        */
         if (physics.buoyantForce > 0.01) {
-          arrow(
-            centerX - 12,
+          drawArrow(
+            centerX - 8,
             centerY,
-            centerX - 12,
+            centerX - 8,
             centerY - physics.buoyantForce * forceScale,
-            "#2fb39a"
+            "#2b5c8f"
           );
         }
 
-        arrow(
-          centerX + 12,
+        drawArrow(
+          centerX + 8,
           centerY,
-          centerX + 12,
+          centerX + 8,
           centerY + physics.weight * forceScale,
-          "#f4c542"
+          "#2b2b2b"
         );
       }
 
-      ctx.fillStyle = "#5a5a5a";
-      ctx.font = "12px Nunito";
-      ctx.fillText("fluid", tankLeft + 12, waterTop + 24);
-      ctx.fillText("air", tankLeft + 12, waterTop - 12);
+      // Environment Technical Markers
+      ctx.fillStyle = "#666666";
+      ctx.font = "600 10px Inter";
+      ctx.textAlign = "left";
+      ctx.fillText("FLUID MEDIUM", tankLeft + 12, waterTop + 20);
+      ctx.fillText("AIR", tankLeft + 12, waterTop - 12);
     }
 
     function animate(timestamp) {
@@ -739,11 +756,7 @@
         previousTimestamp = timestamp;
       }
 
-      const delta = Math.min(
-        (timestamp - previousTimestamp) / 1000,
-        0.04
-      );
-
+      const delta = Math.min((timestamp - previousTimestamp) / 1000, 0.04);
       previousTimestamp = timestamp;
 
       const v = values();
