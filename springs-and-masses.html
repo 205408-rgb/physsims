@@ -6,153 +6,200 @@
   <title>Springs & Masses | Physics Simulations</title>
   <style>
     :root {
-      --bg: #0b1020;
-      --panel: #121a2e;
-      --canvas: #0c1425;
-      --border: #263658;
-      --text: #f2f7ff;
-      --muted: #aebbd3;
-      --blue: #61b4ff;
-      --green: #61e7b6;
-      --red: #ff7b8e;
-      --yellow: #ffd56a;
+      --bg: #fcfcf9;
+      --panel: #ffffff;
+      --canvas: #f7f7f4;
+      --border: #e8e8e3;
+      --border-subtle: #eee;
+      --text: #1a1a1a;
+      --muted: #707070;
+      --blue: #2b5c8f;
+      --green: #2e7d32;
+      --red: #c93b2b;
+      --yellow: #d97706;
     }
 
     * { box-sizing: border-box; }
 
     body {
       margin: 0;
+      min-height: 100vh;
       color: var(--text);
-      background:
-        radial-gradient(circle at 20% 0%, #193563 0%, transparent 32rem),
-        var(--bg);
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
     }
 
     .page {
-      width: min(1180px, calc(100% - 32px));
+      width: min(1180px, calc(100% - 48px));
       margin: auto;
+      padding-bottom: 40px;
     }
 
     header {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      gap: 18px;
-      padding: 28px 0 20px;
+      padding: 36px 0 24px;
       border-bottom: 1px solid var(--border);
     }
 
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: #f4f4f0;
+    }
+
     h1 {
-      margin: 0;
-      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      margin: 8px 0 0;
+      font-family: "Georgia", "Times New Roman", serif;
+      font-weight: 400;
+      font-size: clamp(2rem, 4vw, 2.75rem);
+      color: var(--text);
+      letter-spacing: -0.01em;
     }
 
     h2 {
       margin: 0 0 16px;
-      font-size: 1.1rem;
+      font-family: "Georgia", "Times New Roman", serif;
+      font-weight: 400;
+      font-size: 1.25rem;
+      color: var(--text);
     }
 
     .subtitle {
-      margin: 7px 0 0;
+      margin: 8px 0 0;
       color: var(--muted);
+      font-size: 0.95rem;
     }
 
     .back {
-      color: var(--blue);
+      color: var(--text);
+      background: #f0f0eb;
+      border: 1px solid var(--border);
       text-decoration: none;
       white-space: nowrap;
-      padding-top: 6px;
+      padding: 6px 14px;
+      border-radius: 4px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      transition: background 0.15s;
     }
 
-    .back:hover { text-decoration: underline; }
+    .back:hover { background: #e5e5df; }
 
     .layout {
       display: grid;
-      grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.75fr);
-      gap: 18px;
-      padding: 22px 0 18px;
+      grid-template-columns: minmax(0, 1.6fr) minmax(300px, 0.9fr);
+      gap: 24px;
+      padding-top: 28px;
     }
 
     .panel {
-      overflow: hidden;
       border: 1px solid var(--border);
-      border-radius: 16px;
-      background: rgba(18, 26, 46, 0.9);
+      background: var(--panel);
+      border-radius: 2px;
+      overflow: hidden;
     }
 
     .simulation {
       position: relative;
-      min-height: 440px;
+      min-height: 480px;
     }
 
     #simCanvas {
       display: block;
       width: 100%;
-      height: 440px;
+      height: 480px;
       background: var(--canvas);
     }
 
     .canvas-label {
       position: absolute;
-      top: 12px;
-      left: 14px;
+      top: 14px;
+      left: 16px;
       color: var(--muted);
-      font-size: 0.84rem;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
       pointer-events: none;
     }
 
-    .controls { padding: 20px; }
+    .controls {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+    }
 
-    .control { margin-bottom: 19px; }
+    .control { margin-bottom: 20px; }
 
     label {
       display: flex;
       justify-content: space-between;
       gap: 10px;
       margin-bottom: 8px;
-      color: var(--muted);
-      font-size: 0.9rem;
+      color: var(--text);
+      font-size: 0.88rem;
     }
 
     output {
       color: var(--text);
+      font-weight: 600;
       font-variant-numeric: tabular-nums;
     }
 
     input[type="range"] {
       width: 100%;
+      height: 4px;
       cursor: pointer;
-      accent-color: var(--blue);
+      accent-color: #1a1a1a;
+      background: #e2e2dc;
+      border-radius: 2px;
     }
 
     .actions {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
-      margin: 5px 0 20px;
+      margin: 8px 0 20px;
     }
 
     button {
       cursor: pointer;
-      border: 0;
-      border-radius: 9px;
-      padding: 10px 14px;
-      color: #08101c;
-      background: linear-gradient(135deg, var(--blue), var(--green));
+      border: 1px solid #1a1a1a;
+      border-radius: 2px;
+      padding: 8px 16px;
+      color: #ffffff;
+      background: #1a1a1a;
       font: inherit;
-      font-weight: 750;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: background 0.15s;
     }
+
+    button:hover { background: #333333; }
 
     button.secondary {
       color: var(--text);
       border: 1px solid var(--border);
-      background: transparent;
+      background: #f7f7f4;
     }
+
+    button.secondary:hover { background: #ebebe5; }
 
     .checks {
       display: grid;
       gap: 10px;
+      padding-top: 10px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border-subtle);
     }
 
     .checks label {
@@ -160,63 +207,70 @@
       align-items: center;
       margin: 0;
       cursor: pointer;
+      font-size: 0.85rem;
+      color: var(--muted);
     }
 
-    .checks input { accent-color: var(--blue); }
+    .checks input {
+      accent-color: #1a1a1a;
+      margin-right: 8px;
+    }
 
     .readouts {
-      margin-top: 22px;
-      padding: 14px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: var(--canvas);
+      margin-top: 20px;
+      padding-top: 16px;
     }
 
     .readouts h3 {
-      margin: 0 0 8px;
-      color: var(--muted);
-      font-size: 0.92rem;
+      margin: 0 0 12px;
+      font-family: "Georgia", "Times New Roman", serif;
+      font-weight: 400;
+      font-size: 1.05rem;
+      color: var(--text);
     }
 
     .readouts p {
       display: flex;
       justify-content: space-between;
-      margin: 6px 0;
-      font-size: 0.92rem;
+      margin: 8px 0;
+      font-size: 0.86rem;
+      color: var(--muted);
     }
 
-    .readouts strong { font-variant-numeric: tabular-nums; }
+    .readouts strong {
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
 
     .graphs {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 18px;
-      padding-bottom: 40px;
+      gap: 24px;
+      padding-top: 24px;
     }
 
-    .graph { padding: 14px; }
+    .graph { padding: 20px; }
 
     .graph h2 {
-      margin-bottom: 10px;
-      color: var(--muted);
-      font-size: 0.95rem;
+      margin-bottom: 12px;
+      font-size: 1.05rem;
     }
 
     .graph canvas {
       display: block;
       width: 100%;
-      height: 205px;
-      border: 1px solid var(--border);
-      border-radius: 10px;
+      height: 200px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 2px;
       background: var(--canvas);
     }
 
     .legend {
       display: flex;
-      gap: 14px;
-      margin-top: 9px;
+      gap: 16px;
+      margin-top: 12px;
       color: var(--muted);
-      font-size: 0.82rem;
+      font-size: 0.8rem;
     }
 
     .blue { color: var(--blue); }
@@ -225,7 +279,7 @@
     .yellow { color: var(--yellow); }
 
     @media (max-width: 850px) {
-      header { flex-direction: column; }
+      header { flex-direction: column; gap: 16px; }
       .layout, .graphs { grid-template-columns: 1fr; }
       #simCanvas { height: 360px; }
     }
@@ -235,6 +289,7 @@
   <div class="page">
     <header>
       <div>
+        <span class="badge">Physics Interactive</span>
         <h1>Springs & Masses</h1>
         <p class="subtitle">Explore simple harmonic motion, damping, resonance, force, and energy.</p>
       </div>
@@ -302,7 +357,7 @@
         </div>
 
         <section class="readouts">
-          <h3>Live readouts</h3>
+          <h3>Live Readouts</h3>
           <p><span>Time</span><strong id="timeOut">0.00 s</strong></p>
           <p><span>Position</span><strong id="positionOut">0.000 m</strong></p>
           <p><span>Velocity</span><strong id="velocityOut">0.000 m/s</strong></p>
@@ -314,7 +369,7 @@
 
     <section class="graphs">
       <section class="panel graph">
-        <h2>Position vs. time</h2>
+        <h2>Position vs. Time</h2>
         <canvas id="positionGraph"></canvas>
         <div class="legend">
           <span class="blue">● position</span>
@@ -323,7 +378,7 @@
       </section>
 
       <section class="panel graph">
-        <h2>Energy vs. time</h2>
+        <h2>Energy vs. Time</h2>
         <canvas id="energyGraph"></canvas>
         <div class="legend">
           <span class="red">● kinetic</span>
@@ -386,8 +441,14 @@
     function resizeCanvas(canvas) {
       const ratio = window.devicePixelRatio || 1;
       const rect = canvas.getBoundingClientRect();
-      canvas.width = Math.round(rect.width * ratio);
-      canvas.height = Math.round(rect.height * ratio);
+      const targetWidth = Math.round(rect.width * ratio);
+      const targetHeight = Math.round(rect.height * ratio);
+
+      if (canvas.width !== targetWidth || canvas.height !== targetHeight) {
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+      }
+
       const context = canvas.getContext("2d");
       context.setTransform(ratio, 0, 0, ratio, 0, 0);
       return { width: rect.width, height: rect.height };
@@ -403,10 +464,10 @@
     }
 
     function drawArrow(ctx, x1, y1, x2, y2, color) {
-      const head = 8;
+      const head = 7;
       const angle = Math.atan2(y2 - y1, x2 - x1);
 
-      drawLine(ctx, x1, y1, x2, y2, color, 2);
+      drawLine(ctx, x1, y1, x2, y2, color, 1.8);
 
       ctx.fillStyle = color;
       ctx.beginPath();
@@ -487,11 +548,11 @@
 
     function drawSpring(ctx, x, y1, y2) {
       const coils = 14;
-      const amplitude = 18;
+      const amplitude = 16;
       const step = (y2 - y1) / coils;
 
-      ctx.strokeStyle = "#aebbd3";
-      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = "#1a1a1a";
+      ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.moveTo(x, y1);
 
@@ -515,29 +576,34 @@
       const massHeight = 54;
 
       simCtx.clearRect(0, 0, width, height);
-      simCtx.fillStyle = "#0c1425";
-      simCtx.fillRect(0, 0, width, height);
 
-      simCtx.strokeStyle = "rgba(174,187,211,0.12)";
+      simCtx.strokeStyle = "#ebebe5";
       simCtx.lineWidth = 1;
 
-      for (let y = 36; y < height; y += 45) {
+      for (let y = 32; y < height; y += 32) {
         simCtx.beginPath();
         simCtx.moveTo(0, y);
         simCtx.lineTo(width, y);
         simCtx.stroke();
       }
 
-      simCtx.fillStyle = "#263658";
-      simCtx.fillRect(centerX - 120, ceilingY - 12, 240, 12);
+      for (let x = 32; x < width; x += 32) {
+        simCtx.beginPath();
+        simCtx.moveTo(x, 0);
+        simCtx.lineTo(x, height);
+        simCtx.stroke();
+      }
 
-      simCtx.setLineDash([6, 7]);
-      drawLine(simCtx, 36, equilibriumY, width - 36, equilibriumY, "rgba(97,180,255,0.45)");
+      simCtx.fillStyle = "#1a1a1a";
+      simCtx.fillRect(centerX - 100, ceilingY - 8, 200, 8);
+
+      simCtx.setLineDash([4, 4]);
+      drawLine(simCtx, 36, equilibriumY, width - 36, equilibriumY, "rgba(43,92,143,0.35)");
       simCtx.setLineDash([]);
 
       drawSpring(simCtx, centerX, ceilingY, massY - massHeight / 2);
 
-      simCtx.fillStyle = "#61b4ff";
+      simCtx.fillStyle = "#2b5c8f";
       simCtx.fillRect(
         centerX - massWidth / 2,
         massY - massHeight / 2,
@@ -545,8 +611,8 @@
         massHeight
       );
 
-      simCtx.strokeStyle = "#06101d";
-      simCtx.lineWidth = 2;
+      simCtx.strokeStyle = "#1a1a1a";
+      simCtx.lineWidth = 1.5;
       simCtx.strokeRect(
         centerX - massWidth / 2,
         massY - massHeight / 2,
@@ -554,9 +620,9 @@
         massHeight
       );
 
-      simCtx.fillStyle = "#f2f7ff";
-      simCtx.font = "13px system-ui";
-      simCtx.fillText(`${p.mass.toFixed(1)} kg`, centerX - 20, massY + 5);
+      simCtx.fillStyle = "#ffffff";
+      simCtx.font = "500 13px -apple-system, BlinkMacSystemFont, sans-serif";
+      simCtx.fillText(`${p.mass.toFixed(1)} kg`, centerX - 18, massY + 4);
 
       const driveForce = p.driveAmplitude *
         Math.sin(2 * Math.PI * p.driveFrequency * time);
@@ -572,7 +638,7 @@
           centerY,
           centerX,
           centerY + springForce * vectorScale,
-          "#61b4ff"
+          "#2b5c8f"
         );
 
         drawArrow(
@@ -581,7 +647,7 @@
           centerY,
           centerX + 20,
           centerY + driveForce * vectorScale,
-          "#61e7b6"
+          "#2e7d32"
         );
       }
 
@@ -591,19 +657,19 @@
         const total = kinetic + springPotential;
         const maximum = Math.max(total, 0.2);
 
-        const barX = 18;
-        const barY = height - 76;
-        const barW = 145;
-        const barH = 12;
+        const barX = 20;
+        const barY = height - 60;
+        const barW = 140;
+        const barH = 10;
 
-        simCtx.fillStyle = "#aebbd3";
-        simCtx.font = "11px system-ui";
-        simCtx.fillText("Energy", barX, barY - 10);
+        simCtx.fillStyle = "#707070";
+        simCtx.font = "11px -apple-system, BlinkMacSystemFont, sans-serif";
+        simCtx.fillText("Energy", barX, barY - 8);
 
-        simCtx.fillStyle = "#ff7b8e";
+        simCtx.fillStyle = "#c93b2b";
         simCtx.fillRect(barX, barY, barW * kinetic / maximum, barH);
 
-        simCtx.fillStyle = "#61b4ff";
+        simCtx.fillStyle = "#2b5c8f";
         simCtx.fillRect(
           barX + barW * kinetic / maximum,
           barY,
@@ -611,28 +677,26 @@
           barH
         );
 
-        simCtx.strokeStyle = "#ffd56a";
+        simCtx.strokeStyle = "#d97706";
         simCtx.lineWidth = 1;
         simCtx.strokeRect(barX, barY, barW, barH);
       }
 
-      simCtx.fillStyle = "#aebbd3";
-      simCtx.font = "11px system-ui";
-      simCtx.fillText("equilibrium", 40, equilibriumY - 8);
+      simCtx.fillStyle = "#707070";
+      simCtx.font = "11px -apple-system, BlinkMacSystemFont, sans-serif";
+      simCtx.fillText("equilibrium", 40, equilibriumY - 6);
     }
 
     function drawGraphBase(ctx, canvas, label) {
       const { width, height } = resizeCanvas(canvas);
-      const left = 40;
+      const left = 36;
       const right = 12;
-      const top = 15;
-      const bottom = 27;
+      const top = 16;
+      const bottom = 24;
 
       ctx.clearRect(0, 0, width, height);
-      ctx.fillStyle = "#0c1425";
-      ctx.fillRect(0, 0, width, height);
 
-      ctx.strokeStyle = "rgba(174,187,211,0.15)";
+      ctx.strokeStyle = "#f0f0eb";
       ctx.lineWidth = 1;
 
       for (let i = 0; i <= 4; i++) {
@@ -643,12 +707,12 @@
         ctx.stroke();
       }
 
-      drawLine(ctx, left, top, left, height - bottom, "rgba(174,187,211,0.55)");
-      drawLine(ctx, left, height - bottom, width - right, height - bottom, "rgba(174,187,211,0.55)");
+      drawLine(ctx, left, top, left, height - bottom, "#d0d0c8");
+      drawLine(ctx, left, height - bottom, width - right, height - bottom, "#d0d0c8");
 
-      ctx.fillStyle = "#aebbd3";
-      ctx.font = "11px system-ui";
-      ctx.fillText(label, 7, 16);
+      ctx.fillStyle = "#707070";
+      ctx.font = "10px -apple-system, BlinkMacSystemFont, sans-serif";
+      ctx.fillText(label, 6, 14);
 
       return { width, height, left, right, top, bottom };
     }
@@ -657,7 +721,7 @@
       if (points.length < 2) return;
 
       ctx.strokeStyle = color;
-      ctx.lineWidth = 2.2;
+      ctx.lineWidth = 1.8;
       ctx.beginPath();
 
       points.forEach((point, index) => {
@@ -692,20 +756,20 @@
         middle,
         area.width - area.right,
         middle,
-        "rgba(97,231,182,0.45)"
+        "rgba(46,125,50,0.35)"
       );
 
       drawSeries(
         positionCtx,
         history.map(point => ({ t: point.t, value: point.position })),
-        "#61b4ff",
+        "#2b5c8f",
         mapX,
         mapY
       );
 
-      positionCtx.fillStyle = "#aebbd3";
-      positionCtx.font = "11px system-ui";
-      positionCtx.fillText("time", area.width - 33, area.height - 8);
+      positionCtx.fillStyle = "#707070";
+      positionCtx.font = "10px -apple-system, BlinkMacSystemFont, sans-serif";
+      positionCtx.fillText("time", area.width - 28, area.height - 6);
     }
 
     function drawEnergyGraph() {
@@ -726,7 +790,7 @@
       drawSeries(
         energyCtx,
         history.map(point => ({ t: point.t, value: point.kinetic })),
-        "#ff7b8e",
+        "#c93b2b",
         mapX,
         mapY
       );
@@ -734,7 +798,7 @@
       drawSeries(
         energyCtx,
         history.map(point => ({ t: point.t, value: point.springPotential })),
-        "#61b4ff",
+        "#2b5c8f",
         mapX,
         mapY
       );
@@ -742,14 +806,14 @@
       drawSeries(
         energyCtx,
         history.map(point => ({ t: point.t, value: point.total })),
-        "#ffd56a",
+        "#d97706",
         mapX,
         mapY
       );
 
-      energyCtx.fillStyle = "#aebbd3";
-      energyCtx.font = "11px system-ui";
-      energyCtx.fillText("time", area.width - 33, area.height - 8);
+      energyCtx.fillStyle = "#707070";
+      energyCtx.font = "10px -apple-system, BlinkMacSystemFont, sans-serif";
+      energyCtx.fillText("time", area.width - 28, area.height - 6);
     }
 
     function animate(timestamp) {
