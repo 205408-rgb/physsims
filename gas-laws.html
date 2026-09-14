@@ -304,7 +304,7 @@
         </section>
 
         <p class="formula">
-          Ideal Gas Relation: $P \propto \frac{N \cdot T}{V}$
+          Ideal Gas Relation: P ∝ NT / V
         </p>
       </aside>
     </main>
@@ -337,7 +337,6 @@
     let particles = [];
     let isRunning = false;
     let lastTime = null;
-    let previousBox = null;
 
     function getValues() {
       return {
@@ -407,21 +406,11 @@
       for (let i = 0; i < v.particleCount; i++) {
         particles.push(newParticle(box, speed));
       }
-      previousBox = box;
     }
 
     function syncParticles(v, box) {
       const target = v.particleCount;
       const speed = targetSpeed(v.temperature);
-
-      // Rescale positions proportionally if the container geometry changed
-      if (previousBox && (previousBox.width !== box.width || previousBox.x !== box.x)) {
-        particles.forEach(p => {
-          const relX = (p.x - previousBox.x) / previousBox.width;
-          p.x = box.x + relX * box.width;
-        });
-      }
-      previousBox = box;
 
       while (particles.length < target) {
         particles.push(newParticle(box, speed));
@@ -430,15 +419,17 @@
         particles.pop();
       }
 
-      // Hard clamp positions within boundary walls
-      const minX = box.x + PARTICLE_RADIUS + 1;
-      const maxX = box.x + box.width - PARTICLE_RADIUS - 1;
-      const minY = box.y + PARTICLE_RADIUS + 1;
-      const maxY = box.y + box.height - PARTICLE_RADIUS - 1;
+      // Ensure particles are clamped inside box bounds if volume changes
+      const minX = box.x + PARTICLE_RADIUS + 2;
+      const maxX = box.x + box.width - PARTICLE_RADIUS - 2;
+      const minY = box.y + PARTICLE_RADIUS + 2;
+      const maxY = box.y + box.height - PARTICLE_RADIUS - 2;
 
-      particles.forEach(particle => {
-        particle.x = Math.max(minX, Math.min(maxX, particle.x));
-        particle.y = Math.max(minY, Math.min(maxY, particle.y));
+      particles.forEach(p => {
+        if (p.x < minX) p.x = minX;
+        if (p.x > maxX) p.x = maxX;
+        if (p.y < minY) p.y = minY;
+        if (p.y > maxY) p.y = maxY;
       });
     }
 
@@ -464,20 +455,20 @@
         particle.x += particle.vx * delta;
         particle.y += particle.vy * delta;
 
-        // Bounce logic with direct position displacement to eliminate wall-sticking
+        // Collision logic with pushback offset (+1px) to prevent wall sticking
         if (particle.x <= minX) {
-          particle.x = minX + 0.5;
+          particle.x = minX + 1.0;
           particle.vx = Math.abs(particle.vx);
         } else if (particle.x >= maxX) {
-          particle.x = maxX - 0.5;
+          particle.x = maxX - 1.0;
           particle.vx = -Math.abs(particle.vx);
         }
 
         if (particle.y <= minY) {
-          particle.y = minY + 0.5;
+          particle.y = minY + 1.0;
           particle.vy = Math.abs(particle.vy);
         } else if (particle.y >= maxY) {
-          particle.y = maxY - 0.5;
+          particle.y = maxY - 1.0;
           particle.vy = -Math.abs(particle.vy);
         }
 
@@ -533,7 +524,7 @@
 
       ctx.clearRect(0, 0, width, height);
 
-      // Light background grid
+      // Light grid pattern matching the Collision Lab
       ctx.strokeStyle = "#ebebe5";
       ctx.lineWidth = 1;
       const gridSize = 24;
@@ -658,7 +649,6 @@
       resetParticles();
     });
 
-    // Do not call resetParticles() on input so particle velocities persist smoothly
     [temperatureInput, volumeInput, particleCountInput].forEach(input => {
       input.addEventListener("input", () => {
         const size = getCanvasSize();
