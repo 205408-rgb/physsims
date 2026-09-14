@@ -300,7 +300,7 @@
   <div class="page">
     <header>
       <div>
-        <span class="badge">Student Project</span>
+        <span class="badge">Physics Interactive</span>
         <h1>Orbital Motion</h1>
         <p class="subtitle">Change starting conditions and observe circular, elliptical, escape, and collision paths.</p>
       </div>
@@ -472,8 +472,14 @@
     function resizeCanvas(canvas) {
       const ratio = window.devicePixelRatio || 1;
       const rect = canvas.getBoundingClientRect();
-      canvas.width = Math.round(rect.width * ratio);
-      canvas.height = Math.round(rect.height * ratio);
+      const targetWidth = Math.round(rect.width * ratio);
+      const targetHeight = Math.round(rect.height * ratio);
+
+      if (canvas.width !== targetWidth || canvas.height !== targetHeight) {
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+      }
+
       const context = canvas.getContext("2d");
       context.setTransform(ratio, 0, 0, ratio, 0, 0);
       return { width: rect.width, height: rect.height };
@@ -512,9 +518,9 @@
     function physics(delta, v) {
       if (paused || status === "Collision" || status === "Escaped") return;
 
-      // Apply speed multiplier to integration step
       const effectiveDelta = delta * v.multiplier;
-      const steps = Math.max(1, Math.ceil(effectiveDelta / 0.008));
+      const baseSubstep = 0.005;
+      const steps = Math.max(1, Math.ceil(effectiveDelta / baseSubstep));
       const dt = effectiveDelta / steps;
 
       for (let i = 0; i < steps; i++) {
@@ -526,7 +532,7 @@
           break;
         }
 
-        if (r > 2000) {
+        if (r > 3000) {
           status = "Escaped";
           break;
         }
@@ -551,7 +557,7 @@
         trail.push({ x: body.x, y: body.y });
       }
 
-      if (trail.length > 2400) trail.shift();
+      if (trail.length > 3000) trail.shift();
       history = history.filter(point => point.t >= time - 25);
 
       if (totalEnergy > 0 && status === "Orbiting") {
@@ -594,7 +600,6 @@
 
       simCtx.clearRect(0, 0, width, height);
 
-      // Grid pattern
       simCtx.strokeStyle = "#ebebe5";
       simCtx.lineWidth = 1;
       const gridSize = 24;
@@ -612,7 +617,6 @@
         simCtx.stroke();
       }
 
-      // Orbital Trail
       if (trailsInput.checked && trail.length > 1) {
         simCtx.strokeStyle = "rgba(43, 92, 143, 0.45)";
         simCtx.lineWidth = 1.5;
@@ -629,7 +633,6 @@
         simCtx.stroke();
       }
 
-      // Central Star
       const starRadius = 10 + Math.sqrt(v.mass) * 0.8;
 
       simCtx.fillStyle = "#d97706";
@@ -637,7 +640,6 @@
       simCtx.arc(centerX, centerY, starRadius, 0, Math.PI * 2);
       simCtx.fill();
 
-      // Orbiting Body
       const bodyX = mapX(body.x);
       const bodyY = mapY(body.y);
 
@@ -650,7 +652,6 @@
       simCtx.lineWidth = 1.5;
       simCtx.stroke();
 
-      // Velocity Vector
       if (vectorsInput.checked) {
         const velocityScale = Math.min(20, scale * 13);
         arrow(
