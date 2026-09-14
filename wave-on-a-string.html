@@ -7,15 +7,17 @@
 
   <style>
     :root {
-      --bg: #0b1020;
-      --panel: #121a2e;
-      --panel-dark: #0c1425;
-      --border: #263658;
-      --text: #f2f7ff;
-      --muted: #aebbd3;
-      --accent: #61b4ff;
-      --accent2: #61e7b6;
-      --red: #ff7b8e;
+      --bg: #f8f9fa;
+      --panel: #ffffff;
+      --panel-dark: #f1f3f5;
+      --border: #e9ecef;
+      --border-dark: #dee2e6;
+      --text: #212529;
+      --muted: #6c757d;
+      --accent: #212529;
+      --accent-hover: #343a40;
+      --primary: #0d6efd;
+      --red: #dc3545;
     }
 
     * { box-sizing: border-box; }
@@ -23,10 +25,8 @@
     body {
       margin: 0;
       color: var(--text);
-      background:
-        radial-gradient(circle at 20% 0%, #193563 0%, transparent 32rem),
-        var(--bg);
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       line-height: 1.45;
     }
 
@@ -40,47 +40,62 @@
       align-items: flex-start;
       justify-content: space-between;
       gap: 18px;
-      padding: 28px 0 20px;
-      border-bottom: 1px solid var(--border);
+      padding: 32px 0 24px;
+      border-bottom: 1px solid var(--border-dark);
     }
 
     h1 {
       margin: 0;
-      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      font-family: "Georgia", "Times New Roman", serif;
+      font-weight: 400;
+      font-size: clamp(2rem, 4vw, 2.8rem);
+      color: #111;
     }
 
     h2 {
-      font-size: 1.1rem;
+      font-family: "Georgia", "Times New Roman", serif;
+      font-weight: 400;
+      font-size: 1.2rem;
       margin: 0 0 16px;
+      color: #111;
     }
 
     .subtitle {
-      margin: 7px 0 0;
+      margin: 8px 0 0;
       color: var(--muted);
+      font-size: 0.98rem;
     }
 
     .back {
       display: inline-block;
-      color: var(--accent);
+      color: var(--text);
+      font-size: 0.9rem;
       text-decoration: none;
       white-space: nowrap;
-      padding-top: 6px;
+      padding: 6px 12px;
+      border: 1px solid var(--border-dark);
+      border-radius: 6px;
+      background: #fff;
+      transition: background 0.15s ease;
     }
 
-    .back:hover { text-decoration: underline; }
+    .back:hover { 
+      background: var(--panel-dark);
+    }
 
     .layout {
       display: grid;
       grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.75fr);
-      gap: 18px;
-      padding: 22px 0 18px;
+      gap: 20px;
+      padding: 24px 0 20px;
     }
 
     .panel {
-      background: rgba(18, 26, 46, 0.9);
-      border: 1px solid var(--border);
-      border-radius: 16px;
+      background: var(--panel);
+      border: 1px solid var(--border-dark);
+      border-radius: 8px;
       overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
     }
 
     .simulation {
@@ -92,7 +107,7 @@
       display: block;
       width: 100%;
       height: 440px;
-      background: var(--panel-dark);
+      background: #fafafa;
     }
 
     .canvas-info {
@@ -100,16 +115,18 @@
       top: 12px;
       left: 14px;
       color: var(--muted);
-      font-size: 0.85rem;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
       pointer-events: none;
     }
 
     .controls {
-      padding: 20px;
+      padding: 24px;
     }
 
     .control {
-      margin-bottom: 19px;
+      margin-bottom: 20px;
     }
 
     label {
@@ -117,53 +134,66 @@
       justify-content: space-between;
       gap: 10px;
       color: var(--muted);
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       margin-bottom: 8px;
+      font-weight: 500;
     }
 
     output {
       color: var(--text);
       font-variant-numeric: tabular-nums;
+      font-weight: 600;
     }
 
     input[type="range"] {
       width: 100%;
-      accent-color: var(--accent);
+      accent-color: var(--text);
       cursor: pointer;
     }
 
     select {
       width: 100%;
       color: var(--text);
-      background: var(--panel-dark);
-      border: 1px solid var(--border);
-      border-radius: 9px;
-      padding: 10px;
+      background: var(--panel);
+      border: 1px solid var(--border-dark);
+      border-radius: 6px;
+      padding: 9px;
       font: inherit;
+      font-size: 0.9rem;
     }
 
     .actions {
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
-      margin: 5px 0 20px;
+      margin: 10px 0 20px;
     }
 
     button {
       cursor: pointer;
-      border: 0;
-      border-radius: 9px;
-      padding: 10px 14px;
-      color: #08101c;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      font-weight: 750;
+      border: 1px solid var(--accent);
+      border-radius: 6px;
+      padding: 9px 16px;
+      color: #fff;
+      background: var(--accent);
+      font-weight: 500;
       font: inherit;
+      font-size: 0.9rem;
+      transition: background 0.15s ease;
+    }
+
+    button:hover {
+      background: var(--accent-hover);
     }
 
     button.secondary {
       color: var(--text);
-      background: transparent;
-      border: 1px solid var(--border);
+      background: #fff;
+      border: 1px solid var(--border-dark);
+    }
+
+    button.secondary:hover {
+      background: var(--panel-dark);
     }
 
     .checks {
@@ -176,31 +206,37 @@
       display: flex;
       justify-content: flex-start;
       align-items: center;
+      gap: 8px;
       margin: 0;
       cursor: pointer;
+      color: var(--text);
+      font-weight: normal;
     }
 
-    .checks input { accent-color: var(--accent); }
+    .checks input { accent-color: var(--text); }
 
     .readouts {
-      margin-top: 22px;
-      padding: 14px;
+      margin-top: 24px;
+      padding: 16px;
       border: 1px solid var(--border);
-      border-radius: 12px;
+      border-radius: 6px;
       background: var(--panel-dark);
     }
 
     .readouts h3 {
-      margin: 0 0 8px;
+      margin: 0 0 10px;
       color: var(--muted);
-      font-size: 0.92rem;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
     .readouts p {
       display: flex;
       justify-content: space-between;
       margin: 6px 0;
-      font-size: 0.92rem;
+      font-size: 0.9rem;
+      color: var(--muted);
     }
 
     .readouts strong {
@@ -211,39 +247,42 @@
     .graphs {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 18px;
+      gap: 20px;
       padding-bottom: 40px;
     }
 
     .graph {
-      padding: 14px;
+      padding: 18px;
     }
 
     .graph h2 {
-      margin-bottom: 10px;
+      margin-bottom: 12px;
       color: var(--muted);
-      font-size: 0.95rem;
+      font-size: 0.9rem;
+      font-family: inherit;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
     canvas.graph-canvas {
       display: block;
       width: 100%;
       height: 205px;
-      background: var(--panel-dark);
-      border-radius: 10px;
+      background: #fafafa;
+      border-radius: 6px;
       border: 1px solid var(--border);
     }
 
     .legend {
       display: flex;
       gap: 14px;
-      margin-top: 9px;
+      margin-top: 10px;
       color: var(--muted);
       font-size: 0.82rem;
     }
 
-    .blue { color: var(--accent); }
-    .green { color: var(--accent2); }
+    .blue { color: #111; font-weight: 500; }
+    .green { color: #555; font-weight: 500; }
 
     @media (max-width: 850px) {
       header { flex-direction: column; }
@@ -439,10 +478,10 @@
       const pixelsPerMeterY = Math.min(height * 0.32 / 1.5, 105);
 
       waveCtx.clearRect(0, 0, width, height);
-      waveCtx.fillStyle = "#0c1425";
+      waveCtx.fillStyle = "#fafafa";
       waveCtx.fillRect(0, 0, width, height);
 
-      waveCtx.strokeStyle = "rgba(174,187,211,0.13)";
+      waveCtx.strokeStyle = "#e9ecef";
       waveCtx.lineWidth = 1;
 
       for (let x = marginX; x <= width - marginX; x += drawWidth / 10) {
@@ -459,17 +498,17 @@
         waveCtx.stroke();
       }
 
-      line(waveCtx, marginX, baseline, width - marginX, baseline, "rgba(174,187,211,0.45)", 1);
+      line(waveCtx, marginX, baseline, width - marginX, baseline, "#ced4da", 1);
 
-      waveCtx.fillStyle = "#61e7b6";
-      waveCtx.fillRect(marginX - 5, baseline - 54, 7, 108);
+      waveCtx.fillStyle = "#212529";
+      waveCtx.fillRect(marginX - 4, baseline - 54, 5, 108);
 
-      waveCtx.fillStyle = "#ff7b8e";
-      waveCtx.fillRect(width - marginX - 2, baseline - 54, 6, 108);
+      waveCtx.fillStyle = "#212529";
+      waveCtx.fillRect(width - marginX - 1, baseline - 54, 5, 108);
 
       if (standingWaveInput.checked) {
-        waveCtx.setLineDash([5, 7]);
-        waveCtx.strokeStyle = "rgba(97,180,255,0.32)";
+        waveCtx.setLineDash([4, 4]);
+        waveCtx.strokeStyle = "#adb5bd";
         waveCtx.lineWidth = 1;
 
         waveCtx.beginPath();
@@ -498,8 +537,8 @@
         waveCtx.setLineDash([]);
       }
 
-      waveCtx.strokeStyle = "#61b4ff";
-      waveCtx.lineWidth = 3;
+      waveCtx.strokeStyle = "#111111";
+      waveCtx.lineWidth = 2.5;
       waveCtx.beginPath();
 
       for (let i = 0; i <= points; i++) {
@@ -516,7 +555,7 @@
       waveCtx.stroke();
 
       if (particlesInput.checked) {
-        waveCtx.fillStyle = "#61e7b6";
+        waveCtx.fillStyle = "#111111";
 
         for (let i = 0; i <= 28; i++) {
           const fraction = i / 28;
@@ -525,19 +564,18 @@
           const px = marginX + fraction * drawWidth;
           const py = baseline - y * pixelsPerMeterY;
           waveCtx.beginPath();
-          waveCtx.arc(px, py, 3.3, 0, Math.PI * 2);
+          waveCtx.arc(px, py, 3, 0, Math.PI * 2);
           waveCtx.fill();
         }
       }
 
-      waveCtx.fillStyle = "#aebbd3";
+      waveCtx.fillStyle = "#6c757d";
       waveCtx.font = "12px system-ui";
       waveCtx.fillText("0 m", marginX - 8, height - 10);
       waveCtx.fillText("10", width - marginX - 12, height - 10);
-      waveCtx.fillStyle = "#61e7b6";
-      waveCtx.fillText("driver", marginX - 18, baseline - 67);
-      waveCtx.fillStyle = "#ff7b8e";
-      waveCtx.fillText(p.boundary, width - marginX - 34, baseline - 67);
+      waveCtx.fillStyle = "#212529";
+      waveCtx.fillText("driver", marginX - 18, baseline - 62);
+      waveCtx.fillText(p.boundary, width - marginX - 34, baseline - 62);
     }
 
     function drawAxes(context, width, height, label) {
@@ -547,10 +585,10 @@
       const bottom = 27;
 
       context.clearRect(0, 0, width, height);
-      context.fillStyle = "#0c1425";
+      context.fillStyle = "#fafafa";
       context.fillRect(0, 0, width, height);
 
-      context.strokeStyle = "rgba(174,187,211,0.16)";
+      context.strokeStyle = "#e9ecef";
       context.lineWidth = 1;
 
       for (let i = 0; i <= 4; i++) {
@@ -561,10 +599,10 @@
         context.stroke();
       }
 
-      line(context, left, top, left, height - bottom, "rgba(174,187,211,0.55)");
-      line(context, left, height - bottom, width - right, height - bottom, "rgba(174,187,211,0.55)");
+      line(context, left, top, left, height - bottom, "#adb5bd");
+      line(context, left, height - bottom, width - right, height - bottom, "#adb5bd");
 
-      context.fillStyle = "#aebbd3";
+      context.fillStyle = "#6c757d";
       context.font = "11px system-ui";
       context.fillText(label, 7, 16);
 
@@ -579,8 +617,8 @@
       const graphWidth = width - area.left - area.right;
       const scale = (height - area.top - area.bottom) / (4 * Math.max(p.amplitude, 0.2));
 
-      shapeCtx.strokeStyle = "#61b4ff";
-      shapeCtx.lineWidth = 2.5;
+      shapeCtx.strokeStyle = "#111111";
+      shapeCtx.lineWidth = 2;
       shapeCtx.beginPath();
 
       for (let i = 0; i <= points; i++) {
@@ -595,7 +633,7 @@
       }
 
       shapeCtx.stroke();
-      shapeCtx.fillStyle = "#aebbd3";
+      shapeCtx.fillStyle = "#6c757d";
       shapeCtx.font = "11px system-ui";
       shapeCtx.fillText("0", area.left - 3, height - 8);
       shapeCtx.fillText("x (m)", width - 39, height - 8);
@@ -613,8 +651,8 @@
 
       const recent = history.filter(point => point.t >= time - historySeconds);
       if (recent.length > 1) {
-        timeCtx.strokeStyle = "#61e7b6";
-        timeCtx.lineWidth = 2.5;
+        timeCtx.strokeStyle = "#555555";
+        timeCtx.lineWidth = 2;
         timeCtx.beginPath();
 
         for (let i = 0; i < recent.length; i++) {
@@ -630,7 +668,7 @@
         timeCtx.stroke();
       }
 
-      timeCtx.fillStyle = "#aebbd3";
+      timeCtx.fillStyle = "#6c757d";
       timeCtx.font = "11px system-ui";
       timeCtx.fillText("-8 s", area.left, height - 8);
       timeCtx.fillText("now", width - area.right - 23, height - 8);
