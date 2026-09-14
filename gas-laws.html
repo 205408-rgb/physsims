@@ -297,6 +297,8 @@
     const toggleButton = document.getElementById("toggleButton");
     const resetButton = document.getElementById("resetButton");
 
+    const PARTICLE_RADIUS = 4.2;
+
     let particles = [];
     let isRunning = false;
     let lastTime = null;
@@ -352,8 +354,8 @@
       const randomSpeed = speed * (0.65 + Math.random() * 0.55);
 
       return {
-        x: box.x + 8 + Math.random() * (box.width - 16),
-        y: box.y + 8 + Math.random() * (box.height - 16),
+        x: box.x + PARTICLE_RADIUS + 2 + Math.random() * (box.width - 2 * PARTICLE_RADIUS - 4),
+        y: box.y + PARTICLE_RADIUS + 2 + Math.random() * (box.height - 2 * PARTICLE_RADIUS - 4),
         vx: Math.cos(direction) * randomSpeed,
         vy: Math.sin(direction) * randomSpeed,
         trail: []
@@ -386,8 +388,8 @@
       }
 
       particles.forEach(particle => {
-        particle.x = Math.max(box.x + 6, Math.min(box.x + box.width - 6, particle.x));
-        particle.y = Math.max(box.y + 6, Math.min(box.y + box.height - 6, particle.y));
+        particle.x = Math.max(box.x + PARTICLE_RADIUS + 1, Math.min(box.x + box.width - PARTICLE_RADIUS - 1, particle.x));
+        particle.y = Math.max(box.y + PARTICLE_RADIUS + 1, Math.min(box.y + box.height - PARTICLE_RADIUS - 1, particle.y));
       });
     }
 
@@ -409,23 +411,25 @@
         particle.x += particle.vx * delta;
         particle.y += particle.vy * delta;
 
-        if (particle.x <= box.x + 5) {
-          particle.x = box.x + 5;
-          particle.vx = Math.abs(particle.vx);
-        }
+        // Corrected boundary collision detection and clamping
+        const minX = box.x + PARTICLE_RADIUS;
+        const maxX = box.x + box.width - PARTICLE_RADIUS;
+        const minY = box.y + PARTICLE_RADIUS;
+        const maxY = box.y + box.height - PARTICLE_RADIUS;
 
-        if (particle.x >= box.x + box.width - 5) {
-          particle.x = box.x + box.width - 5;
+        if (particle.x <= minX) {
+          particle.x = minX;
+          particle.vx = Math.abs(particle.vx);
+        } else if (particle.x >= maxX) {
+          particle.x = maxX;
           particle.vx = -Math.abs(particle.vx);
         }
 
-        if (particle.y <= box.y + 5) {
-          particle.y = box.y + 5;
+        if (particle.y <= minY) {
+          particle.y = minY;
           particle.vy = Math.abs(particle.vy);
-        }
-
-        if (particle.y >= box.y + box.height - 5) {
-          particle.y = box.y + box.height - 5;
+        } else if (particle.y >= maxY) {
+          particle.y = maxY;
           particle.vy = -Math.abs(particle.vy);
         }
 
@@ -531,7 +535,7 @@
       particles.forEach(particle => {
         ctx.fillStyle = `hsl(${hue}, 90%, 66%)`;
         ctx.beginPath();
-        ctx.arc(particle.x, particle.y, 4.2, 0, Math.PI * 2);
+        ctx.arc(particle.x, particle.y, PARTICLE_RADIUS, 0, Math.PI * 2);
         ctx.fill();
 
         if (vectorsInput.checked && isRunning) {
