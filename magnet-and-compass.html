@@ -3,25 +3,33 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Gas Laws Lab | Physics Simulations</title>
+  <title>Magnet & Compass | Physics Simulations</title>
+
   <style>
     :root {
       --bg: #fcfcf9;
       --panel: #ffffff;
       --canvas: #f7f7f4;
-      --border: #e2e2dc;
+      --border: #e8e8e3;
       --border-subtle: #eee;
       --text: #1a1a1a;
       --muted: #707070;
       --accent: #2b5c8f;
+      --north-red: #d93838;
+      --south-blue: #2b5c8f;
+      --arrow-color: #3b719f;
+      --field-green: #3a825c;
     }
 
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
     body {
       margin: 0;
-      background: var(--bg);
+      min-height: 100vh;
       color: var(--text);
+      background: var(--bg);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       -webkit-font-smoothing: antialiased;
     }
@@ -40,8 +48,21 @@
       border-bottom: 1px solid var(--border);
     }
 
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: #f4f4f0;
+    }
+
     h1 {
-      margin: 0;
+      margin: 8px 0 0;
       font-family: "Georgia", "Times New Roman", serif;
       font-weight: 400;
       font-size: clamp(2rem, 4vw, 2.75rem);
@@ -76,7 +97,9 @@
       transition: background 0.15s;
     }
 
-    .back:hover { background: #e5e5df; }
+    .back:hover {
+      background: #e5e5df;
+    }
 
     .layout {
       display: grid;
@@ -89,13 +112,7 @@
       border: 1px solid var(--border);
       background: var(--panel);
       border-radius: 2px;
-    }
-
-    #simCanvas {
-      display: block;
-      width: 100%;
-      height: 480px;
-      background: var(--canvas);
+      overflow: hidden;
     }
 
     .simulation {
@@ -113,13 +130,28 @@
       pointer-events: none;
     }
 
-    .controls { 
-      padding: 24px; 
+    #magnetCanvas {
+      display: block;
+      width: 100%;
+      height: 480px;
+      background: var(--canvas);
+      cursor: grab;
+      touch-action: none;
+    }
+
+    #magnetCanvas:active {
+      cursor: grabbing;
+    }
+
+    .controls {
+      padding: 24px;
       display: flex;
       flex-direction: column;
     }
 
-    .control { margin-bottom: 22px; }
+    .control {
+      margin-bottom: 20px;
+    }
 
     label {
       display: flex;
@@ -145,10 +177,26 @@
       border-radius: 2px;
     }
 
-    .actions {
+    select {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      background: var(--canvas);
+      color: var(--text);
+      font: inherit;
+      font-size: 0.88rem;
+      cursor: pointer;
+    }
+
+    select:focus {
+      outline: 1px solid #1a1a1a;
+    }
+
+    .buttons {
       display: flex;
       gap: 10px;
-      margin: 8px 0 24px;
+      margin: 8px 0 20px;
     }
 
     button {
@@ -156,7 +204,7 @@
       cursor: pointer;
       border: 1px solid #1a1a1a;
       border-radius: 2px;
-      padding: 10px 16px;
+      padding: 10px 14px;
       color: #ffffff;
       background: #1a1a1a;
       font: inherit;
@@ -165,11 +213,8 @@
       transition: opacity 0.15s;
     }
 
-    button:hover { opacity: 0.88; }
-
-    button.running {
-      background: #a82e2e;
-      border-color: #a82e2e;
+    button:hover {
+      opacity: 0.88;
     }
 
     button.secondary {
@@ -178,7 +223,9 @@
       background: #f7f7f4;
     }
 
-    button.secondary:hover { background: #ecece6; }
+    button.secondary:hover {
+      background: #ecece6;
+    }
 
     .checks {
       display: grid;
@@ -196,14 +243,17 @@
       color: var(--muted);
     }
 
-    .checks input { accent-color: #1a1a1a; margin-right: 8px; }
+    .checks input {
+      accent-color: #1a1a1a;
+      margin-right: 8px;
+    }
 
-    .readouts {
+    .readout {
       margin-top: 20px;
       padding-top: 16px;
     }
 
-    .readouts h3 {
+    .readout h3 {
       margin: 0 0 12px;
       font-family: "Georgia", "Times New Roman", serif;
       font-weight: 400;
@@ -211,20 +261,21 @@
       color: var(--text);
     }
 
-    .readouts p {
+    .readout p {
       display: flex;
       justify-content: space-between;
+      gap: 12px;
       margin: 8px 0;
       font-size: 0.86rem;
       color: var(--muted);
     }
 
-    .readouts strong { 
+    .readout strong {
       color: var(--text);
-      font-variant-numeric: tabular-nums; 
+      font-variant-numeric: tabular-nums;
     }
 
-    .formula {
+    .help {
       margin: 20px 0 0;
       padding-top: 12px;
       border-top: 1px dashed var(--border);
@@ -234,118 +285,130 @@
     }
 
     @media (max-width: 850px) {
-      header { flex-direction: column; gap: 16px; }
-      .layout { grid-template-columns: 1fr; }
-      #simCanvas { height: 360px; }
+      header {
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      #magnetCanvas {
+        height: 360px;
+      }
     }
   </style>
 </head>
+
 <body>
   <div class="page">
     <header>
       <div>
-        <h1>Gas Laws Lab</h1>
-        <p class="subtitle">Adjust temperature, volume, and particle count to observe kinetic gas behavior and pressure changes.</p>
+        <span class="badge">Student Project</span>
+        <h1>Magnet & Compass</h1>
+        <p class="subtitle">
+          Drag the bar magnet and observe closed magnetic-field loops and compass behavior.
+        </p>
       </div>
+
       <a class="back" href="index.html">← All Simulations</a>
     </header>
 
     <main class="layout">
       <section class="panel simulation">
-        <canvas id="simCanvas"></canvas>
-        <div class="canvas-label">Ideal Gas Model</div>
+        <canvas id="magnetCanvas"></canvas>
+        <div class="canvas-label">Dipole Model</div>
       </section>
 
       <aside class="panel controls">
         <h2>Controls</h2>
 
         <div class="control">
-          <label for="temperature">
-            <span>Temperature</span>
-            <output id="temperatureOut">300 K</output>
+          <label for="strengthSlider">
+            <span>Magnet Strength</span>
+            <output id="strengthValue">1.0</output>
           </label>
-          <input id="temperature" type="range" min="100" max="800" value="300" step="10">
+          <input id="strengthSlider" type="range" min="0.2" max="3" value="1" step="0.1">
         </div>
 
         <div class="control">
-          <label for="volume">
-            <span>Container Volume</span>
-            <output id="volumeOut">5.0 L</output>
+          <label for="rotationSlider">
+            <span>Magnet Rotation</span>
+            <output id="rotationValue">0°</output>
           </label>
-          <input id="volume" type="range" min="2" max="10" value="5" step="0.5">
+          <input id="rotationSlider" type="range" min="0" max="360" value="0" step="1">
         </div>
 
         <div class="control">
-          <label for="particleCount">
-            <span>Number of Particles</span>
-            <output id="particleCountOut">40</output>
+          <label for="speedSelect">
+            <span>Simulation Speed</span>
           </label>
-          <input id="particleCount" type="range" min="10" max="100" value="40" step="5">
+          <select id="speedSelect">
+            <option value="1">1x (Normal)</option>
+            <option value="2">2x</option>
+            <option value="4">4x</option>
+            <option value="8">8x</option>
+            <option value="10">10x</option>
+          </select>
         </div>
 
-        <div class="actions">
-          <button id="toggleButton" type="button">Start</button>
-          <button id="resetButton" class="secondary" type="button">Reset</button>
+        <div class="buttons">
+          <button id="centreButton" type="button">Centre Magnet</button>
+          <button id="flipButton" class="secondary" type="button">Flip Poles</button>
         </div>
 
         <div class="checks">
-          <label><input id="vectors" type="checkbox" checked> Show velocity vectors</label>
-          <label><input id="trails" type="checkbox"> Show trails</label>
-          <label><input id="meter" type="checkbox" checked> Show pressure gauge</label>
+          <label>
+            <input id="loopsToggle" type="checkbox" checked> Show field loops
+          </label>
+          <label>
+            <input id="compassToggle" type="checkbox" checked> Show compasses
+          </label>
+          <label>
+            <input id="arrowToggle" type="checkbox" checked> Show field vectors
+          </label>
         </div>
 
-        <section class="readouts">
-          <h3>Readouts</h3>
-          <p><span>Pressure</span><strong id="pressureOut">0.00 kPa</strong></p>
-          <p><span>Average Speed</span><strong id="speedOut">0.00 units/s</strong></p>
-          <p><span>Active Particles</span><strong id="countOut">0</strong></p>
-          <p><span>Relative PV / NT</span><strong id="ratioOut">1.00</strong></p>
+        <section class="readout">
+          <h3>Field Readouts</h3>
+          <p><span>Center Direction</span><strong id="directionValue">0°</strong></p>
+          <p><span>Center Magnitude</span><strong id="magnitudeValue">0.00</strong></p>
+          <p><span>North Pole Pos</span><strong id="northValue">Left</strong></p>
         </section>
 
-        <p class="formula">
-          Ideal Gas Relation: P ∝ NT / V
+        <p class="help">
+          Outside the magnet, field vectors travel N → S. Inside the magnet, return loops run S → N to maintain closed continuous field loops.
         </p>
       </aside>
     </main>
   </div>
 
   <script>
-    const canvas = document.getElementById("simCanvas");
+    const canvas = document.getElementById("magnetCanvas");
     const ctx = canvas.getContext("2d");
 
-    const temperatureInput = document.getElementById("temperature");
-    const volumeInput = document.getElementById("volume");
-    const particleCountInput = document.getElementById("particleCount");
-    const vectorsInput = document.getElementById("vectors");
-    const trailsInput = document.getElementById("trails");
-    const meterInput = document.getElementById("meter");
+    const strengthSlider = document.getElementById("strengthSlider");
+    const rotationSlider = document.getElementById("rotationSlider");
+    const speedSelect = document.getElementById("speedSelect");
 
-    const temperatureOut = document.getElementById("temperatureOut");
-    const volumeOut = document.getElementById("volumeOut");
-    const particleCountOut = document.getElementById("particleCountOut");
+    const loopsToggle = document.getElementById("loopsToggle");
+    const compassToggle = document.getElementById("compassToggle");
+    const arrowToggle = document.getElementById("arrowToggle");
 
-    const pressureOut = document.getElementById("pressureOut");
-    const speedOut = document.getElementById("speedOut");
-    const countOut = document.getElementById("countOut");
-    const ratioOut = document.getElementById("ratioOut");
+    const strengthValue = document.getElementById("strengthValue");
+    const rotationValue = document.getElementById("rotationValue");
+    const directionValue = document.getElementById("directionValue");
+    const magnitudeValue = document.getElementById("magnitudeValue");
+    const northValue = document.getElementById("northValue");
 
-    const toggleButton = document.getElementById("toggleButton");
-    const resetButton = document.getElementById("resetButton");
+    let magnetX = 0.50;
+    let magnetY = 0.50;
+    let flipped = false;
+    let dragging = false;
+    let timeStep = 0;
 
-    const PARTICLE_RADIUS = 4;
-    let particles = [];
-    let isRunning = false;
-    let lastTime = null;
-
-    function getValues() {
-      return {
-        temperature: Number(temperatureInput.value),
-        volume: Number(volumeInput.value),
-        particleCount: Number(particleCountInput.value)
-      };
-    }
-
-    function getCanvasSize() {
+    function resizeCanvas() {
       const ratio = window.devicePixelRatio || 1;
       const rect = canvas.getBoundingClientRect();
 
@@ -360,179 +423,281 @@
       };
     }
 
-    function getContainer(v, width, height) {
-      const top = height * 0.16;
-      const bottom = height * 0.84;
-
-      const minWidth = width * 0.30;
-      const maxWidth = width * 0.72;
-
-      const fraction = (v.volume - 2) / 8;
-      const containerWidth = minWidth + fraction * (maxWidth - minWidth);
-
+    function getSettings() {
       return {
-        x: (width - containerWidth) / 2,
-        y: top,
-        width: containerWidth,
-        height: bottom - top
+        strength: Number(strengthSlider.value),
+        angle: Number(rotationSlider.value) * Math.PI / 180,
+        speed: Number(speedSelect.value)
       };
     }
 
-    function targetSpeed(temperature) {
-      return 100 + Math.sqrt(temperature) * 6.0;
+    function getPoles(width, height, settings) {
+      const centreX = magnetX * width;
+      const centreY = magnetY * height;
+      const halfLength = 64;
+
+      const axisX = Math.cos(settings.angle);
+      const axisY = Math.sin(settings.angle);
+
+      let north = {
+        x: centreX - axisX * halfLength,
+        y: centreY - axisY * halfLength
+      };
+
+      let south = {
+        x: centreX + axisX * halfLength,
+        y: centreY + axisY * halfLength
+      };
+
+      if (flipped) {
+        const savedNorth = north;
+        north = south;
+        south = savedNorth;
+      }
+
+      return { centreX, centreY, axisX, axisY, north, south };
     }
 
-    function createParticle(box, speed) {
-      const angle = Math.random() * Math.PI * 2;
-      const spd = speed * (0.8 + Math.random() * 0.4);
+    function fieldAt(x, y, width, height, settings) {
+      const poles = getPoles(width, height, settings);
+
+      const nx = x - poles.north.x;
+      const ny = y - poles.north.y;
+
+      const sx = x - poles.south.x;
+      const sy = y - poles.south.y;
+
+      const northR2 = nx * nx + ny * ny + 700;
+      const southR2 = sx * sx + sy * sy + 700;
+
+      const northR = Math.sqrt(northR2);
+      const southR = Math.sqrt(southR2);
+
+      const bx =
+        settings.strength * nx / (northR2 * northR) -
+        settings.strength * sx / (southR2 * southR);
+
+      const by =
+        settings.strength * ny / (northR2 * northR) -
+        settings.strength * sy / (southR2 * southR);
 
       return {
-        x: box.x + PARTICLE_RADIUS + 5 + Math.random() * Math.max(1, box.width - 2 * PARTICLE_RADIUS - 10),
-        y: box.y + PARTICLE_RADIUS + 5 + Math.random() * Math.max(1, box.height - 2 * PARTICLE_RADIUS - 10),
-        vx: Math.cos(angle) * spd,
-        vy: Math.sin(angle) * spd,
-        trail: []
+        x: bx,
+        y: by,
+        magnitude: Math.hypot(bx, by)
       };
     }
 
-    function resetParticles() {
-      const size = getCanvasSize();
-      const v = getValues();
-      const box = getContainer(v, size.width, size.height);
-      const speed = targetSpeed(v.temperature);
-
-      particles = [];
-      for (let i = 0; i < v.particleCount; i++) {
-        particles.push(createParticle(box, speed));
-      }
-    }
-
-    function syncParticles(v, box) {
-      const target = v.particleCount;
-      const speed = targetSpeed(v.temperature);
-
-      while (particles.length < target) {
-        particles.push(createParticle(box, speed));
-      }
-      while (particles.length > target) {
-        particles.pop();
-      }
-
-      // Constrain inside container boundary on resize/volume changes
-      const minX = box.x + PARTICLE_RADIUS + 1;
-      const maxX = box.x + box.width - PARTICLE_RADIUS - 1;
-      const minY = box.y + PARTICLE_RADIUS + 1;
-      const maxY = box.y + box.height - PARTICLE_RADIUS - 1;
-
-      particles.forEach(p => {
-        if (p.x < minX) p.x = minX;
-        if (p.x > maxX) p.x = maxX;
-        if (p.y < minY) p.y = minY;
-        if (p.y > maxY) p.y = maxY;
-      });
-    }
-
-    function updateParticles(delta, v, box) {
-      if (!isRunning) return;
-
-      const baseSpeed = targetSpeed(v.temperature);
-
-      const minX = box.x + PARTICLE_RADIUS;
-      const maxX = box.x + box.width - PARTICLE_RADIUS;
-      const minY = box.y + PARTICLE_RADIUS;
-      const maxY = box.y + box.height - PARTICLE_RADIUS;
-
-      // Split physics calculations into 8 sub-steps to eliminate tunneling/sticking
-      const SUB_STEPS = 8;
-      const subDelta = delta / SUB_STEPS;
-
-      for (let step = 0; step < SUB_STEPS; step++) {
-        particles.forEach(p => {
-          // Adjust velocity towards current temperature target speed
-          const currentSpeed = Math.hypot(p.vx, p.vy);
-          if (currentSpeed > 0.001) {
-            const factor = baseSpeed / currentSpeed;
-            p.vx += (p.vx * factor - p.vx) * 0.02;
-            p.vy += (p.vy * factor - p.vy) * 0.02;
-          } else {
-            p.vx = (Math.random() > 0.5 ? 1 : -1) * baseSpeed * 0.7;
-            p.vy = (Math.random() > 0.5 ? 1 : -1) * baseSpeed * 0.7;
-          }
-
-          p.x += p.vx * subDelta;
-          p.y += p.vy * subDelta;
-
-          // Absolute Directional Wall Checks
-          // (Sets explicit positive/negative velocity instead of toggling)
-          if (p.x <= minX) {
-            p.x = minX;
-            if (p.vx < 0) p.vx = Math.abs(p.vx);
-          } else if (p.x >= maxX) {
-            p.x = maxX;
-            if (p.vx > 0) p.vx = -Math.abs(p.vx);
-          }
-
-          if (p.y <= minY) {
-            p.y = minY;
-            if (p.vy < 0) p.vy = Math.abs(p.vy);
-          } else if (p.y >= maxY) {
-            p.y = maxY;
-            if (p.vy > 0) p.vy = -Math.abs(p.vy);
-          }
-        });
-      }
-
-      // Record trail points once per full frame update
-      particles.forEach(p => {
-        if (trailsInput.checked) {
-          p.trail.push({ x: p.x, y: p.y });
-          if (p.trail.length > 15) p.trail.shift();
-        } else {
-          p.trail = [];
-        }
-      });
-    }
-
-    function drawArrow(ctx, fromX, fromY, toX, toY, color) {
-      const headLength = 5;
-      const dx = toX - fromX;
-      const dy = toY - fromY;
-      const angle = Math.atan2(dy, dx);
-      
-      if (Math.hypot(dx, dy) < 2) return;
+    function drawArrow(x1, y1, x2, y2, color, width = 1.2, head = 5) {
+      const angle = Math.atan2(y2 - y1, x2 - x1);
 
       ctx.strokeStyle = color;
-      ctx.fillStyle = color;
-      ctx.lineWidth = 1.2;
-
+      ctx.lineWidth = width;
       ctx.beginPath();
-      ctx.moveTo(fromX, fromY);
-      ctx.lineTo(toX, toY);
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
       ctx.stroke();
 
+      ctx.fillStyle = color;
       ctx.beginPath();
-      ctx.moveTo(toX, toY);
-      ctx.lineTo(toX - headLength * Math.cos(angle - Math.PI / 6), toY - headLength * Math.sin(angle - Math.PI / 6));
-      ctx.lineTo(toX - headLength * Math.cos(angle + Math.PI / 6), toY - headLength * Math.sin(angle + Math.PI / 6));
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(
+        x2 - head * Math.cos(angle - Math.PI / 6),
+        y2 - head * Math.sin(angle - Math.PI / 6)
+      );
+      ctx.lineTo(
+        x2 - head * Math.cos(angle + Math.PI / 6),
+        y2 - head * Math.sin(angle + Math.PI / 6)
+      );
       ctx.closePath();
       ctx.fill();
     }
 
-    function draw(v, box, width, height) {
-      const pressure = isRunning ? (0.004 * v.particleCount * v.temperature / v.volume) : 0;
+    function cubicPoint(a, b, c, d, t) {
+      const u = 1 - t;
 
-      const averageSpeed = isRunning ? (
-        particles.reduce((total, p) => total + Math.hypot(p.vx, p.vy), 0) / Math.max(particles.length, 1)
-      ) : 0;
+      return {
+        x: u * u * u * a.x + 3 * u * u * t * b.x + 3 * u * t * t * c.x + t * t * t * d.x,
+        y: u * u * u * a.y + 3 * u * u * t * b.y + 3 * u * t * t * c.y + t * t * t * d.y
+      };
+    }
 
-      temperatureOut.textContent = `${v.temperature.toFixed(0)} K`;
-      volumeOut.textContent = `${v.volume.toFixed(1)} L`;
-      particleCountOut.textContent = `${v.particleCount}`;
+    function cubicTangent(a, b, c, d, t) {
+      const u = 1 - t;
 
-      pressureOut.textContent = `${pressure.toFixed(2)} kPa`;
-      speedOut.textContent = `${averageSpeed.toFixed(1)} units/s`;
-      countOut.textContent = particles.length;
-      ratioOut.textContent = "1.00";
+      return {
+        x: 3 * u * u * (b.x - a.x) + 6 * u * t * (c.x - b.x) + 3 * t * t * (d.x - c.x),
+        y: 3 * u * u * (b.y - a.y) + 6 * u * t * (c.y - b.y) + 3 * t * t * (d.y - c.y)
+      };
+    }
+
+    function drawFieldLoop(north, south, bend, settings) {
+      const dx = south.x - north.x;
+      const dy = south.y - north.y;
+      const distance = Math.hypot(dx, dy) || 1;
+
+      const perpendicularX = -dy / distance;
+      const perpendicularY = dx / distance;
+
+      const controlOne = {
+        x: north.x + dx * 0.25 + perpendicularX * bend,
+        y: north.y + dy * 0.25 + perpendicularY * bend
+      };
+
+      const controlTwo = {
+        x: north.x + dx * 0.75 + perpendicularX * bend,
+        y: north.y + dy * 0.75 + perpendicularY * bend
+      };
+
+      /* Exterior field: N → S */
+      ctx.strokeStyle = "rgba(58, 130, 92, 0.65)";
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(north.x, north.y);
+      ctx.bezierCurveTo(
+        controlOne.x, controlOne.y,
+        controlTwo.x, controlTwo.y,
+        south.x, south.y
+      );
+      ctx.stroke();
+
+      /* Animated direction flow along loop based on multiplier speed */
+      const loopSpeed = (timeStep * 0.005 * settings.speed) % 1;
+      const tPos = (0.5 + loopSpeed) % 1;
+
+      const midpoint = cubicPoint(north, controlOne, controlTwo, south, tPos);
+      const tangent = cubicTangent(north, controlOne, controlTwo, south, tPos);
+      const tangentLength = Math.hypot(tangent.x, tangent.y) || 1;
+
+      drawArrow(
+        midpoint.x - tangent.x / tangentLength * 6,
+        midpoint.y - tangent.y / tangentLength * 6,
+        midpoint.x + tangent.x / tangentLength * 6,
+        midpoint.y + tangent.y / tangentLength * 6,
+        "#3a825c",
+        1.5,
+        5
+      );
+
+      /* Interior return path: S → N */
+      ctx.strokeStyle = "rgba(43, 92, 143, 0.3)";
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 4]);
+      ctx.beginPath();
+      ctx.moveTo(south.x, south.y);
+      ctx.lineTo(north.x, north.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    function drawFieldLoops(width, height, settings) {
+      const poles = getPoles(width, height, settings);
+      const base = Math.min(width, height) * 0.085;
+
+      const bends = [
+        -base * 0.70, -base * 1.20, -base * 1.85, -base * 2.55, -base * 3.25,
+        base * 0.70, base * 1.20, base * 1.85, base * 2.55, base * 3.25
+      ];
+
+      bends.forEach(bend => {
+        drawFieldLoop(poles.north, poles.south, bend, settings);
+      });
+    }
+
+    function drawFieldArrows(width, height, settings) {
+      const spacing = 48;
+
+      for (let x = spacing / 2; x < width; x += spacing) {
+        for (let y = spacing / 2; y < height; y += spacing) {
+          const field = fieldAt(x, y, width, height, settings);
+          if (field.magnitude < 0.000001) continue;
+
+          const length = 12;
+
+          drawArrow(
+            x,
+            y,
+            x + field.x / field.magnitude * length,
+            y + field.y / field.magnitude * length,
+            "rgba(43, 92, 143, 0.45)",
+            1,
+            3.5
+          );
+        }
+      }
+    }
+
+    function drawCompass(x, y, field) {
+      if (field.magnitude < 0.000001) return;
+
+      const angle = Math.atan2(field.y, field.x);
+
+      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = "rgba(112, 112, 112, 0.5)";
+      ctx.lineWidth = 1;
+
+      ctx.beginPath();
+      ctx.arc(x, y, 9, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      /* Red end points along B field */
+      drawArrow(
+        x - Math.cos(angle) * 6,
+        y - Math.sin(angle) * 6,
+        x + Math.cos(angle) * 6,
+        y + Math.sin(angle) * 6,
+        "#d93838",
+        1.8,
+        3.5
+      );
+    }
+
+    function drawCompasses(width, height, settings) {
+      const spacing = 80;
+
+      for (let x = spacing / 2; x < width; x += spacing) {
+        for (let y = spacing / 2; y < height; y += spacing) {
+          drawCompass(x, y, fieldAt(x, y, width, height, settings));
+        }
+      }
+    }
+
+    function drawMagnet(width, height, settings) {
+      const poles = getPoles(width, height, settings);
+      const length = 128;
+      const thickness = 34;
+
+      ctx.save();
+      ctx.translate(poles.centreX, poles.centreY);
+      ctx.rotate(settings.angle);
+
+      const leftIsNorth = !flipped;
+
+      ctx.fillStyle = leftIsNorth ? "#d93838" : "#2b5c8f";
+      ctx.fillRect(-length / 2, -thickness / 2, length / 2, thickness);
+
+      ctx.fillStyle = leftIsNorth ? "#2b5c8f" : "#d93838";
+      ctx.fillRect(0, -thickness / 2, length / 2, thickness);
+
+      ctx.strokeStyle = "#1a1a1a";
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(-length / 2, -thickness / 2, length, thickness);
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 14px system-ui, -apple-system";
+
+      ctx.fillText(leftIsNorth ? "N" : "S", -36, 5);
+      ctx.fillText(leftIsNorth ? "S" : "N", 26, 5);
+
+      ctx.restore();
+    }
+
+    function render() {
+      const canvasSize = resizeCanvas();
+      const width = canvasSize.width;
+      const height = canvasSize.height;
+      const settings = getSettings();
 
       ctx.clearRect(0, 0, width, height);
 
@@ -554,128 +719,91 @@
         ctx.stroke();
       }
 
-      // Container Box
-      ctx.fillStyle = "#ffffff";
-      ctx.fillRect(box.x, box.y, box.width, box.height);
-
-      ctx.strokeStyle = "#1a1a1a";
-      ctx.lineWidth = 2;
-      ctx.strokeRect(box.x, box.y, box.width, box.height);
-
-      // Render Trails
-      if (trailsInput.checked && isRunning) {
-        particles.forEach(p => {
-          if (p.trail.length < 2) return;
-
-          ctx.strokeStyle = "rgba(43, 92, 143, 0.25)";
-          ctx.lineWidth = 1;
-          ctx.beginPath();
-
-          p.trail.forEach((pt, index) => {
-            if (index === 0) ctx.moveTo(pt.x, pt.y);
-            else ctx.lineTo(pt.x, pt.y);
-          });
-          ctx.stroke();
-        });
+      if (loopsToggle.checked) {
+        drawFieldLoops(width, height, settings);
       }
 
-      // Render Particles & Velocity Vectors
-      particles.forEach(p => {
-        ctx.fillStyle = "#1a1a1a";
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, PARTICLE_RADIUS, 0, Math.PI * 2);
-        ctx.fill();
-
-        if (vectorsInput.checked && isRunning) {
-          const vectorScale = 0.1;
-          const endX = p.x + p.vx * vectorScale;
-          const endY = p.y + p.vy * vectorScale;
-          drawArrow(ctx, p.x, p.y, endX, endY, "#2b5c8f");
-        }
-      });
-
-      // Render Pressure Gauge
-      if (meterInput.checked) {
-        const meterX = width * 0.06;
-        const meterY = height * 0.22;
-        const meterWidth = 16;
-        const meterHeight = height * 0.56;
-        const maximumPressure = 20;
-        const fill = Math.min(1, pressure / maximumPressure);
-
-        ctx.strokeStyle = "#1a1a1a";
-        ctx.lineWidth = 1.5;
-        ctx.strokeRect(meterX, meterY, meterWidth, meterHeight);
-
-        ctx.fillStyle = "#2b5c8f";
-        ctx.fillRect(
-          meterX + 2,
-          meterY + meterHeight * (1 - fill),
-          meterWidth - 4,
-          meterHeight * fill
-        );
-
-        ctx.fillStyle = "#707070";
-        ctx.font = "11px system-ui";
-        ctx.fillText("P", meterX + 4, meterY - 8);
-        ctx.fillText(`${pressure.toFixed(1)}`, meterX - 6, meterY + meterHeight + 18);
+      if (arrowToggle.checked) {
+        drawFieldArrows(width, height, settings);
       }
 
-      ctx.fillStyle = "#707070";
-      ctx.font = "12px system-ui";
-      ctx.fillText("GAS CONTAINER", box.x, box.y - 10);
+      if (compassToggle.checked) {
+        drawCompasses(width, height, settings);
+      }
+
+      drawMagnet(width, height, settings);
+
+      const centreField = fieldAt(
+        width / 2,
+        height / 2,
+        width,
+        height,
+        settings
+      );
+
+      strengthValue.textContent = settings.strength.toFixed(1);
+      rotationValue.textContent = `${Number(rotationSlider.value).toFixed(0)}°`;
+
+      directionValue.textContent =
+        `${(Math.atan2(centreField.y, centreField.x) * 180 / Math.PI).toFixed(0)}°`;
+
+      magnitudeValue.textContent = centreField.magnitude.toExponential(2);
+      northValue.textContent = flipped ? "Right" : "Left";
     }
 
-    function animate(timestamp) {
-      if (lastTime === null) lastTime = timestamp;
-
-      const delta = Math.min((timestamp - lastTime) / 1000, 0.033);
-      lastTime = timestamp;
-
-      const size = getCanvasSize();
-      const v = getValues();
-      const box = getContainer(v, size.width, size.height);
-
-      syncParticles(v, box);
-      updateParticles(delta, v, box);
-      draw(v, box, size.width, size.height);
-
+    function animate() {
+      timeStep += 1;
+      render();
       requestAnimationFrame(animate);
     }
 
-    toggleButton.addEventListener("click", () => {
-      isRunning = !isRunning;
-      if (isRunning) {
-        toggleButton.textContent = "Pause";
-        toggleButton.classList.add("running");
-      } else {
-        toggleButton.textContent = "Start";
-        toggleButton.classList.remove("running");
+    function pointerPosition(event) {
+      const rect = canvas.getBoundingClientRect();
+
+      return {
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top,
+        width: rect.width,
+        height: rect.height
+      };
+    }
+
+    canvas.addEventListener("pointerdown", event => {
+      const pointer = pointerPosition(event);
+      const currentX = magnetX * pointer.width;
+      const currentY = magnetY * pointer.height;
+
+      if (Math.hypot(pointer.x - currentX, pointer.y - currentY) < 95) {
+        dragging = true;
+        canvas.setPointerCapture(event.pointerId);
       }
     });
 
-    resetButton.addEventListener("click", () => {
-      isRunning = false;
-      toggleButton.textContent = "Start";
-      toggleButton.classList.remove("running");
-      resetParticles();
+    canvas.addEventListener("pointermove", event => {
+      if (!dragging) return;
+
+      const pointer = pointerPosition(event);
+
+      magnetX = Math.max(0.16, Math.min(0.84, pointer.x / pointer.width));
+      magnetY = Math.max(0.16, Math.min(0.84, pointer.y / pointer.height));
     });
 
-    [temperatureInput, volumeInput, particleCountInput].forEach(input => {
-      input.addEventListener("input", () => {
-        const size = getCanvasSize();
-        const v = getValues();
-        const box = getContainer(v, size.width, size.height);
-        syncParticles(v, box);
-      });
+    canvas.addEventListener("pointerup", () => { dragging = false; });
+    canvas.addEventListener("pointercancel", () => { dragging = false; });
+
+    centreButton.addEventListener("click", () => {
+      magnetX = 0.5;
+      magnetY = 0.5;
+      rotationSlider.value = 0;
+      flipped = false;
     });
 
-    window.addEventListener("resize", () => {
-      lastTime = null;
-      resetParticles();
+    flipButton.addEventListener("click", () => {
+      flipped = !flipped;
     });
 
-    resetParticles();
+    window.addEventListener("resize", render);
+
     requestAnimationFrame(animate);
   </script>
 </body>
