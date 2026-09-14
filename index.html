@@ -4,18 +4,23 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Physics Simulations</title>
+
+  <!-- Hand-drawn-ish fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+
   <style>
     :root {
-      --bg: #0e1322;
-      --panel: #141b2f;
-      --panel-2: #1a2340;
-      --border: #2a3759;
-      --text: #eef4ff;
-      --muted: #b6c2db;
-      --accent: #5aa3ff;
-      --accent-2: #5ce3b8;
-      --warm: #ffc86b;
-      --shadow: rgba(10, 14, 26, 0.55);
+      --bg: #f7f5f0;
+      --paper: #ffffff;
+      --ink: #2b2b2b;
+      --muted: #5a5a5a;
+      --border: #d8d3c7;
+      --accent: #ff6b6b;
+      --accent-2: #4ecdc4;
+      --accent-3: #ffd166;
+      --shadow: rgba(40, 30, 20, 0.12);
     }
 
     * {
@@ -28,24 +33,24 @@
 
     body {
       margin: 0;
-      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      color: var(--text);
+      font-family: "Nunito", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
       background:
-        radial-gradient(1200px 600px at 10% -10%, #1b2a55 0%, transparent 60%),
-        radial-gradient(900px 500px at 90% 10%, #1f2a4a 0%, transparent 60%),
+        radial-gradient(1200px 600px at 10% -10%, #fff7e6 0%, transparent 60%),
+        radial-gradient(900px 500px at 90% 10%, #f0efe9 0%, transparent 60%),
         var(--bg);
       line-height: 1.5;
     }
 
     .page {
-      width: min(1100px, calc(100% - 32px));
+      width: min(1060px, calc(100% - 32px));
       margin: auto;
     }
 
     /* HEADER */
 
     header {
-      padding: 56px 0 28px;
+      padding: 52px 0 22px;
     }
 
     .title-row {
@@ -58,20 +63,22 @@
 
     h1 {
       margin: 0;
-      font-size: clamp(2rem, 5vw, 3.2rem);
-      letter-spacing: 0.2px;
+      font-family: "Kalam", cursive;
+      font-size: clamp(2.2rem, 6vw, 3.6rem);
+      letter-spacing: 0.4px;
       line-height: 1.05;
+      color: var(--ink);
     }
 
     .subtitle {
-      margin: 10px 0 0;
+      margin: 8px 0 0;
       color: var(--muted);
       font-size: 1.05rem;
       max-width: 52ch;
     }
 
     .credit {
-      margin: 10px 0 0;
+      margin: 8px 0 0;
       color: var(--muted);
       font-size: 0.9rem;
     }
@@ -82,41 +89,46 @@
       gap: 8px;
       padding: 6px 10px;
       border-radius: 999px;
-      border: 1px solid var(--border);
-      background: linear-gradient(180deg, var(--panel), var(--panel-2));
+      border: 2px solid var(--border);
+      background: var(--paper);
       color: var(--muted);
       font-size: 0.82rem;
+      font-weight: 700;
       white-space: nowrap;
+      box-shadow: 2px 2px 0 rgba(0,0,0,0.06);
     }
 
     .badge .dot {
-      width: 8px;
-      height: 8px;
+      width: 9px;
+      height: 9px;
       border-radius: 50%;
       background: var(--accent-2);
-      box-shadow: 0 0 10px rgba(92, 227, 184, 0.5);
+      border: 2px solid var(--ink);
     }
 
     /* INTRO */
 
     .intro {
-      margin: 22px 0 26px;
+      margin: 20px 0 24px;
       padding: 16px 18px;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      background: linear-gradient(180deg, rgba(20, 27, 47, 0.9), rgba(20, 27, 47, 0.6));
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      background: var(--paper);
+      box-shadow: 3px 3px 0 rgba(0,0,0,0.06);
     }
 
     .intro h2 {
       margin: 0 0 6px;
-      font-size: 1.15rem;
-      color: var(--accent);
+      font-family: "Kalam", cursive;
+      font-size: 1.35rem;
+      color: var(--ink);
+      letter-spacing: 0.3px;
     }
 
     .intro p {
       margin: 0;
       color: var(--muted);
-      font-size: 0.95rem;
+      font-size: 0.96rem;
     }
 
     /* GRID */
@@ -131,49 +143,33 @@
     .card {
       position: relative;
       display: block;
-      min-height: 150px;
+      min-height: 155px;
       padding: 18px 18px 16px;
-      border: 1px solid var(--border);
-      border-radius: 14px;
+      border: 2px solid var(--border);
+      border-radius: 16px;
       color: inherit;
       text-decoration: none;
-      background:
-        linear-gradient(180deg, rgba(20, 27, 47, 0.95), rgba(20, 27, 47, 0.75));
-      box-shadow: 0 8px 24px var(--shadow);
+      background: var(--paper);
+      box-shadow: 3px 3px 0 var(--shadow);
       transition:
-        transform 160ms ease,
-        border-color 160ms ease,
-        box-shadow 160ms ease;
+        transform 140ms ease,
+        box-shadow 140ms ease,
+        border-color 140ms ease;
       overflow: hidden;
     }
 
-    .card::before {
-      content: "";
-      position: absolute;
-      inset: -2px;
-      border-radius: 16px;
-      padding: 2px;
-      background: linear-gradient(135deg, rgba(90, 163, 255, 0.35), transparent 60%);
-      -webkit-mask:
-        linear-gradient(#fff 0 0) content-box,
-        linear-gradient(#fff 0 0);
-      -webkit-mask-composite: xor;
-      mask-composite: exclude;
-      pointer-events: none;
-      opacity: 0.7;
-    }
-
     .card:hover {
-      transform: translateY(-3px);
-      border-color: rgba(90, 163, 255, 0.6);
-      box-shadow: 0 14px 34px rgba(10, 14, 26, 0.7);
+      transform: translateY(-3px) rotate(-0.4deg);
+      border-color: #cfc9bd;
+      box-shadow: 5px 5px 0 rgba(40, 30, 20, 0.14);
     }
 
     .card h3 {
-      margin: 0 0 6px;
-      font-size: 1.05rem;
-      color: var(--accent);
-      letter-spacing: 0.2px;
+      margin: 6px 0 6px;
+      font-family: "Kalam", cursive;
+      font-size: 1.2rem;
+      color: var(--ink);
+      letter-spacing: 0.3px;
     }
 
     .card p {
@@ -196,16 +192,17 @@
       align-items: center;
       gap: 6px;
       padding: 4px 8px;
-      border-radius: 8px;
-      background: rgba(90, 163, 255, 0.12);
-      color: var(--accent);
-      font-size: 0.8rem;
-      font-weight: 700;
-      letter-spacing: 0.3px;
+      border-radius: 999px;
+      background: rgba(255, 107, 107, 0.12);
+      color: #c03939;
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.4px;
+      border: 1.5px solid rgba(255, 107, 107, 0.35);
     }
 
     .tag .arrow {
-      transition: transform 160ms ease;
+      transition: transform 140ms ease;
     }
 
     .card:hover .tag .arrow {
@@ -213,17 +210,22 @@
     }
 
     .topic {
-      color: var(--warm);
-      font-size: 0.78rem;
-      font-weight: 700;
-      letter-spacing: 0.4px;
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(78, 205, 196, 0.15);
+      color: #2f8f86;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
       text-transform: uppercase;
+      border: 1.5px solid rgba(78, 205, 196, 0.45);
     }
 
     /* FOOTER */
 
     footer {
-      border-top: 1px solid var(--border);
+      border-top: 2px dashed var(--border);
       color: var(--muted);
       padding: 22px 0 44px;
       font-size: 0.88rem;
@@ -274,7 +276,7 @@
 
       <section class="grid">
         <a class="card" href="wave-on-a-string.html">
-          <div class="topic">Waves</div>
+          <span class="topic">Waves</span>
           <h3>Wave on a String</h3>
           <p>Change frequency, amplitude, tension, damping, and the end boundary. Watch the wave evolve in real time.</p>
           <div class="card-footer">
@@ -283,7 +285,7 @@
         </a>
 
         <a class="card" href="projectile-motion.html">
-          <div class="topic">Mechanics</div>
+          <span class="topic">Mechanics</span>
           <h3>Projectile Motion</h3>
           <p>Launch objects and investigate trajectories, gravity, and air resistance.</p>
           <div class="card-footer">
@@ -292,7 +294,7 @@
         </a>
 
         <a class="card" href="springs-and-masses.html">
-          <div class="topic">Oscillations</div>
+          <span class="topic">Oscillations</span>
           <h3>Springs & Masses</h3>
           <p>Explore Hooke’s law, resonance, damping, and mechanical energy.</p>
           <div class="card-footer">
@@ -301,7 +303,7 @@
         </a>
 
         <a class="card" href="simple-circuits.html">
-          <div class="topic">Electricity</div>
+          <span class="topic">Electricity</span>
           <h3>Simple Circuits</h3>
           <p>Experiment with voltage, resistance, capacitance, and current.</p>
           <div class="card-footer">
@@ -310,7 +312,7 @@
         </a>
 
         <a class="card" href="orbital-motion.html">
-          <div class="topic">Gravity</div>
+          <span class="topic">Gravity</span>
           <h3>Orbital Motion</h3>
           <p>Explore gravity, orbital speed, and paths around a central body.</p>
           <div class="card-footer">
@@ -319,7 +321,7 @@
         </a>
 
         <a class="card" href="pendulum-lab.html">
-          <div class="topic">Oscillations</div>
+          <span class="topic">Oscillations</span>
           <h3>Pendulum Lab</h3>
           <p>Explore periodic motion by changing pendulum length, gravity, release angle, and damping.</p>
           <div class="card-footer">
@@ -328,7 +330,7 @@
         </a>
 
         <a class="card" href="forces-and-friction.html">
-          <div class="topic">Mechanics</div>
+          <span class="topic">Mechanics</span>
           <h3>Forces & Friction</h3>
           <p>Push a block and explore applied force, friction, net force, and acceleration.</p>
           <div class="card-footer">
@@ -337,7 +339,7 @@
         </a>
 
         <a class="card" href="collision-lab.html">
-          <div class="topic">Mechanics</div>
+          <span class="topic">Mechanics</span>
           <h3>Collision Lab</h3>
           <p>Investigate elastic and inelastic collisions, momentum conservation, and kinetic energy.</p>
           <div class="card-footer">
@@ -346,7 +348,7 @@
         </a>
 
         <a class="card" href="electric-fields.html">
-          <div class="topic">Electricity</div>
+          <span class="topic">Electricity</span>
           <h3>Electric Fields & Charges</h3>
           <p>Place positive and negative charges, visualize the electric field, and measure force on a test charge.</p>
           <div class="card-footer">
@@ -355,7 +357,7 @@
         </a>
 
         <a class="card" href="ray-optics.html">
-          <div class="topic">Optics</div>
+          <span class="topic">Optics</span>
           <h3>Ray Optics</h3>
           <p>Explore converging and diverging lenses, principal rays, focal length, and real or virtual images.</p>
           <div class="card-footer">
@@ -364,7 +366,7 @@
         </a>
 
         <a class="card" href="buoyancy-lab.html">
-          <div class="topic">Fluids</div>
+          <span class="topic">Fluids</span>
           <h3>Buoyancy Lab</h3>
           <p>Explore floating and sinking by changing object density, volume, fluid density, and gravity.</p>
           <div class="card-footer">
@@ -373,7 +375,7 @@
         </a>
 
         <a class="card" href="gas-laws.html">
-          <div class="topic">Thermal</div>
+          <span class="topic">Thermal</span>
           <h3>Gas Laws Lab</h3>
           <p>Change temperature, volume, and particle count to explore gas pressure and particle motion.</p>
           <div class="card-footer">
@@ -382,7 +384,7 @@
         </a>
 
         <a class="card" href="magnet-and-compass.html">
-          <div class="topic">Magnetism</div>
+          <span class="topic">Magnetism</span>
           <h3>Magnet & Compass</h3>
           <p>Move a bar magnet, change its strength, and observe compass needles align with the magnetic field.</p>
           <div class="card-footer">
