@@ -12,15 +12,15 @@
 
   <style>
     :root {
-      --bg: #f7f5f0;
+      --bg: #f6f3ec;
       --paper: #ffffff;
       --ink: #2b2b2b;
       --muted: #5a5a5a;
-      --border: #d8d3c7;
-      --accent: #ff6b6b;
-      --accent-2: #4ecdc4;
-      --accent-3: #ffd166;
-      --shadow: rgba(40, 30, 20, 0.12);
+      --border: #dcd6ca;
+      --accent: #e05d5d;
+      --accent-2: #2fb39a;
+      --accent-3: #f4c542;
+      --shadow: rgba(40, 30, 20, 0.10);
     }
 
     * {
@@ -36,8 +36,8 @@
       font-family: "Nunito", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       color: var(--ink);
       background:
-        radial-gradient(1200px 600px at 10% -10%, #fff7e6 0%, transparent 60%),
-        radial-gradient(900px 500px at 90% 10%, #f0efe9 0%, transparent 60%),
+        radial-gradient(1200px 600px at 10% -10%, #fff7e8 0%, transparent 60%),
+        radial-gradient(900px 500px at 90% 10%, #f3f0e8 0%, transparent 60%),
         var(--bg);
       line-height: 1.5;
     }
@@ -135,15 +135,15 @@
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 14px;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
       padding: 10px 0 56px;
     }
 
     .card {
       position: relative;
       display: block;
-      min-height: 155px;
+      min-height: 190px;
       padding: 18px 18px 16px;
       border: 2px solid var(--border);
       border-radius: 16px;
@@ -160,12 +160,12 @@
 
     .card:hover {
       transform: translateY(-3px) rotate(-0.4deg);
-      border-color: #cfc9bd;
-      box-shadow: 5px 5px 0 rgba(40, 30, 20, 0.14);
+      border-color: #d3cdbf;
+      box-shadow: 5px 5px 0 rgba(40, 30, 20, 0.12);
     }
 
     .card h3 {
-      margin: 6px 0 6px;
+      margin: 6px 0 4px;
       font-family: "Kalam", cursive;
       font-size: 1.2rem;
       color: var(--ink);
@@ -179,12 +179,26 @@
       line-height: 1.45;
     }
 
+    .sample {
+      margin: 10px 0 8px;
+      border: 1.5px dashed var(--border);
+      border-radius: 10px;
+      background: #faf8f3;
+      overflow: hidden;
+    }
+
+    .sample svg {
+      display: block;
+      width: 100%;
+      height: 80px;
+    }
+
     .card-footer {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 10px;
-      margin-top: 12px;
+      margin-top: 10px;
     }
 
     .tag {
@@ -193,12 +207,12 @@
       gap: 6px;
       padding: 4px 8px;
       border-radius: 999px;
-      background: rgba(255, 107, 107, 0.12);
-      color: #c03939;
+      background: rgba(224, 93, 93, 0.12);
+      color: #b03636;
       font-size: 0.78rem;
       font-weight: 800;
       letter-spacing: 0.4px;
-      border: 1.5px solid rgba(255, 107, 107, 0.35);
+      border: 1.5px solid rgba(224, 93, 93, 0.35);
     }
 
     .tag .arrow {
@@ -213,13 +227,13 @@
       display: inline-block;
       padding: 3px 8px;
       border-radius: 999px;
-      background: rgba(78, 205, 196, 0.15);
-      color: #2f8f86;
+      background: rgba(47, 179, 154, 0.15);
+      color: #267a6b;
       font-size: 0.72rem;
       font-weight: 800;
       letter-spacing: 0.5px;
       text-transform: uppercase;
-      border: 1.5px solid rgba(78, 205, 196, 0.45);
+      border: 1.5px solid rgba(47, 179, 154, 0.45);
     }
 
     /* FOOTER */
@@ -275,117 +289,356 @@
       </section>
 
       <section class="grid">
+        <!-- WAVE -->
         <a class="card" href="wave-on-a-string.html">
           <span class="topic">Waves</span>
           <h3>Wave on a String</h3>
+
+          <div class="sample">
+            <svg viewBox="0 0 300 80" preserveAspectRatio="none">
+              <path
+                d="M0 40
+                   C 30 10, 60 10, 90 40
+                   C 120 70, 150 70, 180 40
+                   C 210 10, 240 10, 270 40
+                   L 300 40"
+                fill="none"
+                stroke="#2fb39a"
+                stroke-width="3"
+              />
+              <circle cx="0" cy="40" r="3.5" fill="#2fb39a" />
+              <circle cx="300" cy="40" r="3.5" fill="#2fb39a" />
+            </svg>
+          </div>
+
           <p>Change frequency, amplitude, tension, damping, and the end boundary. Watch the wave evolve in real time.</p>
           <div class="card-footer">
             <span class="tag">Open <span class="arrow">→</span></span>
           </div>
         </a>
 
+        <!-- PROJECTILE -->
         <a class="card" href="projectile-motion.html">
           <span class="topic">Mechanics</span>
           <h3>Projectile Motion</h3>
+
+          <div class="sample">
+            <svg viewBox="0 0 300 80" preserveAspectRatio="none">
+              <!-- ground -->
+              <line x1="0" y1="70" x2="300" y2="70" stroke="#dcd6ca" stroke-width="2" />
+              <!-- trajectory -->
+              <path
+                d="M10 70
+                   C 60 20, 140 20, 190 50
+                   C 230 65, 260 68, 290 70"
+                fill="none"
+                stroke="#e05d5d"
+                stroke-width="3"
+                stroke-linecap="round"
+              />
+              <!-- ball -->
+              <circle cx="60" cy="35" r="4" fill="#e05d5d" />
+            </svg>
+          </div>
+
           <p>Launch objects and investigate trajectories, gravity, and air resistance.</p>
           <div class="card-footer">
             <span class="tag">Open <span class="arrow">→</span></span>
           </div>
         </a>
 
+        <!-- SPRING -->
         <a class="card" href="springs-and-masses.html">
           <span class="topic">Oscillations</span>
           <h3>Springs & Masses</h3>
+
+          <div class="sample">
+            <svg viewBox="0 0 300 80" preserveAspectRatio="none">
+              <!-- ceiling -->
+              <line x1="20" y1="10" x2="280" y2="10" stroke="#dcd6ca" stroke-width="2" />
+              <!-- spring -->
+              <path
+                d="M150 10
+                   L 145 20
+                   L 155 25
+                   L 145 30
+                   L 155 35
+                   L 145 40
+                   L 155 45
+                   L 150 55"
+                fill="none"
+                stroke="#f4c542"
+                stroke-width="3"
+                stroke-linejoin="round"
+              />
+              <!-- mass -->
+              <rect x="135" y="55" width="30" height="20" rx="4" fill="#f4c542" />
+            </svg>
+          </div>
+
           <p>Explore Hooke’s law, resonance, damping, and mechanical energy.</p>
           <div class="card-footer">
             <span class="tag">Open <span class="arrow">→</span></span>
           </div>
         </a>
 
+        <!-- CIRCUIT -->
         <a class="card" href="simple-circuits.html">
           <span class="topic">Electricity</span>
           <h3>Simple Circuits</h3>
+
+          <div class="sample">
+            <svg viewBox="0 0 300 80" preserveAspectRatio="none">
+              <!-- wire loop -->
+              <path
+                d="M30 40
+                   L 30 25
+                   L 120 25
+                   L 120 55
+                   L 220 55
+                   L 220 25
+                   L 270 25
+                   L 270 40"
+                fill="none"
+                stroke="#2b2b2b"
+                stroke-width="2.5"
+                stroke-linejoin="round"
+              />
+              <!-- battery -->
+              <rect x="105" y="20" width="30" height="10" fill="#2fb39a" stroke="#2b2b2b" stroke-width="2" />
+              <!-- bulb -->
+              <circle cx="245" cy="40" r="8" fill="#f4c542" stroke="#2b2b2b" stroke-width="2" />
+            </svg>
+          </div>
+
           <p>Experiment with voltage, resistance, capacitance, and current.</p>
           <div class="card-footer">
             <span class="tag">Open <span class="arrow">→</span></span>
           </div>
         </a>
 
+        <!-- ORBIT -->
         <a class="card" href="orbital-motion.html">
           <span class="topic">Gravity</span>
           <h3>Orbital Motion</h3>
+
+          <div class="sample">
+            <svg viewBox="0 0 300 80" preserveAspectRatio="none">
+              <!-- central body -->
+              <circle cx="80" cy="40" r="14" fill="#f4c542" stroke="#2b2b2b" stroke-width="2" />
+              <!-- orbit path -->
+              <ellipse
+                cx="150"
+                cy="40"
+                rx="90"
+                ry="28"
+                fill="none"
+                stroke="#dcd6ca"
+                stroke-width="2"
+                stroke-dasharray="4 4"
+              />
+              <!-- satellite -->
+              <circle cx="230" cy="30" r="4" fill="#2fb39a" />
+            </svg>
+          </div>
+
           <p>Explore gravity, orbital speed, and paths around a central body.</p>
           <div class="card-footer">
             <span class="tag">Open <span class="arrow">→</span></span>
           </div>
         </a>
 
+        <!-- PENDULUM -->
         <a class="card" href="pendulum-lab.html">
           <span class="topic">Oscillations</span>
           <h3>Pendulum Lab</h3>
+
+          <div class="sample">
+            <svg viewBox="0 0 300 80" preserveAspectRatio="none">
+              <!-- ceiling -->
+              <line x1="20" y1="10" x2="280" y2="10" stroke="#dcd6ca" stroke-width="2" />
+              <!-- string -->
+              <line x1="150" y1="10" x2="190" y2="60" stroke="#2b2b2b" stroke-width="2.5" />
+              <!-- bob -->
+              <circle cx="190" cy="60" r="7" fill="#e05d5d" stroke="#2b2b2b" stroke-width="2" />
+            </svg>
+          </div>
+
           <p>Explore periodic motion by changing pendulum length, gravity, release angle, and damping.</p>
           <div class="card-footer">
             <span class="tag">Open <span class="arrow">→</span></span>
           </div>
         </a>
 
+        <!-- FORCES -->
         <a class="card" href="forces-and-friction.html">
           <span class="topic">Mechanics</span>
           <h3>Forces & Friction</h3>
+
+          <div class="sample">
+            <svg viewBox="0 0 300 80" preserveAspectRatio="none">
+              <!-- ground -->
+              <line x1="0" y1="60" x2="300" y2="60" stroke="#dcd6ca" stroke-width="2" />
+              <!-- block -->
+              <rect x="90" y="40" width="50" height="20" rx="3" fill="#2fb39a" stroke="#2b2b2b" stroke-width="2" />
+              <!-- force arrow -->
+              <line x1="140" y1="50" x2="210" y2="50" stroke="#e05d5d" stroke-width="3" />
+              <polygon points="210,50 200,45 200,55" fill="#e05d5d" />
+            </svg>
+          </div>
+
           <p>Push a block and explore applied force, friction, net force, and acceleration.</p>
           <div class="card-footer">
             <span class="tag">Open <span class="arrow">→</span></span>
           </div>
         </a>
 
+        <!-- COLLISION -->
         <a class="card" href="collision-lab.html">
           <span class="topic">Mechanics</span>
           <h3>Collision Lab</h3>
+
+          <div class="sample">
+            <svg viewBox="0 0 300 80" preserveAspectRatio="none">
+              <!-- ground -->
+              <line x1="0" y1="60" x2="300" y2="60" stroke="#dcd6ca" stroke-width="2" />
+              <!-- left mass -->
+              <circle cx="110" cy="50" r="12" fill="#e05d5d" stroke="#2b2b2b" stroke-width="2" />
+              <!-- right mass -->
+              <circle cx="190" cy="50" r="12" fill="#2fb39a" stroke="#2b2b2b" stroke-width="2" />
+              <!-- velocity arrows -->
+              <line x1="80" y1="50" x2="100" y2="50" stroke="#e05d5d" stroke-width="2.5" />
+              <polygon points="100,50 92,46 92,54" fill="#e05d5d" />
+              <line x1="200" y1="50" x2="220" y2="50" stroke="#2fb39a" stroke-width="2.5" />
+              <polygon points="220,50 212,46 212,54" fill="#2fb39a" />
+            </svg>
+          </div>
+
           <p>Investigate elastic and inelastic collisions, momentum conservation, and kinetic energy.</p>
           <div class="card-footer">
             <span class="tag">Open <span class="arrow">→</span></span>
           </div>
         </a>
 
+        <!-- ELECTRIC FIELDS -->
         <a class="card" href="electric-fields.html">
           <span class="topic">Electricity</span>
           <h3>Electric Fields & Charges</h3>
+
+          <div class="sample">
+            <svg viewBox="0 0 300 80" preserveAspectRatio="none">
+              <!-- plus charge -->
+              <circle cx="90" cy="40" r="12" fill="#e05d5d" stroke="#2b2b2b" stroke-width="2" />
+              <text x="90" y="44" text-anchor="middle" font-size="16" fill="#fff" font-family="Nunito">+</text>
+              <!-- minus charge -->
+              <circle cx="210" cy="40" r="12" fill="#2fb39a" stroke="#2b2b2b" stroke-width="2" />
+              <text x="210" y="44" text-anchor="middle" font-size="16" fill="#fff" font-family="Nunito">−</text>
+              <!-- field lines -->
+              <path d="M105 40 Q 150 25 195 40" fill="none" stroke="#dcd6ca" stroke-width="2" />
+              <path d="M105 40 Q 150 55 195 40" fill="none" stroke="#dcd6ca" stroke-width="2" />
+            </svg>
+          </div>
+
           <p>Place positive and negative charges, visualize the electric field, and measure force on a test charge.</p>
           <div class="card-footer">
             <span class="tag">Open <span class="arrow">→</span></span>
           </div>
         </a>
 
+        <!-- RAY OPTICS -->
         <a class="card" href="ray-optics.html">
           <span class="topic">Optics</span>
           <h3>Ray Optics</h3>
+
+          <div class="sample">
+            <svg viewBox="0 0 300 80" preserveAspectRatio="none">
+              <!-- lens -->
+              <ellipse cx="150" cy="40" rx="12" ry="28" fill="#f4c542" stroke="#2b2b2b" stroke-width="2" />
+              <!-- principal axis -->
+              <line x1="0" y1="40" x2="300" y2="40" stroke="#dcd6ca" stroke-width="2" stroke-dasharray="4 4" />
+              <!-- rays -->
+              <line x1="20" y1="20" x2="138" y2="34" stroke="#e05d5d" stroke-width="2.5" />
+              <line x1="162" y1="46" x2="280" y2="60" stroke="#e05d5d" stroke-width="2.5" />
+            </svg>
+          </div>
+
           <p>Explore converging and diverging lenses, principal rays, focal length, and real or virtual images.</p>
           <div class="card-footer">
             <span class="tag">Open <span class="arrow">→</span></span>
           </div>
         </a>
 
+        <!-- BUOYANCY -->
         <a class="card" href="buoyancy-lab.html">
           <span class="topic">Fluids</span>
           <h3>Buoyancy Lab</h3>
+
+          <div class="sample">
+            <svg viewBox="0 0 300 80" preserveAspectRatio="none">
+              <!-- water surface -->
+              <path d="M0 45 Q 40 40, 80 45 T 160 45 T 240 45 T 300 45" fill="none" stroke="#2fb39a" stroke-width="2" />
+              <!-- submerged object -->
+              <rect x="120" y="35" width="40" height="25" rx="4" fill="#f4c542" stroke="#2b2b2b" stroke-width="2" />
+              <!-- buoyant arrow -->
+              <line x1="140" y1="48" x2="140" y2="28" stroke="#e05d5d" stroke-width="2.5" />
+              <polygon points="140,28 135,36 145,36" fill="#e05d5d" />
+            </svg>
+          </div>
+
           <p>Explore floating and sinking by changing object density, volume, fluid density, and gravity.</p>
           <div class="card-footer">
             <span class="tag">Open <span class="arrow">→</span></span>
           </div>
         </a>
 
+        <!-- GAS LAWS -->
         <a class="card" href="gas-laws.html">
           <span class="topic">Thermal</span>
           <h3>Gas Laws Lab</h3>
+
+          <div class="sample">
+            <svg viewBox="0 0 300 80" preserveAspectRatio="none">
+              <!-- container -->
+              <rect x="60" y="15" width="180" height="50" rx="6" fill="none" stroke="#2b2b2b" stroke-width="2.5" />
+              <!-- particles -->
+              <circle cx="110" cy="35" r="4" fill="#2fb39a" />
+              <circle cx="150" cy="45" r="4" fill="#2fb39a" />
+              <circle cx="190" cy="30" r="4" fill="#2fb39a" />
+              <circle cx="210" cy="50" r="4" fill="#2fb39a" />
+            </svg>
+          </div>
+
           <p>Change temperature, volume, and particle count to explore gas pressure and particle motion.</p>
           <div class="card-footer">
             <span class="tag">Open <span class="arrow">→</span></span>
           </div>
         </a>
 
+        <!-- MAGNET -->
         <a class="card" href="magnet-and-compass.html">
           <span class="topic">Magnetism</span>
           <h3>Magnet & Compass</h3>
+
+          <div class="sample">
+            <svg viewBox="0 0 300 80" preserveAspectRatio="none">
+              <!-- bar magnet -->
+              <rect x="90" y="30" width="120" height="20" rx="4" fill="#e05d5d" stroke="#2b2b2b" stroke-width="2" />
+              <rect x="150" y="30" width="60" height="20" rx="4" fill="#2fb39a" stroke="#2b2b2b" stroke-width="2" />
+              <!-- field line -->
+              <path
+                d="M150 25
+                   Q 180 10, 210 25"
+                fill="none"
+                stroke="#dcd6ca"
+                stroke-width="2"
+              />
+              <!-- compass -->
+              <circle cx="240" cy="45" r="8" fill="#fff" stroke="#2b2b2b" stroke-width="2" />
+              <line x1="240" y1="45" x2="250" y2="45" stroke="#e05d5d" stroke-width="2.5" />
+              <line x1="240" y1="45" x2="230" y2="45" stroke="#2fb39a" stroke-width="2.5" />
+            </svg>
+          </div>
+
           <p>Move a bar magnet, change its strength, and observe compass needles align with the magnetic field.</p>
           <div class="card-footer">
             <span class="tag">Open <span class="arrow">→</span></span>
