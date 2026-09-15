@@ -357,7 +357,7 @@
     </section>
   </div>
 
-  <script>
+ <script>
     const simCanvas = document.getElementById("simCanvas");
     const simCtx = simCanvas.getContext("2d");
     const distGraph = document.getElementById("distGraph");
@@ -385,12 +385,18 @@
 
     let particles = [];
     let trajectories = [];
-    let angleCounts = new Array(18).fill(0); // 10 degree bins
+    let angleCounts = new Array(18).fill(0);
     let totalCount = 0;
     let backscatterCount = 0;
     let forwardCount = 0;
     let minDistanceOverall = Infinity;
     let streaming = false;
+
+    // Simulation reference width and height for coordinate consistency
+    const BASE_WIDTH = 700;
+    const BASE_HEIGHT = 440;
+    const NUCLEUS_X = BASE_WIDTH / 2;
+    const NUCLEUS_Y = BASE_HEIGHT / 2;
 
     function params() {
       return {
@@ -421,44 +427,44 @@
 
     function spawnParticle(impactB) {
       const p = params();
-      const speed = Math.sqrt(p.E) * 1.5;
+      const speed = Math.sqrt(p.E) * 1.6;
       return {
-        x: 40,
-        y: 220 + impactB,
+        x: 30,
+        y: NUCLEUS_Y + impactB,
         vx: speed,
         vy: 0,
-        path: [{ x: 40, y: 220 + impactB }],
+        path: [{ x: 30, y: NUCLEUS_Y + impactB }],
         minDist: Infinity
       };
     }
 
     function stepPhysics() {
       const p = params();
-      const k = p.Z * 45; // Coulomb constant multiplier for simulation scale
+      const k = p.Z * 35; // Electrostatic coupling scaling factor
 
       for (let i = particles.length - 1; i >= 0; i--) {
         const pt = particles[i];
-        const dx = pt.x - 440;
-        const dy = pt.y - 220;
+        const dx = pt.x - NUCLEUS_X;
+        const dy = pt.y - NUCLEUS_Y;
         const distSq = dx * dx + dy * dy;
         const dist = Math.sqrt(distSq);
 
         if (dist < pt.minDist) pt.minDist = dist;
         if (dist < minDistanceOverall) minDistanceOverall = dist;
 
-        const force = k / Math.max(distSq, 100);
-        const ax = (force * (dx / dist));
-        const ay = (force * (dy / dist));
+        const force = k / Math.max(distSq, 40);
+        const ax = force * (dx / dist);
+        const ay = force * (dy / dist);
 
-        pt.vx += ax * 0.2;
-        pt.vy += ay * 0.2;
-        pt.x += pt.vx * 0.2;
-        pt.y += pt.vy * 0.2;
+        pt.vx += ax * 0.25;
+        pt.vy += ay * 0.25;
+        pt.x += pt.vx * 0.25;
+        pt.y += pt.vy * 0.25;
 
         pt.path.push({ x: pt.x, y: pt.y });
 
-        // Check if out of bounds
-        if (pt.x < 0 || pt.x > 880 || pt.y < 0 || pt.y > 440) {
+        // Boundary check relative to internal simulation space
+        if (pt.x < -50 || pt.x > BASE_WIDTH + 50 || pt.y < -50 || pt.y > BASE_HEIGHT + 50) {
           const finalAngle = Math.abs(Math.atan2(pt.vy, pt.vx) * 180 / Math.PI);
           const bin = Math.min(17, Math.floor(finalAngle / 10));
           angleCounts[bin]++;
@@ -468,7 +474,7 @@
           if (finalAngle < 10) forwardCount++;
 
           trajectories.push(pt.path);
-          if (trajectories.length > 80) trajectories.shift();
+          if (trajectories.length > 90) trajectories.shift();
           particles.splice(i, 1);
         }
       }
@@ -476,31 +482,41 @@
 
     function drawMainCanvas() {
       const { width, height } = resizeCanvas(simCanvas);
-      const cx = width / 2;
-      const cy = height / 2;
-
+      
       simCtx.clearRect(0, 0, width, height);
       simCtx.fillStyle = "#fafafa";
       simCtx.fillRect(0, 0, width, height);
 
+      // Scale drawing canvas coordinate space to match simulation base dimensions
+      const scaleX = width / BASE_WIDTH;
+      const scaleY = height / BASE_HEIGHT;
+      const scale = Math.min(scaleX, scaleY);
+      
+      const offsetX = (width - BASE_WIDTH * scale) / 2;
+      const offsetY = (height - BASE_HEIGHT * scale) / 2;
+
+      simCtx.save();
+      simCtx.translate(offsetX, offsetY);
+      simCtx.scale(scale, scale);
+
       // Grid
       simCtx.strokeStyle = "#f1f3f5";
       simCtx.lineWidth = 1;
-      for (let x = 0; x < width; x += 40) line(simCtx, x, 0, x, height, "#f1f3f5");
-      for (let y = 0; y < height; y += 40) line(simCtx, 0, y, width, y, "#f1f3f5");
+      for (let x = 0; x < BASE_WIDTH; x += 40) line(simCtx, x, 0, x, BASE_HEIGHT, "#f1f3f5");
+      for (let y = 0; y < BASE_HEIGHT; y += 40) line(simCtx, 0, y, BASE_WIDTH, y, "#f1f3f5");
 
-      // Equipotential circles
+      // Equipotential circles centered on nucleus coordinates
       if (showEquipotentialsInput.checked) {
         simCtx.strokeStyle = "#e9ecef";
         simCtx.lineWidth = 1;
-        [40, 80, 130, 190].forEach(r => {
+        [35, 75, 120, 170].forEach(r => {
           simCtx.beginPath();
-          simCtx.arc(cx, cy, r, 0, Math.PI * 2);
+          simCtx.arc(NUCLEUS_X, NUCLEUS_Y, r, 0, Math.PI * 2);
           simCtx.stroke();
         });
       }
 
-      // Trajectories
+      // Past trajectories
       trajectories.forEach(path => {
         simCtx.strokeStyle = "rgba(108, 117, 125, 0.35)";
         simCtx.lineWidth = 1.2;
@@ -525,17 +541,19 @@
 
         simCtx.fillStyle = "#111111";
         simCtx.beginPath();
-        simCtx.arc(pt.x, pt.y, 3.5, 0, Math.PI * 2);
+        simCtx.arc(pt.x, pt.y, 3, 0, Math.PI * 2);
         simCtx.fill();
       });
 
-      // Nucleus (Gold/Target)
+      // Target Nucleus (Center)
       const p = params();
-      const nucRadius = Math.max(6, Math.min(16, p.Z * 0.15));
+      const nucRadius = Math.max(5, Math.min(14, p.Z * 0.14));
       simCtx.fillStyle = "#212529";
       simCtx.beginPath();
-      simCtx.arc(cx, cy, nucRadius, 0, Math.PI * 2);
+      simCtx.arc(NUCLEUS_X, NUCLEUS_Y, nucRadius, 0, Math.PI * 2);
       simCtx.fill();
+
+      simCtx.restore();
     }
 
     function drawAxes(context, width, height, label) {
@@ -634,7 +652,7 @@
     }
 
     function updateFrame() {
-      if (streaming && Math.random() < 0.3) {
+      if (streaming && Math.random() < 0.35) {
         const p = params();
         const b = (Math.random() - 0.5) * p.spread * 2;
         particles.push(spawnParticle(b));
@@ -672,6 +690,5 @@
     });
 
     requestAnimationFrame(updateFrame);
-  </script>
-</body>
+  </script></body>
 </html>
