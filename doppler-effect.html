@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Doppler Effect Lab | Physics Simulations</title>
+
+  <style>
+    :root {
+      --bg: #f8f9fa;
+      --panel: #ffffff;
+      --panel-dark: #f1f3f5;
+      --border: #e9ecef;
+      --border-dark: #dee2e6;
+      --text: #212529;
+      --muted: #6c757d;
+      --accent: #212529;
+      --accent-hover: #343a40;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      background: var(--bg);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.45;
+    }
+
+    .page {
+      width: min(1180px, calc(100% - 32px));
+      margin: auto;
+    }
+
+    header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 32px 0 24px;
+      border-bottom: 1px solid var(--border-dark);
+    }
+
+    h1 {
+      margin: 0;
+      font-family: "Georgia", "Times New Roman", serif;
+      font-weight: 400;
+      font-size: clamp(2rem, 4vw, 2.8rem);
+      color: #111;
+    }
+
+    h2 {
+      font-family: "Georgia", "Times New Roman", serif;
+      font-weight: 400;
+      font-size: 1.2rem;
+      margin: 0 0 16px;
+      color: #111;
+    }
+
+    .subtitle {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 0.98rem;
+    }
+
+    .back {
+      display: inline-block;
+      color: var(--text);
+      font-size: 0.9rem;
+      text-decoration: none;
+      white-space: nowrap;
+      padding: 6px 12px;
+      border: 1px solid var(--border-dark);
+      border-radius: 6px;
+      background: #fff;
+      transition: background 0.15s ease;
+    }
+
+    .back:hover { 
+      background: var(--panel-dark);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.75fr);
+      gap: 20px;
+      padding: 24px 0 20px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border-dark);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+
+    .simulation {
+      position: relative;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .canvas-info {
+      color: var(--muted);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+    }
+
+    #simCanvas {
+      display: block;
+      width: 100%;
+      height: 420px;
+      background: #ffffff;
+      border-radius: 4px;
+    }
+
+    .controls {
+      padding: 24px;
+    }
+
+    .control {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 0.88rem;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    output {
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--text);
+      cursor: pointer;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 10px 0 20px;
+    }
+
+    button {
+      cursor: pointer;
+      border: 1px solid var(--accent);
+      border-radius: 6px;
+      padding: 9px 16px;
+      color: #fff;
+      background: var(--accent);
+      font-weight: 500;
+      font: inherit;
+      font-size: 0.9rem;
+      transition: background 0.15s ease;
+    }
+
+    button:hover {
+      background: var(--accent-hover);
+    }
+
+    button.secondary {
+      color: var(--text);
+      background: #fff;
+      border: 1px solid var(--border-dark);
+    }
+
+    button.secondary:hover {
+      background: var(--panel-dark);
+    }
+
+    .readouts {
+      margin-top: 24px;
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--panel-dark);
+    }
+
+    .readouts h3 {
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .readouts p {
+      display: flex;
+      justify-content: space-between;
+      margin: 6px 0;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .readouts strong {
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+
+    @media (max-width: 850px) {
+      header { flex-direction: column; }
+      .layout { grid-template-columns: 1fr; }
+      #simCanvas { height: 340px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <header>
+      <div>
+        <h1>Doppler Effect Lab</h1>
+        <p class="subtitle">Observe wavefront compression and perceived frequency shifts from a moving wave source.</p>
+      </div>
+      <a class="back" href="index.html">← All simulations</a>
+    </header>
+
+    <main class="layout">
+      <section class="panel simulation">
+        <div class="canvas-info">Wavefront Propagation & Observer Points</div>
+        <canvas id="simCanvas"></canvas>
+      </section>
+
+      <aside class="panel controls">
+        <h2>Controls</h2>
+
+        <div class="control">
+          <label for="velocity">
+            <span>Source Speed (v<sub>s</sub>)</span>
+            <output id="velOut">0.50 Mach</output>
+          </label>
+          <input id="velocity" type="range" min="0" max="1.2" value="0.5" step="0.05">
+        </div>
+
+        <div class="control">
+          <label for="emission">
+            <span>Emission Frequency (f<sub>0</sub>)</span>
+            <output id="freqOut">1.0 Hz</output>
+          </label>
+          <input id="emission" type="range" min="0.5" max="2.0" value="1.0" step="0.1">
+        </div>
+
+        <div class="actions">
+          <button id="pauseButton" type="button">Pause</button>
+          <button id="resetButton" class="secondary" type="button">Reset</button>
+        </div>
+
+        <section class="readouts">
+          <h3>Observed Frequencies</h3>
+          <p><span>Ahead (Approaching)</span><strong id="aheadOut">2.00 Hz</strong></p>
+          <p><span>Behind (Receding)</span><strong id="behindOut">0.67 Hz</strong></p>
+          <p><span>Regime</span><strong id="regimeOut">Subsonic</strong></p>
+        </section>
+      </aside>
+    </main>
+  </div>
+
+  <script>
+    const simCanvas = document.getElementById("simCanvas");
+    const simCtx = simCanvas.getContext("2d");
+
+    const velInput = document.getElementById("velocity");
+    const freqInput = document.getElementById("emission");
+
+    const velOut = document.getElementById("velOut");
+    const freqOut = document.getElementById("freqOut");
+
+    const aheadOut = document.getElementById("aheadOut");
+    const behindOut = document.getElementById("behindOut");
+    const regimeOut = document.getElementById("regimeOut");
+
+    const pauseButton = document.getElementById("pauseButton");
+    const resetButton = document.getElementById("resetButton");
+
+    let paused = false;
+    let previousTimestamp = null;
+    let waves = [];
+    let lastEmitTime = 0;
+
+    const WAVE_SPEED = 100; // px/sec
+
+    let source = {
+      x: 50,
+      y: 210
+    };
+
+    function params() {
+      return {
+        vMach: Number(velInput.value),
+        f0: Number(freqInput.value)
+      };
+    }
+
+    function setupHiDPI(canvas) {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      const width = Math.floor(rect.width);
+      const height = Math.floor(rect.height);
+
+      if (canvas.width !== width * dpr || canvas.height !== height * dpr) {
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+      }
+
+      const ctx = canvas.getContext("2d");
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+      return { width, height };
+    }
+
+    function updateSim(dt) {
+      const p = params();
+      const { width, height } = simCanvas.getBoundingClientRect();
+
+      source.y = height / 2;
+      const vs = p.vMach * WAVE_SPEED;
+
+      source.x += vs * dt;
+      if (source.x > width + 40) {
+        source.x = -20;
+        waves = [];
+      }
+
+      // Wave emission
+      const emitInterval = 1 / p.f0;
+      lastEmitTime += dt;
+      if (lastEmitTime >= emitInterval) {
+        waves.push({
+          x: source.x,
+          y: source.y,
+          r: 0
+        });
+        lastEmitTime %= emitInterval;
+      }
+
+      // Wave propagation
+      for (let i = waves.length - 1; i >= 0; i--) {
+        waves[i].r += WAVE_SPEED * dt;
+        if (waves[i].r > Math.max(width, height) * 1.5) {
+          waves.splice(i, 1);
+        }
+      }
+    }
+
+    function draw() {
+      const { width, height } = setupHiDPI(simCanvas);
+      const p = params();
+
+      simCtx.clearRect(0, 0, width, height);
+
+      // Draw Centerline
+      simCtx.strokeStyle = "#e9ecef";
+      simCtx.lineWidth = 1;
+      simCtx.beginPath();
+      simCtx.moveTo(0, height / 2);
+      simCtx.lineTo(width, height / 2);
+      simCtx.stroke();
+
+      // Draw Wavefronts
+      waves.forEach(w => {
+        const alpha = Math.max(0.1, 1 - w.r / (width * 0.8));
+        simCtx.strokeStyle = `rgba(33, 37, 41, ${alpha})`;
+        simCtx.lineWidth = 1.5;
+        simCtx.beginPath();
+        simCtx.arc(w.x, w.y, w.r, 0, Math.PI * 2);
+        simCtx.stroke();
+      });
+
+      // Draw Observers
+      const obsAheadX = width - 40;
+      const obsBehindX = 40;
+
+      simCtx.fillStyle = "#6c757d";
+      simCtx.beginPath();
+      simCtx.arc(obsAheadX, height / 2, 6, 0, Math.PI * 2);
+      simCtx.arc(obsBehindX, height / 2, 6, 0, Math.PI * 2);
+      simCtx.fill();
+
+      // Draw Source
+      simCtx.fillStyle = "#111111";
+      simCtx.beginPath();
+      simCtx.arc(source.x, source.y, 8, 0, Math.PI * 2);
+      simCtx.fill();
+
+      // Update Outputs
+      velOut.textContent = `${p.vMach.toFixed(2)} Mach`;
+      freqOut.textContent = `${p.f0.toFixed(1)} Hz`;
+
+      if (p.vMach < 1) {
+        const fAhead = p.f0 / (1 - p.vMach);
+        const fBehind = p.f0 / (1 + p.vMach);
+        aheadOut.textContent = `${fAhead.toFixed(2)} Hz`;
+        behindOut.textContent = `${fBehind.toFixed(2)} Hz`;
+        regimeOut.textContent = "Subsonic";
+      } else if (p.vMach === 1) {
+        aheadOut.textContent = "∞ (Shockwave)";
+        behindOut.textContent = `${(p.f0 / 2).toFixed(2)} Hz`;
+        regimeOut.textContent = "Sonic (Mach 1)";
+      } else {
+        aheadOut.textContent = "N/A (Cone)";
+        behindOut.textContent = `${(p.f0 / (1 + p.vMach)).toFixed(2)} Hz`;
+        regimeOut.textContent = "Supersonic";
+      }
+    }
+
+    function loop(timestamp) {
+      if (previousTimestamp === null) previousTimestamp = timestamp;
+      const dt = Math.min((timestamp - previousTimestamp) / 1000, 0.03);
+      previousTimestamp = timestamp;
+
+      if (!paused) {
+        updateSim(dt);
+      }
+      draw();
+      requestAnimationFrame(loop);
+    }
+
+    pauseButton.addEventListener("click", () => {
+      paused = !paused;
+      pauseButton.textContent = paused ? "Play" : "Pause";
+    });
+
+    resetButton.addEventListener("click", () => {
+      source.x = 50;
+      waves = [];
+      lastEmitTime = 0;
+      paused = false;
+      pauseButton.textContent = "Pause";
+    });
+
+    requestAnimationFrame(loop);
+  </script>
+</body>
+</html>
