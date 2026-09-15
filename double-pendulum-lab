@@ -1,0 +1,736 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Double Pendulum Lab | Physics Simulations</title>
+
+  <style>
+    :root {
+      --bg: #f8f9fa;
+      --panel: #ffffff;
+      --panel-dark: #f1f3f5;
+      --border: #e9ecef;
+      --border-dark: #dee2e6;
+      --text: #212529;
+      --muted: #6c757d;
+      --accent: #212529;
+      --accent-hover: #343a40;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      background: var(--bg);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.45;
+    }
+
+    .page {
+      width: min(1180px, calc(100% - 32px));
+      margin: auto;
+    }
+
+    header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 32px 0 24px;
+      border-bottom: 1px solid var(--border-dark);
+    }
+
+    h1 {
+      margin: 0;
+      font-family: "Georgia", "Times New Roman", serif;
+      font-weight: 400;
+      font-size: clamp(2rem, 4vw, 2.8rem);
+      color: #111;
+    }
+
+    h2 {
+      font-family: "Georgia", "Times New Roman", serif;
+      font-weight: 400;
+      font-size: 1.2rem;
+      margin: 0 0 16px;
+      color: #111;
+    }
+
+    .subtitle {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 0.98rem;
+    }
+
+    .back {
+      display: inline-block;
+      color: var(--text);
+      font-size: 0.9rem;
+      text-decoration: none;
+      white-space: nowrap;
+      padding: 6px 12px;
+      border: 1px solid var(--border-dark);
+      border-radius: 6px;
+      background: #fff;
+      transition: background 0.15s ease;
+    }
+
+    .back:hover { 
+      background: var(--panel-dark);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.75fr);
+      gap: 20px;
+      padding: 24px 0 20px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border-dark);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+
+    .simulation {
+      position: relative;
+      min-height: 440px;
+    }
+
+    #simCanvas {
+      display: block;
+      width: 100%;
+      height: 440px;
+      background: #fafafa;
+    }
+
+    .canvas-info {
+      position: absolute;
+      top: 12px;
+      left: 14px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      pointer-events: none;
+    }
+
+    .controls {
+      padding: 24px;
+    }
+
+    .control {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 0.88rem;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    output {
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--text);
+      cursor: pointer;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 10px 0 20px;
+    }
+
+    button {
+      cursor: pointer;
+      border: 1px solid var(--accent);
+      border-radius: 6px;
+      padding: 9px 16px;
+      color: #fff;
+      background: var(--accent);
+      font-weight: 500;
+      font: inherit;
+      font-size: 0.9rem;
+      transition: background 0.15s ease;
+    }
+
+    button:hover {
+      background: var(--accent-hover);
+    }
+
+    button.secondary {
+      color: var(--text);
+      background: #fff;
+      border: 1px solid var(--border-dark);
+    }
+
+    button.secondary:hover {
+      background: var(--panel-dark);
+    }
+
+    .checks {
+      display: grid;
+      gap: 10px;
+      padding-top: 5px;
+    }
+
+    .checks label {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      gap: 8px;
+      margin: 0;
+      cursor: pointer;
+      color: var(--text);
+      font-weight: normal;
+    }
+
+    .checks input { accent-color: var(--text); }
+
+    .readouts {
+      margin-top: 24px;
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--panel-dark);
+    }
+
+    .readouts h3 {
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .readouts p {
+      display: flex;
+      justify-content: space-between;
+      margin: 6px 0;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .readouts strong {
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .graphs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      padding-bottom: 40px;
+    }
+
+    .graph {
+      padding: 18px;
+    }
+
+    .graph h2 {
+      margin-bottom: 12px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-family: inherit;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    canvas.graph-canvas {
+      display: block;
+      width: 100%;
+      height: 205px;
+      background: #fafafa;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+
+    .legend {
+      display: flex;
+      gap: 14px;
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .blue { color: #111; font-weight: 500; }
+    .green { color: #555; font-weight: 500; }
+
+    @media (max-width: 850px) {
+      header { flex-direction: column; }
+      .layout, .graphs { grid-template-columns: 1fr; }
+      #simCanvas { height: 360px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <header>
+      <div>
+        <h1>Double Pendulum Lab</h1>
+        <p class="subtitle">Simulate chaotic double-arm rotational motion using Lagrangian mechanics.</p>
+      </div>
+      <a class="back" href="index.html">← All simulations</a>
+    </header>
+
+    <main class="layout">
+      <section class="panel simulation">
+        <canvas id="simCanvas"></canvas>
+        <div class="canvas-info">Pivot Point</div>
+      </section>
+
+      <aside class="panel controls">
+        <h2>Controls</h2>
+
+        <div class="control">
+          <label for="l1">
+            <span>Length 1 (L₁)</span>
+            <output id="l1Out">1.20 m</output>
+          </label>
+          <input id="l1" type="range" min="0.5" max="2.0" value="1.2" step="0.05">
+        </div>
+
+        <div class="control">
+          <label for="l2">
+            <span>Length 2 (L₂)</span>
+            <output id="l2Out">1.00 m</output>
+          </label>
+          <input id="l2" type="range" min="0.5" max="2.0" value="1.0" step="0.05">
+        </div>
+
+        <div class="control">
+          <label for="m1">
+            <span>Mass 1 (m₁)</span>
+            <output id="m1Out">2.0 kg</output>
+          </label>
+          <input id="m1" type="range" min="0.5" max="5.0" value="2.0" step="0.1">
+        </div>
+
+        <div class="control">
+          <label for="m2">
+            <span>Mass 2 (m₂)</span>
+            <output id="m2Out">1.5 kg</output>
+          </label>
+          <input id="m2" type="range" min="0.5" max="5.0" value="1.5" step="0.1">
+        </div>
+
+        <div class="control">
+          <label for="gravity">
+            <span>Gravity (g)</span>
+            <output id="gravityOut">9.81 m/s²</output>
+          </label>
+          <input id="gravity" type="range" min="0" max="20" value="9.81" step="0.1">
+        </div>
+
+        <div class="actions">
+          <button id="pauseButton" type="button">Pause</button>
+          <button id="resetButton" class="secondary" type="button">Reset</button>
+        </div>
+
+        <div class="checks">
+          <label><input id="showTrail" type="checkbox" checked> Show tip trajectory</label>
+        </div>
+
+        <section class="readouts">
+          <h3>Live readouts</h3>
+          <p><span>Time</span><strong id="timeOut">0.00 s</strong></p>
+          <p><span>Angle 1 (θ₁)</span><strong id="a1Out">0.00°</strong></p>
+          <p><span>Angle 2 (θ₂)</span><strong id="a2Out">0.00°</strong></p>
+          <p><span>Kinetic Energy</span><strong id="keOut">0.0 J</strong></p>
+          <p><span>Potential Energy</span><strong id="peOut">0.0 J</strong></p>
+        </section>
+      </aside>
+    </main>
+
+    <section class="graphs">
+      <section class="panel graph">
+        <h2>Angular Position History</h2>
+        <canvas class="graph-canvas" id="angleGraph"></canvas>
+        <div class="legend"><span class="blue">● θ₁</span> <span class="green">● θ₂</span></div>
+      </section>
+
+      <section class="panel graph">
+        <h2>Total System Energy</h2>
+        <canvas class="graph-canvas" id="energyGraph"></canvas>
+        <div class="legend"><span class="blue">● Total Mechanical Energy</span></div>
+      </section>
+    </section>
+  </div>
+
+  <script>
+    const simCanvas = document.getElementById("simCanvas");
+    const simCtx = simCanvas.getContext("2d");
+    const angleGraph = document.getElementById("angleGraph");
+    const angleCtx = angleGraph.getContext("2d");
+    const energyGraph = document.getElementById("energyGraph");
+    const energyCtx = energyGraph.getContext("2d");
+
+    const l1Input = document.getElementById("l1");
+    const l2Input = document.getElementById("l2");
+    const m1Input = document.getElementById("m1");
+    const m2Input = document.getElementById("m2");
+    const gravityInput = document.getElementById("gravity");
+    const showTrailInput = document.getElementById("showTrail");
+
+    const l1Out = document.getElementById("l1Out");
+    const l2Out = document.getElementById("l2Out");
+    const m1Out = document.getElementById("m1Out");
+    const m2Out = document.getElementById("m2Out");
+    const gravityOut = document.getElementById("gravityOut");
+
+    const timeOut = document.getElementById("timeOut");
+    const a1Out = document.getElementById("a1Out");
+    const a2Out = document.getElementById("a2Out");
+    const keOut = document.getElementById("keOut");
+    const peOut = document.getElementById("peOut");
+
+    const pauseButton = document.getElementById("pauseButton");
+    const resetButton = document.getElementById("resetButton");
+
+    let time = 0;
+    let paused = false;
+    let previousTimestamp = null;
+
+    // Double pendulum state variables
+    let a1 = Math.PI / 2;
+    let a2 = Math.PI / 2;
+    let a1_v = 0;
+    let a2_v = 0;
+
+    let trail = [];
+    let history = [];
+
+    function params() {
+      return {
+        l1: Number(l1Input.value),
+        l2: Number(l2Input.value),
+        m1: Number(m1Input.value),
+        m2: Number(m2Input.value),
+        g: Number(gravityInput.value)
+      };
+    }
+
+    function resizeCanvas(canvas) {
+      const ratio = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = Math.round(rect.width * ratio);
+      canvas.height = Math.round(rect.height * ratio);
+      const context = canvas.getContext("2d");
+      context.setTransform(ratio, 0, 0, ratio, 0, 0);
+      return { width: rect.width, height: rect.height };
+    }
+
+    function line(context, x1, y1, x2, y2, color, width = 1) {
+      context.strokeStyle = color;
+      context.lineWidth = width;
+      context.beginPath();
+      context.moveTo(x1, y1);
+      context.lineTo(x2, y2);
+      context.stroke();
+    }
+
+    function stepPhysics(dt) {
+      const p = params();
+      const { l1, l2, m1, m2, g } = p;
+
+      // Sub-stepping for numerical stability
+      const steps = 10;
+      const h = dt / steps;
+
+      for (let i = 0; i < steps; i++) {
+        const num1 = -g * (2 * m1 + m2) * Math.sin(a1) - m2 * g * Math.sin(a1 - 2 * a2) - 2 * Math.sin(a1 - a2) * m2 * (a2_v * a2_v * l2 + a1_v * a1_v * l1 * Math.cos(a1 - a2));
+        const den1 = l1 * (2 * m1 + m2 - m2 * Math.cos(2 * a1 - 2 * a2));
+        const a1_a = num1 / den1;
+
+        const num2 = 2 * Math.sin(a1 - a2) * (a1_v * a1_v * l1 * (m1 + m2) + g * (m1 + m2) * Math.cos(a1) + a2_v * a2_v * l2 * m2 * Math.cos(a1 - a2));
+        const den2 = l2 * (2 * m1 + m2 - m2 * Math.cos(2 * a1 - 2 * a2));
+        const a2_a = num2 / den2;
+
+        a1_v += a1_a * h;
+        a2_v += a2_a * h;
+        a1 += a1_v * h;
+        a2 += a2_v * h;
+      }
+    }
+
+    function getPositions(p) {
+      const scale = 110; 
+      const x1 = p.l1 * scale * Math.sin(a1);
+      const y1 = p.l1 * scale * Math.cos(a1);
+      const x2 = x1 + p.l2 * scale * Math.sin(a2);
+      const y2 = y1 + p.l2 * scale * Math.cos(a2);
+      return { x1, y1, x2, y2 };
+    }
+
+    function getEnergy(p) {
+      const { l1, l2, m1, m2, g } = p;
+      const v1sq = l1 * l1 * a1_v * a1_v;
+      const v2sq = v1sq + l2 * l2 * a2_v * a2_v + 2 * l1 * l2 * a1_v * a2_v * Math.cos(a1 - a2);
+
+      const ke = 0.5 * m1 * v1sq + 0.5 * m2 * v2sq;
+      const y1 = -l1 * Math.cos(a1);
+      const y2 = y1 - l2 * Math.cos(a2);
+      const pe = m1 * g * y1 + m2 * g * y2;
+
+      return { ke, pe, total: ke + pe };
+    }
+
+    function drawMainCanvas(p) {
+      const { width, height } = resizeCanvas(simCanvas);
+      const cx = width / 2;
+      const cy = height / 3;
+
+      simCtx.clearRect(0, 0, width, height);
+      simCtx.fillStyle = "#fafafa";
+      simCtx.fillRect(0, 0, width, height);
+
+      // Grid background
+      simCtx.strokeStyle = "#e9ecef";
+      simCtx.lineWidth = 1;
+      for (let x = 0; x < width; x += 40) {
+        line(simCtx, x, 0, x, height, "#f1f3f5");
+      }
+      for (let y = 0; y < height; y += 40) {
+        line(simCtx, 0, y, width, y, "#f1f3f5");
+      }
+
+      const { x1, y1, x2, y2 } = getPositions(p);
+
+      if (showTrailInput.checked) {
+        trail.push({ x: cx + x2, y: cy + y2 });
+        if (trail.length > 250) trail.shift();
+
+        if (trail.length > 1) {
+          simCtx.strokeStyle = "rgba(108, 117, 125, 0.4)";
+          simCtx.lineWidth = 1.5;
+          simCtx.beginPath();
+          for (let i = 0; i < trail.length; i++) {
+            if (i === 0) simCtx.moveTo(trail[i].x, trail[i].y);
+            else simCtx.lineTo(trail[i].x, trail[i].y);
+          }
+          simCtx.stroke();
+        }
+      }
+
+      // Base Support Line
+      line(simCtx, cx - 40, cy, cx + 40, cy, "#adb5bd", 2);
+
+      // Rods
+      line(simCtx, cx, cy, cx + x1, cy + y1, "#111111", 2.5);
+      line(simCtx, cx + x1, cy + y1, cx + x2, cy + y2, "#111111", 2.5);
+
+      // Joints & Bobs
+      simCtx.fillStyle = "#212529";
+      simCtx.beginPath();
+      simCtx.arc(cx, cy, 4, 0, Math.PI * 2);
+      simCtx.fill();
+
+      // Bob 1
+      const r1 = Math.max(6, Math.min(16, p.m1 * 3.5));
+      simCtx.beginPath();
+      simCtx.arc(cx + x1, cy + y1, r1, 0, Math.PI * 2);
+      simCtx.fill();
+
+      // Bob 2
+      const r2 = Math.max(6, Math.min(16, p.m2 * 3.5));
+      simCtx.beginPath();
+      simCtx.arc(cx + x2, cy + y2, r2, 0, Math.PI * 2);
+      simCtx.fill();
+    }
+
+    function drawAxes(context, width, height, label) {
+      const left = 38;
+      const right = 12;
+      const top = 15;
+      const bottom = 27;
+
+      context.clearRect(0, 0, width, height);
+      context.fillStyle = "#fafafa";
+      context.fillRect(0, 0, width, height);
+
+      context.strokeStyle = "#e9ecef";
+      context.lineWidth = 1;
+
+      for (let i = 0; i <= 4; i++) {
+        const y = top + i * ((height - top - bottom) / 4);
+        context.beginPath();
+        context.moveTo(left, y);
+        context.lineTo(width - right, y);
+        context.stroke();
+      }
+
+      line(context, left, top, left, height - bottom, "#adb5bd");
+      line(context, left, height - bottom, width - right, height - bottom, "#adb5bd");
+
+      context.fillStyle = "#6c757d";
+      context.font = "11px system-ui";
+      context.fillText(label, 7, 16);
+
+      return { left, right, top, bottom };
+    }
+
+    function drawAngleGraph() {
+      const { width, height } = resizeCanvas(angleGraph);
+      const area = drawAxes(angleCtx, width, height, "rad");
+      const graphWidth = width - area.left - area.right;
+      const graphHeight = height - area.top - area.bottom;
+      const middle = area.top + graphHeight / 2;
+
+      const recent = history.filter(point => point.t >= time - 8);
+      if (recent.length > 1) {
+        // Draw Angle 1
+        angleCtx.strokeStyle = "#111111";
+        angleCtx.lineWidth = 1.8;
+        angleCtx.beginPath();
+        for (let i = 0; i < recent.length; i++) {
+          const pt = recent[i];
+          const rel = (pt.t - (time - 8)) / 8;
+          const px = area.left + rel * graphWidth;
+          const py = middle - (pt.a1 / (Math.PI * 2)) * (graphHeight / 2 - 8);
+          if (i === 0) angleCtx.moveTo(px, py);
+          else angleCtx.lineTo(px, py);
+        }
+        angleCtx.stroke();
+
+        // Draw Angle 2
+        angleCtx.strokeStyle = "#6c757d";
+        angleCtx.lineWidth = 1.8;
+        angleCtx.beginPath();
+        for (let i = 0; i < recent.length; i++) {
+          const pt = recent[i];
+          const rel = (pt.t - (time - 8)) / 8;
+          const px = area.left + rel * graphWidth;
+          const py = middle - (pt.a2 / (Math.PI * 2)) * (graphHeight / 2 - 8);
+          if (i === 0) angleCtx.moveTo(px, py);
+          else angleCtx.lineTo(px, py);
+        }
+        angleCtx.stroke();
+      }
+
+      angleCtx.fillStyle = "#6c757d";
+      angleCtx.font = "11px system-ui";
+      angleCtx.fillText("-8 s", area.left, height - 8);
+      angleCtx.fillText("now", width - area.right - 23, height - 8);
+    }
+
+    function drawEnergyGraph() {
+      const { width, height } = resizeCanvas(energyGraph);
+      const area = drawAxes(energyCtx, width, height, "J");
+      const graphWidth = width - area.left - area.right;
+      const graphHeight = height - area.top - area.bottom;
+
+      const recent = history.filter(point => point.t >= time - 8);
+      if (recent.length > 1) {
+        energyCtx.strokeStyle = "#111111";
+        energyCtx.lineWidth = 2;
+        energyCtx.beginPath();
+
+        let maxE = 10;
+        recent.forEach(pt => { if (Math.abs(pt.e) > maxE) maxE = Math.abs(pt.e); });
+
+        for (let i = 0; i < recent.length; i++) {
+          const pt = recent[i];
+          const rel = (pt.t - (time - 8)) / 8;
+          const px = area.left + rel * graphWidth;
+          const py = area.top + graphHeight / 2 - (pt.e / (maxE * 1.5)) * (graphHeight / 2 - 8);
+          if (i === 0) energyCtx.moveTo(px, py);
+          else energyCtx.lineTo(px, py);
+        }
+        energyCtx.stroke();
+      }
+
+      energyCtx.fillStyle = "#6c757d";
+      energyCtx.font = "11px system-ui";
+      energyCtx.fillText("-8 s", area.left, height - 8);
+      energyCtx.fillText("now", width - area.right - 23, height - 8);
+    }
+
+    function updateOutputs(p) {
+      l1Out.textContent = `${p.l1.toFixed(2)} m`;
+      l2Out.textContent = `${p.l2.toFixed(2)} m`;
+      m1Out.textContent = `${p.m1.toFixed(1)} kg`;
+      m2Out.textContent = `${p.m2.toFixed(1)} kg`;
+      gravityOut.textContent = `${p.g.toFixed(2)} m/s²`;
+
+      const energy = getEnergy(p);
+
+      timeOut.textContent = `${time.toFixed(2)} s`;
+      a1Out.textContent = `${((a1 % (2 * Math.PI)) * 180 / Math.PI).toFixed(1)}°`;
+      a2Out.textContent = `${((a2 % (2 * Math.PI)) * 180 / Math.PI).toFixed(1)}°`;
+      keOut.textContent = `${Math.abs(energy.ke).toFixed(1)} J`;
+      peOut.textContent = `${energy.pe.toFixed(1)} J`;
+    }
+
+    function updateFrame(timestamp) {
+      if (previousTimestamp === null) previousTimestamp = timestamp;
+
+      const elapsed = Math.min((timestamp - previousTimestamp) / 1000, 0.03);
+      previousTimestamp = timestamp;
+
+      if (!paused) {
+        time += elapsed;
+        stepPhysics(elapsed);
+
+        const p = params();
+        const e = getEnergy(p);
+
+        history.push({
+          t: time,
+          a1: a1,
+          a2: a2,
+          e: e.total
+        });
+
+        history = history.filter(point => point.t >= time - 9);
+      }
+
+      const p = params();
+      updateOutputs(p);
+      drawMainCanvas(p);
+      drawAngleGraph();
+      drawEnergyGraph();
+
+      requestAnimationFrame(updateFrame);
+    }
+
+    pauseButton.addEventListener("click", () => {
+      paused = !paused;
+      pauseButton.textContent = paused ? "Play" : "Pause";
+    });
+
+    resetButton.addEventListener("click", () => {
+      time = 0;
+      a1 = Math.PI / 2;
+      a2 = Math.PI / 2;
+      a1_v = 0;
+      a2_v = 0;
+      trail = [];
+      history = [];
+      paused = false;
+      pauseButton.textContent = "Pause";
+    });
+
+    window.addEventListener("resize", () => {
+      previousTimestamp = null;
+    });
+
+    requestAnimationFrame(updateFrame);
+  </script>
+</body>
+</html>
