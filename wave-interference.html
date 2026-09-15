@@ -98,25 +98,25 @@
 
     .simulation {
       position: relative;
-      min-height: 440px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .canvas-info {
+      color: var(--muted);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
     }
 
     #simCanvas {
       display: block;
       width: 100%;
-      height: 440px;
-      background: #fafafa;
-    }
-
-    .canvas-info {
-      position: absolute;
-      top: 12px;
-      left: 14px;
-      color: var(--muted);
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      pointer-events: none;
+      height: 400px;
+      background: #ffffff;
+      border-radius: 4px;
     }
 
     .controls {
@@ -226,7 +226,7 @@
     .graph h2 {
       margin-bottom: 12px;
       color: var(--muted);
-      font-size: 0.9rem;
+      font-size: 0.8rem;
       font-family: inherit;
       text-transform: uppercase;
       letter-spacing: 0.05em;
@@ -235,9 +235,9 @@
     canvas.graph-canvas {
       display: block;
       width: 100%;
-      height: 205px;
-      background: #fafafa;
-      border-radius: 6px;
+      height: 200px;
+      background: #ffffff;
+      border-radius: 4px;
       border: 1px solid var(--border);
     }
 
@@ -254,7 +254,7 @@
     @media (max-width: 850px) {
       header { flex-direction: column; }
       .layout, .graphs { grid-template-columns: 1fr; }
-      #simCanvas { height: 360px; }
+      #simCanvas { height: 320px; }
     }
   </style>
 </head>
@@ -271,8 +271,8 @@
 
     <main class="layout">
       <section class="panel simulation">
-        <canvas id="simCanvas"></canvas>
         <div class="canvas-info">Wave Field (Superposition)</div>
+        <canvas id="simCanvas"></canvas>
       </section>
 
       <aside class="panel controls">
@@ -368,9 +368,6 @@
     let paused = false;
     let previousTimestamp = null;
 
-    const BASE_WIDTH = 700;
-    const BASE_HEIGHT = 440;
-
     function params() {
       return {
         lambda: Number(waveInput.value),
@@ -380,46 +377,57 @@
       };
     }
 
-    function resizeCanvas(canvas) {
-      const ratio = window.devicePixelRatio || 1;
+    function setupHiDPI(canvas) {
+      const dpr = window.devicePixelRatio || 1;
       const rect = canvas.getBoundingClientRect();
-      canvas.width = Math.round(rect.width * ratio);
-      canvas.height = Math.round(rect.height * ratio);
-      const context = canvas.getContext("2d");
-      context.setTransform(ratio, 0, 0, ratio, 0, 0);
-      return { width: rect.width, height: rect.height };
+      const width = Math.floor(rect.width);
+      const height = Math.floor(rect.height);
+
+      if (canvas.width !== width * dpr || canvas.height !== height * dpr) {
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+      }
+      
+      const ctx = canvas.getContext("2d");
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+
+      return { width, height };
     }
 
     function drawMainCanvas(p) {
-      const { width, height } = resizeCanvas(simCanvas);
-      
-      const scaleX = width / BASE_WIDTH;
-      const scaleY = height / BASE_HEIGHT;
-      const scale = Math.min(scaleX, scaleY);
-      const offsetX = (width - BASE_WIDTH * scale) / 2;
-      const offsetY = (height - BASE_HEIGHT * scale) / 2;
+      const { width, height } = setupHiDPI(simCanvas);
 
-      simCtx.clearRect(0, 0, width, height);
-      simCtx.fillStyle = "#fafafa";
-      simCtx.fillRect(0, 0, width, height);
+      const s1x = 30;
+      const s1y = height / 2 - (p.d / 220) * (height * 0.38);
+      const s2x = 30;
+      const s2y = height / 2 + (p.d / 220) * (height * 0.38);
 
-      simCtx.save();
-      simCtx.translate(offsetX, offsetY);
-      simCtx.scale(scale, scale);
-
-      const s1x = 80;
-      const s1y = BASE_HEIGHT / 2 - p.d / 2;
-      const s2x = 80;
-      const s2y = BASE_HEIGHT / 2 + p.d / 2;
-
-      const k = (2 * Math.PI) / p.lambda;
+      const k = (2 * Math.PI) / (p.lambda * 1.5);
       const omega = 2 * Math.PI * p.freq;
       const phaseRad = (p.phaseDeg * Math.PI) / 180;
 
-      // Render field grid points
-      const step = 6;
-      for (let x = 90; x < BASE_WIDTH - 40; x += step) {
-        for (let y = 10; y < BASE_HEIGHT - 10; y += step) {
+      // High resolution pixel manipulation for clear waves
+      const dpr = window.devicePixelRatio || 1;
+      const imgData = simCtx.createImageData(width * dpr, height * dpr);
+      const data = imgData.data;
+
+      const screenX = width - 20;
+
+      for (let py = 0; py < height * dpr; py++) {
+        const y = py / dpr;
+        for (let px = 0; px < width * dpr; px++) {
+          const x = px / dpr;
+          const idx = (py * width * dpr + px) * 4;
+
+          if (x < s1x || x > screenX) {
+            data[idx] = 255;
+            data[idx + 1] = 255;
+            data[idx + 2] = 255;
+            data[idx + 3] = 255;
+            continue;
+          }
+
           const r1 = Math.hypot(x - s1x, y - s1y);
           const r2 = Math.hypot(x - s2x, y - s2y);
 
@@ -427,35 +435,35 @@
           const val2 = Math.sin(k * r2 - omega * time + phaseRad);
           const totalVal = (val1 + val2) / 2;
 
-          const shade = Math.floor(128 + totalVal * 115);
-          simCtx.fillStyle = `rgb(${shade}, ${shade}, ${shade})`;
-          simCtx.fillRect(x, y, step, step);
+          const val = Math.floor(128 + totalVal * 120);
+
+          data[idx] = val;
+          data[idx + 1] = val;
+          data[idx + 2] = val;
+          data[idx + 3] = 255;
         }
       }
 
-      // Draw detection screen on the right edge
-      const screenX = BASE_WIDTH - 30;
-      simCtx.fillStyle = "#212529";
-      simCtx.fillRect(screenX, 10, 6, BASE_HEIGHT - 20);
+      simCtx.putImageData(imgData, 0, 0);
 
-      // Draw sources
+      // Overlay Crisp Screen Line and Sources
       simCtx.fillStyle = "#111111";
-      simCtx.beginPath();
-      simCtx.arc(s1x, s1y, 6, 0, Math.PI * 2);
-      simCtx.arc(s2x, s2y, 6, 0, Math.PI * 2);
-      simCtx.fill();
+      simCtx.fillRect(screenX, 0, 4, height);
 
-      simCtx.restore();
+      simCtx.beginPath();
+      simCtx.arc(s1x, s1y, 5, 0, Math.PI * 2);
+      simCtx.arc(s2x, s2y, 5, 0, Math.PI * 2);
+      simCtx.fill();
     }
 
     function drawAxes(context, width, height, label) {
-      const left = 38;
-      const right = 12;
+      const left = 35;
+      const right = 15;
       const top = 15;
-      const bottom = 27;
+      const bottom = 25;
 
       context.clearRect(0, 0, width, height);
-      context.fillStyle = "#fafafa";
+      context.fillStyle = "#ffffff";
       context.fillRect(0, 0, width, height);
 
       context.strokeStyle = "#e9ecef";
@@ -478,40 +486,41 @@
 
       context.fillStyle = "#6c757d";
       context.font = "11px system-ui";
-      context.fillText(label, 7, 16);
+      context.fillText(label, 8, 16);
 
       return { left, right, top, bottom };
     }
 
     function drawIntensityGraph(p) {
-      const { width, height } = resizeCanvas(intensityGraph);
+      const { width, height } = setupHiDPI(intensityGraph);
       const area = drawAxes(intensityCtx, width, height, "I");
       const graphWidth = width - area.left - area.right;
       const graphHeight = height - area.top - area.bottom;
 
-      const s1y = BASE_HEIGHT / 2 - p.d / 2;
-      const s2y = BASE_HEIGHT / 2 + p.d / 2;
-      const s1x = 80;
-      const s2x = 80;
-      const screenX = BASE_WIDTH - 30;
+      const simH = simCanvas.getBoundingClientRect().height;
+      const s1y = simH / 2 - (p.d / 220) * (simH * 0.38);
+      const s2y = simH / 2 + (p.d / 220) * (simH * 0.38);
+      const s1x = 30;
+      const s2x = 30;
+      const screenX = (simCanvas.getBoundingClientRect().width) - 20;
 
-      const k = (2 * Math.PI) / p.lambda;
+      const k = (2 * Math.PI) / (p.lambda * 1.5);
       const phaseRad = (p.phaseDeg * Math.PI) / 180;
 
       intensityCtx.strokeStyle = "#111111";
       intensityCtx.lineWidth = 1.8;
       intensityCtx.beginPath();
 
-      for (let i = 0; i <= 100; i++) {
-        const y = (i / 100) * (BASE_HEIGHT - 20) + 10;
+      for (let i = 0; i <= 200; i++) {
+        const y = (i / 200) * simH;
         const r1 = Math.hypot(screenX - s1x, y - s1y);
         const r2 = Math.hypot(screenX - s2x, y - s2y);
 
         const deltaPhase = k * (r2 - r1) + phaseRad;
         const intensity = Math.pow(Math.cos(deltaPhase / 2), 2);
 
-        const px = area.left + (i / 100) * graphWidth;
-        const py = area.top + graphHeight - intensity * (graphHeight - 5);
+        const px = area.left + (i / 200) * graphWidth;
+        const py = area.top + graphHeight - intensity * (graphHeight - 4);
 
         if (i === 0) intensityCtx.moveTo(px, py);
         else intensityCtx.lineTo(px, py);
@@ -520,24 +529,27 @@
 
       intensityCtx.fillStyle = "#6c757d";
       intensityCtx.font = "11px system-ui";
-      intensityCtx.fillText("-Y", area.left, height - 8);
-      intensityCtx.fillText("y-position", width / 2 - 20, height - 8);
-      intensityCtx.fillText("+Y", width - area.right - 15, height - 8);
+      intensityCtx.fillText("-Y", area.left, height - 6);
+      intensityCtx.fillText("y-position", width / 2 - 20, height - 6);
+      intensityCtx.fillText("+Y", width - area.right - 15, height - 6);
     }
 
     function drawCenterlineGraph(p) {
-      const { width, height } = resizeCanvas(centerlineGraph);
+      const { width, height } = setupHiDPI(centerlineGraph);
       const area = drawAxes(centerlineCtx, width, height, "A");
       const graphWidth = width - area.left - area.right;
       const graphHeight = height - area.top - area.bottom;
       const middle = area.top + graphHeight / 2;
 
-      const s1x = 80;
-      const s1y = BASE_HEIGHT / 2 - p.d / 2;
-      const s2x = 80;
-      const s2y = BASE_HEIGHT / 2 + p.d / 2;
+      const simW = simCanvas.getBoundingClientRect().width;
+      const simH = simCanvas.getBoundingClientRect().height;
 
-      const k = (2 * Math.PI) / p.lambda;
+      const s1x = 30;
+      const s1y = simH / 2 - (p.d / 220) * (simH * 0.38);
+      const s2x = 30;
+      const s2y = simH / 2 + (p.d / 220) * (simH * 0.38);
+
+      const k = (2 * Math.PI) / (p.lambda * 1.5);
       const omega = 2 * Math.PI * p.freq;
       const phaseRad = (p.phaseDeg * Math.PI) / 180;
 
@@ -545,9 +557,9 @@
       centerlineCtx.lineWidth = 1.8;
       centerlineCtx.beginPath();
 
-      for (let i = 0; i <= 100; i++) {
-        const x = 90 + (i / 100) * (BASE_WIDTH - 130);
-        const y = BASE_HEIGHT / 2;
+      for (let i = 0; i <= 200; i++) {
+        const x = s1x + (i / 200) * (simW - 50);
+        const y = simH / 2;
 
         const r1 = Math.hypot(x - s1x, y - s1y);
         const r2 = Math.hypot(x - s2x, y - s2y);
@@ -556,7 +568,7 @@
         const val2 = Math.sin(k * r2 - omega * time + phaseRad);
         const totalVal = (val1 + val2) / 2;
 
-        const px = area.left + (i / 100) * graphWidth;
+        const px = area.left + (i / 200) * graphWidth;
         const py = middle - totalVal * (graphHeight / 2 - 6);
 
         if (i === 0) centerlineCtx.moveTo(px, py);
@@ -566,9 +578,9 @@
 
       centerlineCtx.fillStyle = "#6c757d";
       centerlineCtx.font = "11px system-ui";
-      centerlineCtx.fillText("Source", area.left, height - 8);
-      centerlineCtx.fillText("Distance (x)", width / 2 - 25, height - 8);
-      centerlineCtx.fillText("Screen", width - area.right - 35, height - 8);
+      centerlineCtx.fillText("Source", area.left, height - 6);
+      centerlineCtx.fillText("Distance (x)", width / 2 - 25, height - 6);
+      centerlineCtx.fillText("Screen", width - area.right - 35, height - 6);
     }
 
     function updateOutputs(p) {
@@ -579,7 +591,7 @@
 
       timeOut.textContent = `${time.toFixed(2)} s`;
       
-      const L = BASE_WIDTH - 110;
+      const L = 600;
       const fringeY = (p.lambda * L) / p.d;
       fringeOut.textContent = `${fringeY.toFixed(1)} cm`;
       maxOut.textContent = (p.phaseDeg % 360 === 0) ? "Constructive" : "Phase Shifted";
