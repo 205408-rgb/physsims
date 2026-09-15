@@ -1,0 +1,677 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rutherford Scattering | Physics Simulations</title>
+
+  <style>
+    :root {
+      --bg: #f8f9fa;
+      --panel: #ffffff;
+      --panel-dark: #f1f3f5;
+      --border: #e9ecef;
+      --border-dark: #dee2e6;
+      --text: #212529;
+      --muted: #6c757d;
+      --accent: #212529;
+      --accent-hover: #343a40;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      background: var(--bg);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.45;
+    }
+
+    .page {
+      width: min(1180px, calc(100% - 32px));
+      margin: auto;
+    }
+
+    header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 32px 0 24px;
+      border-bottom: 1px solid var(--border-dark);
+    }
+
+    h1 {
+      margin: 0;
+      font-family: "Georgia", "Times New Roman", serif;
+      font-weight: 400;
+      font-size: clamp(2rem, 4vw, 2.8rem);
+      color: #111;
+    }
+
+    h2 {
+      font-family: "Georgia", "Times New Roman", serif;
+      font-weight: 400;
+      font-size: 1.2rem;
+      margin: 0 0 16px;
+      color: #111;
+    }
+
+    .subtitle {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 0.98rem;
+    }
+
+    .back {
+      display: inline-block;
+      color: var(--text);
+      font-size: 0.9rem;
+      text-decoration: none;
+      white-space: nowrap;
+      padding: 6px 12px;
+      border: 1px solid var(--border-dark);
+      border-radius: 6px;
+      background: #fff;
+      transition: background 0.15s ease;
+    }
+
+    .back:hover { 
+      background: var(--panel-dark);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.75fr);
+      gap: 20px;
+      padding: 24px 0 20px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border-dark);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+
+    .simulation {
+      position: relative;
+      min-height: 440px;
+    }
+
+    #simCanvas {
+      display: block;
+      width: 100%;
+      height: 440px;
+      background: #fafafa;
+    }
+
+    .canvas-info {
+      position: absolute;
+      top: 12px;
+      left: 14px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      pointer-events: none;
+    }
+
+    .controls {
+      padding: 24px;
+    }
+
+    .control {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 0.88rem;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    output {
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--text);
+      cursor: pointer;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 10px 0 20px;
+    }
+
+    button {
+      cursor: pointer;
+      border: 1px solid var(--accent);
+      border-radius: 6px;
+      padding: 9px 16px;
+      color: #fff;
+      background: var(--accent);
+      font-weight: 500;
+      font: inherit;
+      font-size: 0.9rem;
+      transition: background 0.15s ease;
+    }
+
+    button:hover {
+      background: var(--accent-hover);
+    }
+
+    button.secondary {
+      color: var(--text);
+      background: #fff;
+      border: 1px solid var(--border-dark);
+    }
+
+    button.secondary:hover {
+      background: var(--panel-dark);
+    }
+
+    .checks {
+      display: grid;
+      gap: 10px;
+      padding-top: 5px;
+    }
+
+    .checks label {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      gap: 8px;
+      margin: 0;
+      cursor: pointer;
+      color: var(--text);
+      font-weight: normal;
+    }
+
+    .checks input { accent-color: var(--text); }
+
+    .readouts {
+      margin-top: 24px;
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--panel-dark);
+    }
+
+    .readouts h3 {
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .readouts p {
+      display: flex;
+      justify-content: space-between;
+      margin: 6px 0;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .readouts strong {
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .graphs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      padding-bottom: 40px;
+    }
+
+    .graph {
+      padding: 18px;
+    }
+
+    .graph h2 {
+      margin-bottom: 12px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-family: inherit;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    canvas.graph-canvas {
+      display: block;
+      width: 100%;
+      height: 205px;
+      background: #fafafa;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+
+    .legend {
+      display: flex;
+      gap: 14px;
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .blue { color: #111; font-weight: 500; }
+    .green { color: #555; font-weight: 500; }
+
+    @media (max-width: 850px) {
+      header { flex-direction: column; }
+      .layout, .graphs { grid-template-columns: 1fr; }
+      #simCanvas { height: 360px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <header>
+      <div>
+        <h1>Rutherford Scattering</h1>
+        <p class="subtitle">Fire alpha particles at a heavy atomic nucleus to observe Coulomb repulsion trajectories.</p>
+      </div>
+      <a class="back" href="index.html">← All simulations</a>
+    </header>
+
+    <main class="layout">
+      <section class="panel simulation">
+        <canvas id="simCanvas"></canvas>
+        <div class="canvas-info">Alpha Beam Source</div>
+      </section>
+
+      <aside class="panel controls">
+        <h2>Controls</h2>
+
+        <div class="control">
+          <label for="zNum">
+            <span>Atomic Number (Z)</span>
+            <output id="zNumOut">79 (Gold)</output>
+          </label>
+          <input id="zNum" type="range" min="10" max="100" value="79" step="1">
+        </div>
+
+        <div class="control">
+          <label for="energy">
+            <span>Particle Energy (E)</span>
+            <output id="energyOut">5.0 MeV</output>
+          </label>
+          <input id="energy" type="range" min="1" max="10" value="5.0" step="0.5">
+        </div>
+
+        <div class="control">
+          <label for="beamSpread">
+            <span>Impact Parameter Spread</span>
+            <output id="spreadOut">± 40 fm</output>
+          </label>
+          <input id="beamSpread" type="range" min="10" max="80" value="40" step="5">
+        </div>
+
+        <div class="actions">
+          <button id="fireButton" type="button">Fire Single</button>
+          <button id="streamButton" class="secondary" type="button">Continuous Stream</button>
+          <button id="clearButton" class="secondary" type="button">Clear Paths</button>
+        </div>
+
+        <div class="checks">
+          <label><input id="showEquipotentials" type="checkbox" checked> Show electric potential lines</label>
+        </div>
+
+        <section class="readouts">
+          <h3>Live readouts</h3>
+          <p><span>Total Particles</span><strong id="countOut">0</strong></p>
+          <p><span>Backscattered (&gt;90°)</span><strong id="backOut">0</strong></p>
+          <p><span>Small Deflection (&lt;10°)</span><strong id="forwardOut">0</strong></p>
+          <p><span>Min Distance (Closest)</span><strong id="dMinOut">0.0 fm</strong></p>
+        </section>
+      </aside>
+    </main>
+
+    <section class="graphs">
+      <section class="panel graph">
+        <h2>Angular Distribution (θ)</h2>
+        <canvas class="graph-canvas" id="distGraph"></canvas>
+        <div class="legend"><span class="blue">● Particle counts per angle</span></div>
+      </section>
+
+      <section class="panel graph">
+        <h2>Scattering Cross-Section</h2>
+        <canvas class="graph-canvas" id="crossGraph"></canvas>
+        <div class="legend"><span class="green">● dσ/dΩ theoretical curve</span></div>
+      </section>
+    </section>
+  </div>
+
+  <script>
+    const simCanvas = document.getElementById("simCanvas");
+    const simCtx = simCanvas.getContext("2d");
+    const distGraph = document.getElementById("distGraph");
+    const distCtx = distGraph.getContext("2d");
+    const crossGraph = document.getElementById("crossGraph");
+    const crossCtx = crossGraph.getContext("2d");
+
+    const zNumInput = document.getElementById("zNum");
+    const energyInput = document.getElementById("energy");
+    const spreadInput = document.getElementById("beamSpread");
+    const showEquipotentialsInput = document.getElementById("showEquipotentials");
+
+    const zNumOut = document.getElementById("zNumOut");
+    const energyOut = document.getElementById("energyOut");
+    const spreadOut = document.getElementById("spreadOut");
+
+    const countOut = document.getElementById("countOut");
+    const backOut = document.getElementById("backOut");
+    const forwardOut = document.getElementById("forwardOut");
+    const dMinOut = document.getElementById("dMinOut");
+
+    const fireButton = document.getElementById("fireButton");
+    const streamButton = document.getElementById("streamButton");
+    const clearButton = document.getElementById("clearButton");
+
+    let particles = [];
+    let trajectories = [];
+    let angleCounts = new Array(18).fill(0); // 10 degree bins
+    let totalCount = 0;
+    let backscatterCount = 0;
+    let forwardCount = 0;
+    let minDistanceOverall = Infinity;
+    let streaming = false;
+
+    function params() {
+      return {
+        Z: Number(zNumInput.value),
+        E: Number(energyInput.value),
+        spread: Number(spreadInput.value)
+      };
+    }
+
+    function resizeCanvas(canvas) {
+      const ratio = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = Math.round(rect.width * ratio);
+      canvas.height = Math.round(rect.height * ratio);
+      const context = canvas.getContext("2d");
+      context.setTransform(ratio, 0, 0, ratio, 0, 0);
+      return { width: rect.width, height: rect.height };
+    }
+
+    function line(context, x1, y1, x2, y2, color, width = 1) {
+      context.strokeStyle = color;
+      context.lineWidth = width;
+      context.beginPath();
+      context.moveTo(x1, y1);
+      context.lineTo(x2, y2);
+      context.stroke();
+    }
+
+    function spawnParticle(impactB) {
+      const p = params();
+      const speed = Math.sqrt(p.E) * 1.5;
+      return {
+        x: 40,
+        y: 220 + impactB,
+        vx: speed,
+        vy: 0,
+        path: [{ x: 40, y: 220 + impactB }],
+        minDist: Infinity
+      };
+    }
+
+    function stepPhysics() {
+      const p = params();
+      const k = p.Z * 45; // Coulomb constant multiplier for simulation scale
+
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const pt = particles[i];
+        const dx = pt.x - 440;
+        const dy = pt.y - 220;
+        const distSq = dx * dx + dy * dy;
+        const dist = Math.sqrt(distSq);
+
+        if (dist < pt.minDist) pt.minDist = dist;
+        if (dist < minDistanceOverall) minDistanceOverall = dist;
+
+        const force = k / Math.max(distSq, 100);
+        const ax = (force * (dx / dist));
+        const ay = (force * (dy / dist));
+
+        pt.vx += ax * 0.2;
+        pt.vy += ay * 0.2;
+        pt.x += pt.vx * 0.2;
+        pt.y += pt.vy * 0.2;
+
+        pt.path.push({ x: pt.x, y: pt.y });
+
+        // Check if out of bounds
+        if (pt.x < 0 || pt.x > 880 || pt.y < 0 || pt.y > 440) {
+          const finalAngle = Math.abs(Math.atan2(pt.vy, pt.vx) * 180 / Math.PI);
+          const bin = Math.min(17, Math.floor(finalAngle / 10));
+          angleCounts[bin]++;
+          totalCount++;
+
+          if (finalAngle > 90) backscatterCount++;
+          if (finalAngle < 10) forwardCount++;
+
+          trajectories.push(pt.path);
+          if (trajectories.length > 80) trajectories.shift();
+          particles.splice(i, 1);
+        }
+      }
+    }
+
+    function drawMainCanvas() {
+      const { width, height } = resizeCanvas(simCanvas);
+      const cx = width / 2;
+      const cy = height / 2;
+
+      simCtx.clearRect(0, 0, width, height);
+      simCtx.fillStyle = "#fafafa";
+      simCtx.fillRect(0, 0, width, height);
+
+      // Grid
+      simCtx.strokeStyle = "#f1f3f5";
+      simCtx.lineWidth = 1;
+      for (let x = 0; x < width; x += 40) line(simCtx, x, 0, x, height, "#f1f3f5");
+      for (let y = 0; y < height; y += 40) line(simCtx, 0, y, width, y, "#f1f3f5");
+
+      // Equipotential circles
+      if (showEquipotentialsInput.checked) {
+        simCtx.strokeStyle = "#e9ecef";
+        simCtx.lineWidth = 1;
+        [40, 80, 130, 190].forEach(r => {
+          simCtx.beginPath();
+          simCtx.arc(cx, cy, r, 0, Math.PI * 2);
+          simCtx.stroke();
+        });
+      }
+
+      // Trajectories
+      trajectories.forEach(path => {
+        simCtx.strokeStyle = "rgba(108, 117, 125, 0.35)";
+        simCtx.lineWidth = 1.2;
+        simCtx.beginPath();
+        path.forEach((pt, idx) => {
+          if (idx === 0) simCtx.moveTo(pt.x, pt.y);
+          else simCtx.lineTo(pt.x, pt.y);
+        });
+        simCtx.stroke();
+      });
+
+      // Active particles
+      particles.forEach(pt => {
+        simCtx.strokeStyle = "#111111";
+        simCtx.lineWidth = 1.8;
+        simCtx.beginPath();
+        pt.path.forEach((p, idx) => {
+          if (idx === 0) simCtx.moveTo(p.x, p.y);
+          else simCtx.lineTo(p.x, p.y);
+        });
+        simCtx.stroke();
+
+        simCtx.fillStyle = "#111111";
+        simCtx.beginPath();
+        simCtx.arc(pt.x, pt.y, 3.5, 0, Math.PI * 2);
+        simCtx.fill();
+      });
+
+      // Nucleus (Gold/Target)
+      const p = params();
+      const nucRadius = Math.max(6, Math.min(16, p.Z * 0.15));
+      simCtx.fillStyle = "#212529";
+      simCtx.beginPath();
+      simCtx.arc(cx, cy, nucRadius, 0, Math.PI * 2);
+      simCtx.fill();
+    }
+
+    function drawAxes(context, width, height, label) {
+      const left = 38;
+      const right = 12;
+      const top = 15;
+      const bottom = 27;
+
+      context.clearRect(0, 0, width, height);
+      context.fillStyle = "#fafafa";
+      context.fillRect(0, 0, width, height);
+
+      context.strokeStyle = "#e9ecef";
+      context.lineWidth = 1;
+
+      for (let i = 0; i <= 4; i++) {
+        const y = top + i * ((height - top - bottom) / 4);
+        context.beginPath();
+        context.moveTo(left, y);
+        context.lineTo(width - right, y);
+        context.stroke();
+      }
+
+      line(context, left, top, left, height - bottom, "#adb5bd");
+      line(context, left, height - bottom, width - right, height - bottom, "#adb5bd");
+
+      context.fillStyle = "#6c757d";
+      context.font = "11px system-ui";
+      context.fillText(label, 7, 16);
+
+      return { left, right, top, bottom };
+    }
+
+    function drawDistGraph() {
+      const { width, height } = resizeCanvas(distGraph);
+      const area = drawAxes(distCtx, width, height, "N");
+      const graphWidth = width - area.left - area.right;
+      const graphHeight = height - area.top - area.bottom;
+
+      const maxVal = Math.max(...angleCounts, 10);
+      const barWidth = graphWidth / 18;
+
+      distCtx.fillStyle = "#212529";
+      angleCounts.forEach((cnt, i) => {
+        const h = (cnt / maxVal) * graphHeight;
+        const x = area.left + i * barWidth;
+        const y = area.top + graphHeight - h;
+        distCtx.fillRect(x + 1, y, barWidth - 2, h);
+      });
+
+      distCtx.fillStyle = "#6c757d";
+      distCtx.font = "11px system-ui";
+      distCtx.fillText("0°", area.left, height - 8);
+      distCtx.fillText("θ", width - 25, height - 8);
+      distCtx.fillText("180°", width - area.right - 25, height - 8);
+    }
+
+    function drawCrossGraph() {
+      const { width, height } = resizeCanvas(crossGraph);
+      const area = drawAxes(crossCtx, width, height, "σ");
+      const graphWidth = width - area.left - area.right;
+      const graphHeight = height - area.top - area.bottom;
+
+      crossCtx.strokeStyle = "#555555";
+      crossCtx.lineWidth = 2;
+      crossCtx.beginPath();
+
+      for (let i = 1; i <= 100; i++) {
+        const rad = (i / 100) * Math.PI * 0.95 + 0.05;
+        const sinHalf = Math.sin(rad / 2);
+        const sigma = 1 / (sinHalf * sinHalf * sinHalf * sinHalf);
+        const px = area.left + (i / 100) * graphWidth;
+        const py = area.top + graphHeight - Math.min(graphHeight, Math.log(sigma) * 12);
+
+        if (i === 1) crossCtx.moveTo(px, py);
+        else crossCtx.lineTo(px, py);
+      }
+      crossCtx.stroke();
+
+      crossCtx.fillStyle = "#6c757d";
+      crossCtx.font = "11px system-ui";
+      crossCtx.fillText("0°", area.left, height - 8);
+      crossCtx.fillText("θ", width - 25, height - 8);
+      crossCtx.fillText("180°", width - area.right - 25, height - 8);
+    }
+
+    function updateOutputs(p) {
+      zNumOut.textContent = `${p.Z}`;
+      energyOut.textContent = `${p.E.toFixed(1)} MeV`;
+      spreadOut.textContent = `± ${p.spread} fm`;
+
+      countOut.textContent = totalCount;
+      backOut.textContent = backscatterCount;
+      forwardOut.textContent = forwardCount;
+      dMinOut.textContent = minDistanceOverall === Infinity ? "0.0 fm" : `${minDistanceOverall.toFixed(1)} fm`;
+    }
+
+    function updateFrame() {
+      if (streaming && Math.random() < 0.3) {
+        const p = params();
+        const b = (Math.random() - 0.5) * p.spread * 2;
+        particles.push(spawnParticle(b));
+      }
+
+      stepPhysics();
+      const p = params();
+      updateOutputs(p);
+      drawMainCanvas();
+      drawDistGraph();
+      drawCrossGraph();
+
+      requestAnimationFrame(updateFrame);
+    }
+
+    fireButton.addEventListener("click", () => {
+      const p = params();
+      const b = (Math.random() - 0.5) * p.spread * 2;
+      particles.push(spawnParticle(b));
+    });
+
+    streamButton.addEventListener("click", () => {
+      streaming = !streaming;
+      streamButton.textContent = streaming ? "Stop Stream" : "Continuous Stream";
+    });
+
+    clearButton.addEventListener("click", () => {
+      particles = [];
+      trajectories = [];
+      angleCounts = new Array(18).fill(0);
+      totalCount = 0;
+      backscatterCount = 0;
+      forwardCount = 0;
+      minDistanceOverall = Infinity;
+    });
+
+    requestAnimationFrame(updateFrame);
+  </script>
+</body>
+</html>
