@@ -1,0 +1,621 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wave Interference Lab | Physics Simulations</title>
+
+  <style>
+    :root {
+      --bg: #f8f9fa;
+      --panel: #ffffff;
+      --panel-dark: #f1f3f5;
+      --border: #e9ecef;
+      --border-dark: #dee2e6;
+      --text: #212529;
+      --muted: #6c757d;
+      --accent: #212529;
+      --accent-hover: #343a40;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      background: var(--bg);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.45;
+    }
+
+    .page {
+      width: min(1180px, calc(100% - 32px));
+      margin: auto;
+    }
+
+    header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 32px 0 24px;
+      border-bottom: 1px solid var(--border-dark);
+    }
+
+    h1 {
+      margin: 0;
+      font-family: "Georgia", "Times New Roman", serif;
+      font-weight: 400;
+      font-size: clamp(2rem, 4vw, 2.8rem);
+      color: #111;
+    }
+
+    h2 {
+      font-family: "Georgia", "Times New Roman", serif;
+      font-weight: 400;
+      font-size: 1.2rem;
+      margin: 0 0 16px;
+      color: #111;
+    }
+
+    .subtitle {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 0.98rem;
+    }
+
+    .back {
+      display: inline-block;
+      color: var(--text);
+      font-size: 0.9rem;
+      text-decoration: none;
+      white-space: nowrap;
+      padding: 6px 12px;
+      border: 1px solid var(--border-dark);
+      border-radius: 6px;
+      background: #fff;
+      transition: background 0.15s ease;
+    }
+
+    .back:hover { 
+      background: var(--panel-dark);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.75fr);
+      gap: 20px;
+      padding: 24px 0 20px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border-dark);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+
+    .simulation {
+      position: relative;
+      min-height: 440px;
+    }
+
+    #simCanvas {
+      display: block;
+      width: 100%;
+      height: 440px;
+      background: #fafafa;
+    }
+
+    .canvas-info {
+      position: absolute;
+      top: 12px;
+      left: 14px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      pointer-events: none;
+    }
+
+    .controls {
+      padding: 24px;
+    }
+
+    .control {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 0.88rem;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    output {
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--text);
+      cursor: pointer;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 10px 0 20px;
+    }
+
+    button {
+      cursor: pointer;
+      border: 1px solid var(--accent);
+      border-radius: 6px;
+      padding: 9px 16px;
+      color: #fff;
+      background: var(--accent);
+      font-weight: 500;
+      font: inherit;
+      font-size: 0.9rem;
+      transition: background 0.15s ease;
+    }
+
+    button:hover {
+      background: var(--accent-hover);
+    }
+
+    button.secondary {
+      color: var(--text);
+      background: #fff;
+      border: 1px solid var(--border-dark);
+    }
+
+    button.secondary:hover {
+      background: var(--panel-dark);
+    }
+
+    .readouts {
+      margin-top: 24px;
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--panel-dark);
+    }
+
+    .readouts h3 {
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .readouts p {
+      display: flex;
+      justify-content: space-between;
+      margin: 6px 0;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .readouts strong {
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .graphs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      padding-bottom: 40px;
+    }
+
+    .graph {
+      padding: 18px;
+    }
+
+    .graph h2 {
+      margin-bottom: 12px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-family: inherit;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    canvas.graph-canvas {
+      display: block;
+      width: 100%;
+      height: 205px;
+      background: #fafafa;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+
+    .legend {
+      display: flex;
+      gap: 14px;
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .blue { color: #111; font-weight: 500; }
+
+    @media (max-width: 850px) {
+      header { flex-direction: column; }
+      .layout, .graphs { grid-template-columns: 1fr; }
+      #simCanvas { height: 360px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <header>
+      <div>
+        <h1>Wave Interference Lab</h1>
+        <p class="subtitle">Simulate two-point source wave superposition, fringe patterns, and intensity profiles.</p>
+      </div>
+      <a class="back" href="index.html">← All simulations</a>
+    </header>
+
+    <main class="layout">
+      <section class="panel simulation">
+        <canvas id="simCanvas"></canvas>
+        <div class="canvas-info">Wave Field (Superposition)</div>
+      </section>
+
+      <aside class="panel controls">
+        <h2>Controls</h2>
+
+        <div class="control">
+          <label for="wavelength">
+            <span>Wavelength (λ)</span>
+            <output id="waveOut">35 cm</output>
+          </label>
+          <input id="wavelength" type="range" min="15" max="70" value="35" step="1">
+        </div>
+
+        <div class="control">
+          <label for="separation">
+            <span>Source Separation (d)</span>
+            <output id="sepOut">120 cm</output>
+          </label>
+          <input id="separation" type="range" min="40" max="220" value="120" step="2">
+        </div>
+
+        <div class="control">
+          <label for="frequency">
+            <span>Wave Speed / Freq</span>
+            <output id="freqOut">1.0 Hz</output>
+          </label>
+          <input id="frequency" type="range" min="0.2" max="2.0" value="1.0" step="0.1">
+        </div>
+
+        <div class="control">
+          <label for="phase">
+            <span>Phase Difference (Δφ)</span>
+            <output id="phaseOut">0°</output>
+          </label>
+          <input id="phase" type="range" min="0" max="360" value="0" step="15">
+        </div>
+
+        <div class="actions">
+          <button id="pauseButton" type="button">Pause</button>
+          <button id="resetButton" class="secondary" type="button">Reset</button>
+        </div>
+
+        <section class="readouts">
+          <h3>Live readouts</h3>
+          <p><span>Time</span><strong id="timeOut">0.00 s</strong></p>
+          <p><span>Fringe Spacing (Screen)</span><strong id="fringeOut">0.0 cm</strong></p>
+          <p><span>Max Interference</span><strong id="maxOut">Constructive</strong></p>
+        </section>
+      </aside>
+    </main>
+
+    <section class="graphs">
+      <section class="panel graph">
+        <h2>Screen Intensity Profile</h2>
+        <canvas class="graph-canvas" id="intensityGraph"></canvas>
+        <div class="legend"><span class="blue">● Relative Intensity I(y)</span></div>
+      </section>
+
+      <section class="panel graph">
+        <h2>Centerline Wave Amplitude</h2>
+        <canvas class="graph-canvas" id="centerlineGraph"></canvas>
+        <div class="legend"><span class="blue">● Amplitude along central axis</span></div>
+      </section>
+    </section>
+  </div>
+
+  <script>
+    const simCanvas = document.getElementById("simCanvas");
+    const simCtx = simCanvas.getContext("2d");
+    const intensityGraph = document.getElementById("intensityGraph");
+    const intensityCtx = intensityGraph.getContext("2d");
+    const centerlineGraph = document.getElementById("centerlineGraph");
+    const centerlineCtx = centerlineGraph.getContext("2d");
+
+    const waveInput = document.getElementById("wavelength");
+    const sepInput = document.getElementById("separation");
+    const freqInput = document.getElementById("frequency");
+    const phaseInput = document.getElementById("phase");
+
+    const waveOut = document.getElementById("waveOut");
+    const sepOut = document.getElementById("sepOut");
+    const freqOut = document.getElementById("freqOut");
+    const phaseOut = document.getElementById("phaseOut");
+
+    const timeOut = document.getElementById("timeOut");
+    const fringeOut = document.getElementById("fringeOut");
+    const maxOut = document.getElementById("maxOut");
+
+    const pauseButton = document.getElementById("pauseButton");
+    const resetButton = document.getElementById("resetButton");
+
+    let time = 0;
+    let paused = false;
+    let previousTimestamp = null;
+
+    const BASE_WIDTH = 700;
+    const BASE_HEIGHT = 440;
+
+    function params() {
+      return {
+        lambda: Number(waveInput.value),
+        d: Number(sepInput.value),
+        freq: Number(freqInput.value),
+        phaseDeg: Number(phaseInput.value)
+      };
+    }
+
+    function resizeCanvas(canvas) {
+      const ratio = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = Math.round(rect.width * ratio);
+      canvas.height = Math.round(rect.height * ratio);
+      const context = canvas.getContext("2d");
+      context.setTransform(ratio, 0, 0, ratio, 0, 0);
+      return { width: rect.width, height: rect.height };
+    }
+
+    function drawMainCanvas(p) {
+      const { width, height } = resizeCanvas(simCanvas);
+      
+      const scaleX = width / BASE_WIDTH;
+      const scaleY = height / BASE_HEIGHT;
+      const scale = Math.min(scaleX, scaleY);
+      const offsetX = (width - BASE_WIDTH * scale) / 2;
+      const offsetY = (height - BASE_HEIGHT * scale) / 2;
+
+      simCtx.clearRect(0, 0, width, height);
+      simCtx.fillStyle = "#fafafa";
+      simCtx.fillRect(0, 0, width, height);
+
+      simCtx.save();
+      simCtx.translate(offsetX, offsetY);
+      simCtx.scale(scale, scale);
+
+      const s1x = 80;
+      const s1y = BASE_HEIGHT / 2 - p.d / 2;
+      const s2x = 80;
+      const s2y = BASE_HEIGHT / 2 + p.d / 2;
+
+      const k = (2 * Math.PI) / p.lambda;
+      const omega = 2 * Math.PI * p.freq;
+      const phaseRad = (p.phaseDeg * Math.PI) / 180;
+
+      // Render field grid points
+      const step = 6;
+      for (let x = 90; x < BASE_WIDTH - 40; x += step) {
+        for (let y = 10; y < BASE_HEIGHT - 10; y += step) {
+          const r1 = Math.hypot(x - s1x, y - s1y);
+          const r2 = Math.hypot(x - s2x, y - s2y);
+
+          const val1 = Math.sin(k * r1 - omega * time);
+          const val2 = Math.sin(k * r2 - omega * time + phaseRad);
+          const totalVal = (val1 + val2) / 2;
+
+          const shade = Math.floor(128 + totalVal * 115);
+          simCtx.fillStyle = `rgb(${shade}, ${shade}, ${shade})`;
+          simCtx.fillRect(x, y, step, step);
+        }
+      }
+
+      // Draw detection screen on the right edge
+      const screenX = BASE_WIDTH - 30;
+      simCtx.fillStyle = "#212529";
+      simCtx.fillRect(screenX, 10, 6, BASE_HEIGHT - 20);
+
+      // Draw sources
+      simCtx.fillStyle = "#111111";
+      simCtx.beginPath();
+      simCtx.arc(s1x, s1y, 6, 0, Math.PI * 2);
+      simCtx.arc(s2x, s2y, 6, 0, Math.PI * 2);
+      simCtx.fill();
+
+      simCtx.restore();
+    }
+
+    function drawAxes(context, width, height, label) {
+      const left = 38;
+      const right = 12;
+      const top = 15;
+      const bottom = 27;
+
+      context.clearRect(0, 0, width, height);
+      context.fillStyle = "#fafafa";
+      context.fillRect(0, 0, width, height);
+
+      context.strokeStyle = "#e9ecef";
+      context.lineWidth = 1;
+
+      for (let i = 0; i <= 4; i++) {
+        const y = top + i * ((height - top - bottom) / 4);
+        context.beginPath();
+        context.moveTo(left, y);
+        context.lineTo(width - right, y);
+        context.stroke();
+      }
+
+      context.strokeStyle = "#adb5bd";
+      context.beginPath();
+      context.moveTo(left, top);
+      context.lineTo(left, height - bottom);
+      context.lineTo(width - right, height - bottom);
+      context.stroke();
+
+      context.fillStyle = "#6c757d";
+      context.font = "11px system-ui";
+      context.fillText(label, 7, 16);
+
+      return { left, right, top, bottom };
+    }
+
+    function drawIntensityGraph(p) {
+      const { width, height } = resizeCanvas(intensityGraph);
+      const area = drawAxes(intensityCtx, width, height, "I");
+      const graphWidth = width - area.left - area.right;
+      const graphHeight = height - area.top - area.bottom;
+
+      const s1y = BASE_HEIGHT / 2 - p.d / 2;
+      const s2y = BASE_HEIGHT / 2 + p.d / 2;
+      const s1x = 80;
+      const s2x = 80;
+      const screenX = BASE_WIDTH - 30;
+
+      const k = (2 * Math.PI) / p.lambda;
+      const phaseRad = (p.phaseDeg * Math.PI) / 180;
+
+      intensityCtx.strokeStyle = "#111111";
+      intensityCtx.lineWidth = 1.8;
+      intensityCtx.beginPath();
+
+      for (let i = 0; i <= 100; i++) {
+        const y = (i / 100) * (BASE_HEIGHT - 20) + 10;
+        const r1 = Math.hypot(screenX - s1x, y - s1y);
+        const r2 = Math.hypot(screenX - s2x, y - s2y);
+
+        const deltaPhase = k * (r2 - r1) + phaseRad;
+        const intensity = Math.pow(Math.cos(deltaPhase / 2), 2);
+
+        const px = area.left + (i / 100) * graphWidth;
+        const py = area.top + graphHeight - intensity * (graphHeight - 5);
+
+        if (i === 0) intensityCtx.moveTo(px, py);
+        else intensityCtx.lineTo(px, py);
+      }
+      intensityCtx.stroke();
+
+      intensityCtx.fillStyle = "#6c757d";
+      intensityCtx.font = "11px system-ui";
+      intensityCtx.fillText("-Y", area.left, height - 8);
+      intensityCtx.fillText("y-position", width / 2 - 20, height - 8);
+      intensityCtx.fillText("+Y", width - area.right - 15, height - 8);
+    }
+
+    function drawCenterlineGraph(p) {
+      const { width, height } = resizeCanvas(centerlineGraph);
+      const area = drawAxes(centerlineCtx, width, height, "A");
+      const graphWidth = width - area.left - area.right;
+      const graphHeight = height - area.top - area.bottom;
+      const middle = area.top + graphHeight / 2;
+
+      const s1x = 80;
+      const s1y = BASE_HEIGHT / 2 - p.d / 2;
+      const s2x = 80;
+      const s2y = BASE_HEIGHT / 2 + p.d / 2;
+
+      const k = (2 * Math.PI) / p.lambda;
+      const omega = 2 * Math.PI * p.freq;
+      const phaseRad = (p.phaseDeg * Math.PI) / 180;
+
+      centerlineCtx.strokeStyle = "#111111";
+      centerlineCtx.lineWidth = 1.8;
+      centerlineCtx.beginPath();
+
+      for (let i = 0; i <= 100; i++) {
+        const x = 90 + (i / 100) * (BASE_WIDTH - 130);
+        const y = BASE_HEIGHT / 2;
+
+        const r1 = Math.hypot(x - s1x, y - s1y);
+        const r2 = Math.hypot(x - s2x, y - s2y);
+
+        const val1 = Math.sin(k * r1 - omega * time);
+        const val2 = Math.sin(k * r2 - omega * time + phaseRad);
+        const totalVal = (val1 + val2) / 2;
+
+        const px = area.left + (i / 100) * graphWidth;
+        const py = middle - totalVal * (graphHeight / 2 - 6);
+
+        if (i === 0) centerlineCtx.moveTo(px, py);
+        else centerlineCtx.lineTo(px, py);
+      }
+      centerlineCtx.stroke();
+
+      centerlineCtx.fillStyle = "#6c757d";
+      centerlineCtx.font = "11px system-ui";
+      centerlineCtx.fillText("Source", area.left, height - 8);
+      centerlineCtx.fillText("Distance (x)", width / 2 - 25, height - 8);
+      centerlineCtx.fillText("Screen", width - area.right - 35, height - 8);
+    }
+
+    function updateOutputs(p) {
+      waveOut.textContent = `${p.lambda} cm`;
+      sepOut.textContent = `${p.d} cm`;
+      freqOut.textContent = `${p.freq.toFixed(1)} Hz`;
+      phaseOut.textContent = `${p.phaseDeg}°`;
+
+      timeOut.textContent = `${time.toFixed(2)} s`;
+      
+      const L = BASE_WIDTH - 110;
+      const fringeY = (p.lambda * L) / p.d;
+      fringeOut.textContent = `${fringeY.toFixed(1)} cm`;
+      maxOut.textContent = (p.phaseDeg % 360 === 0) ? "Constructive" : "Phase Shifted";
+    }
+
+    function updateFrame(timestamp) {
+      if (previousTimestamp === null) previousTimestamp = timestamp;
+
+      const elapsed = Math.min((timestamp - previousTimestamp) / 1000, 0.03);
+      previousTimestamp = timestamp;
+
+      if (!paused) {
+        time += elapsed;
+      }
+
+      const p = params();
+      updateOutputs(p);
+      drawMainCanvas(p);
+      drawIntensityGraph(p);
+      drawCenterlineGraph(p);
+
+      requestAnimationFrame(updateFrame);
+    }
+
+    pauseButton.addEventListener("click", () => {
+      paused = !paused;
+      pauseButton.textContent = paused ? "Play" : "Pause";
+    });
+
+    resetButton.addEventListener("click", () => {
+      time = 0;
+      paused = false;
+      pauseButton.textContent = "Pause";
+    });
+
+    requestAnimationFrame(updateFrame);
+  </script>
+</body>
+</html>
