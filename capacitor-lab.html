@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Capacitor Lab | Physics Simulations</title>
+
+  <style>
+    :root {
+      --bg: #f8f9fa;
+      --panel: #ffffff;
+      --panel-dark: #f1f3f5;
+      --border: #e9ecef;
+      --border-dark: #dee2e6;
+      --text: #212529;
+      --muted: #6c757d;
+      --accent: #212529;
+      --accent-hover: #343a40;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      background: var(--bg);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.45;
+    }
+
+    .page {
+      width: min(1180px, calc(100% - 32px));
+      margin: auto;
+    }
+
+    header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 32px 0 24px;
+      border-bottom: 1px solid var(--border-dark);
+    }
+
+    h1 {
+      margin: 0;
+      font-family: "Georgia", "Times New Roman", serif;
+      font-weight: 400;
+      font-size: clamp(2rem, 4vw, 2.8rem);
+      color: #111;
+    }
+
+    h2 {
+      font-family: "Georgia", "Times New Roman", serif;
+      font-weight: 400;
+      font-size: 1.2rem;
+      margin: 0 0 16px;
+      color: #111;
+    }
+
+    .subtitle {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 0.98rem;
+    }
+
+    .back {
+      display: inline-block;
+      color: var(--text);
+      font-size: 0.9rem;
+      text-decoration: none;
+      white-space: nowrap;
+      padding: 6px 12px;
+      border: 1px solid var(--border-dark);
+      border-radius: 6px;
+      background: #fff;
+      transition: background 0.15s ease;
+    }
+
+    .back:hover { 
+      background: var(--panel-dark);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.75fr);
+      gap: 20px;
+      padding: 24px 0 20px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border-dark);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+
+    .simulation {
+      position: relative;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .canvas-info {
+      color: var(--muted);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+    }
+
+    #simCanvas {
+      display: block;
+      width: 100%;
+      height: 420px;
+      background: #ffffff;
+      border-radius: 4px;
+    }
+
+    .controls {
+      padding: 24px;
+    }
+
+    .control {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 0.88rem;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    output {
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--text);
+      cursor: pointer;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 10px 0 20px;
+    }
+
+    button {
+      cursor: pointer;
+      border: 1px solid var(--accent);
+      border-radius: 6px;
+      padding: 9px 16px;
+      color: #fff;
+      background: var(--accent);
+      font-weight: 500;
+      font: inherit;
+      font-size: 0.9rem;
+      transition: background 0.15s ease;
+    }
+
+    button:hover {
+      background: var(--accent-hover);
+    }
+
+    button.secondary {
+      color: var(--text);
+      background: #fff;
+      border: 1px solid var(--border-dark);
+    }
+
+    button.secondary:hover {
+      background: var(--panel-dark);
+    }
+
+    .readouts {
+      margin-top: 24px;
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--panel-dark);
+    }
+
+    .readouts h3 {
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .readouts p {
+      display: flex;
+      justify-content: space-between;
+      margin: 6px 0;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .readouts strong {
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+
+    @media (max-width: 850px) {
+      header { flex-direction: column; }
+      .layout { grid-template-columns: 1fr; }
+      #simCanvas { height: 340px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <header>
+      <div>
+        <h1>Capacitor Lab</h1>
+        <p class="subtitle">Investigate transient charge dynamics, energy storage, and RC time constants in DC circuits.</p>
+      </div>
+      <a class="back" href="index.html">← All simulations</a>
+    </header>
+
+    <main class="layout">
+      <section class="panel simulation">
+        <div class="canvas-info">Circuit Schematic & Plate Charge Distribution</div>
+        <canvas id="simCanvas"></canvas>
+      </section>
+
+      <aside class="panel controls">
+        <h2>Controls</h2>
+
+        <div class="control">
+          <label for="voltage">
+            <span>Battery Voltage (V<sub>0</sub>)</span>
+            <output id="voltOut">9.0 V</output>
+          </label>
+          <input id="voltage" type="range" min="1" max="18" value="9" step="0.5">
+        </div>
+
+        <div class="control">
+          <label for="resistance">
+            <span>Resistance (R)</span>
+            <output id="resOut">10 kΩ</output>
+          </label>
+          <input id="resistance" type="range" min="1" max="50" value="10" step="1">
+        </div>
+
+        <div class="control">
+          <label for="capacitance">
+            <span>Capacitance (C)</span>
+            <output id="capOut">100 µF</output>
+          </label>
+          <input id="capacitance" type="range" min="10" max="500" value="100" step="10">
+        </div>
+
+        <div class="actions">
+          <button id="chargeBtn" type="button">Charge</button>
+          <button id="dischargeBtn" class="secondary" type="button">Discharge</button>
+          <button id="resetBtn" class="secondary" type="button">Reset</button>
+        </div>
+
+        <section class="readouts">
+          <h3>Live Readouts</h3>
+          <p><span>Time Constant (τ)</span><strong id="tauOut">1.00 s</strong></p>
+          <p><span>Capacitor Voltage</span><strong id="vcOut">0.00 V</strong></p>
+          <p><span>Stored Energy</span><strong id="energyOut">0.00 mJ</strong></p>
+        </section>
+      </aside>
+    </main>
+  </div>
+
+  <script>
+    const simCanvas = document.getElementById("simCanvas");
+    const simCtx = simCanvas.getContext("2d");
+
+    const voltInput = document.getElementById("voltage");
+    const resInput = document.getElementById("resistance");
+    const capInput = document.getElementById("capacitance");
+
+    const voltOut = document.getElementById("voltOut");
+    const resOut = document.getElementById("resOut");
+    const capOut = document.getElementById("capOut");
+
+    const tauOut = document.getElementById("tauOut");
+    const vcOut = document.getElementById("vcOut");
+    const energyOut = document.getElementById("energyOut");
+
+    const chargeBtn = document.getElementById("chargeBtn");
+    const dischargeBtn = document.getElementById("dischargeBtn");
+    const resetBtn = document.getElementById("resetBtn");
+
+    let state = "idle"; // "charging", "discharging", "idle"
+    let vCap = 0;
+    let targetVoltage = 9;
+    let startVoltage = 0;
+    let transitionTime = 0;
+    let previousTimestamp = null;
+
+    function params() {
+      return {
+        v0: Number(voltInput.value),
+        r: Number(resInput.value) * 1000,
+        c: Number(capInput.value) * 1e-6
+      };
+    }
+
+    function setupHiDPI(canvas) {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      const width = Math.floor(rect.width);
+      const height = Math.floor(rect.height);
+
+      if (canvas.width !== width * dpr || canvas.height !== height * dpr) {
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+      }
+
+      const ctx = canvas.getContext("2d");
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+      return { width, height };
+    }
+
+    function updateSim(dt) {
+      const p = params();
+      const tau = p.r * p.c;
+
+      if (state === "charging") {
+        transitionTime += dt;
+        vCap = p.v0 + (startVoltage - p.v0) * Math.exp(-transitionTime / tau);
+        if (Math.abs(vCap - p.v0) < 0.01) {
+          vCap = p.v0;
+          state = "idle";
+        }
+      } else if (state === "discharging") {
+        transitionTime += dt;
+        vCap = startVoltage * Math.exp(-transitionTime / tau);
+        if (vCap < 0.01) {
+          vCap = 0;
+          state = "idle";
+        }
+      }
+    }
+
+    function draw() {
+      const { width, height } = setupHiDPI(simCanvas);
+      const p = params();
+      const tau = p.r * p.c;
+      const energy = 0.5 * p.c * vCap * vCap * 1000; // mJ
+
+      simCtx.clearRect(0, 0, width, height);
+
+      // Draw Circuit Wire Frame
+      simCtx.strokeStyle = "#212529";
+      simCtx.lineWidth = 2;
+      simCtx.beginPath();
+
+      const cx = width / 2;
+      const cy = height / 2;
+      const w = Math.min(width * 0.7, 460);
+      const h = Math.min(height * 0.6, 220);
+
+      const left = cx - w / 2;
+      const right = cx + w / 2;
+      const top = cy - h / 2;
+      const bottom = cy + h / 2;
+
+      // Loop path
+      simCtx.rect(left, top, w, h);
+      simCtx.stroke();
+
+      // Battery (Left Side)
+      simCtx.fillStyle = "#ffffff";
+      simCtx.fillRect(left - 10, cy - 20, 20, 40);
+      simCtx.beginPath();
+      simCtx.moveTo(left - 14, cy - 12);
+      simCtx.lineTo(left + 14, cy - 12);
+      simCtx.moveTo(left - 7, cy + 12);
+      simCtx.lineTo(left + 7, cy + 12);
+      simCtx.stroke();
+
+      // Resistor (Top Side)
+      simCtx.fillRect(cx - 30, top - 12, 60, 24);
+      simCtx.strokeRect(cx - 30, top - 12, 60, 24);
+      simCtx.fillStyle = "#6c757d";
+      simCtx.font = "12px system-ui";
+      simCtx.textAlign = "center";
+      simCtx.fillText("R", cx, top - 18);
+
+      // Capacitor Plates (Right Side)
+      const plateWidth = 44;
+      const plateGap = 16;
+      simCtx.fillStyle = "#ffffff";
+      simCtx.fillRect(right - 22, cy - 20, 44, 40);
+
+      simCtx.lineWidth = 4;
+      simCtx.beginPath();
+      simCtx.moveTo(right - plateWidth / 2, cy - plateGap / 2);
+      simCtx.lineTo(right + plateWidth / 2, cy - plateGap / 2);
+      simCtx.moveTo(right - plateWidth / 2, cy + plateGap / 2);
+      simCtx.lineTo(right + plateWidth / 2, cy + plateGap / 2);
+      simCtx.stroke();
+
+      // Charge Visualizer (+ / -)
+      const chargeRatio = Math.min(1, vCap / p.v0);
+      const numCharges = Math.floor(chargeRatio * 6);
+
+      simCtx.fillStyle = "#111111";
+      simCtx.font = "bold 11px system-ui";
+      simCtx.textAlign = "center";
+      simCtx.textBaseline = "middle";
+
+      for (let i = 0; i < numCharges; i++) {
+        const px = right - plateWidth / 2 + 6 + i * 7;
+        simCtx.fillText("+", px, cy - plateGap / 2 - 8);
+        simCtx.fillText("-", px, cy + plateGap / 2 + 8);
+      }
+
+      // Live Readouts Panel
+      voltOut.textContent = `${p.v0.toFixed(1)} V`;
+      resOut.textContent = `${Number(resInput.value)} kΩ`;
+      capOut.textContent = `${Number(capInput.value)} µF`;
+
+      tauOut.textContent = `${tau.toFixed(2)} s`;
+      vcOut.textContent = `${vCap.toFixed(2)} V`;
+      energyOut.textContent = `${energy.toFixed(2)} mJ`;
+    }
+
+    function loop(timestamp) {
+      if (previousTimestamp === null) previousTimestamp = timestamp;
+      const dt = Math.min((timestamp - previousTimestamp) / 1000, 0.03);
+      previousTimestamp = timestamp;
+
+      updateSim(dt);
+      draw();
+      requestAnimationFrame(loop);
+    }
+
+    chargeBtn.addEventListener("click", () => {
+      startVoltage = vCap;
+      transitionTime = 0;
+      state = "charging";
+    });
+
+    dischargeBtn.addEventListener("click", () => {
+      startVoltage = vCap;
+      transitionTime = 0;
+      state = "discharging";
+    });
+
+    resetBtn.addEventListener("click", () => {
+      vCap = 0;
+      state = "idle";
+    });
+
+    requestAnimationFrame(loop);
+  </script>
+</body>
+</html>
